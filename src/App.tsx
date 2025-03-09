@@ -11,8 +11,10 @@ import Chat from "./pages/Chat";
 import ChatList from "./pages/ChatList";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import AppLayout from "./components/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -23,15 +25,25 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/chats" element={<ChatList />} />
-          <Route path="/chat/:chatId" element={<Chat />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/profile" element={<Profile />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* App routes with layout */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chats" element={<ChatList />} />
+            <Route path="/chat/:chatId" element={<Chat />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          
+          {/* Redirect /chats to ensure it's the main message page */}
+          <Route path="/messages" element={<Navigate to="/chats" replace />} />
+          
+          {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
