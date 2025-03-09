@@ -3,47 +3,60 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { MessageCircle } from 'lucide-react';
+import UserProfileCard from '@/components/UserProfileCard';
 
-interface LanguageUser {
-  id: string;
-  name: string;
-  avatar: string;
-  nativeLanguage: string;
-  learningLanguage: string;
-  online: boolean;
-}
-
-const MOCK_USERS: LanguageUser[] = [
+const MOCK_USERS = [
   {
     id: '2',
     name: 'Maria Garcia',
     avatar: 'https://ui-avatars.com/api/?name=Maria+Garcia&background=random',
+    location: 'Madrid, Spain',
+    bio: 'Spanish teacher looking to practice English and make international friends.',
     nativeLanguage: 'Spanish',
-    learningLanguage: 'English',
+    learningLanguages: [
+      { language: 'English', proficiency: 'Intermediate' },
+    ],
+    learningGoals: 'I want to improve my English for my teaching career.',
     online: true,
   },
   {
     id: '3',
     name: 'Akira Tanaka',
     avatar: 'https://ui-avatars.com/api/?name=Akira+Tanaka&background=random',
+    location: 'Tokyo, Japan',
+    bio: 'Software engineer interested in learning English for work and travel.',
     nativeLanguage: 'Japanese',
-    learningLanguage: 'English',
+    learningLanguages: [
+      { language: 'English', proficiency: 'Advanced' },
+    ],
+    learningGoals: 'I want to communicate better with international colleagues.',
     online: false,
   },
   {
     id: '4',
     name: 'Sophie Laurent',
     avatar: 'https://ui-avatars.com/api/?name=Sophie+Laurent&background=random',
+    location: 'Paris, France',
+    bio: 'Culinary student wanting to learn Spanish for travel around Latin America.',
     nativeLanguage: 'French',
-    learningLanguage: 'Spanish',
+    learningLanguages: [
+      { language: 'Spanish', proficiency: 'Beginner' },
+      { language: 'Italian', proficiency: 'Beginner' },
+    ],
+    learningGoals: 'I want to be able to understand basic conversations during travel.',
     online: true,
   },
   {
     id: '5',
     name: 'Li Wei',
     avatar: 'https://ui-avatars.com/api/?name=Li+Wei&background=random',
+    location: 'Shanghai, China',
+    bio: 'Business student who loves movies and music. Want to improve my English.',
     nativeLanguage: 'Mandarin',
-    learningLanguage: 'English',
+    learningLanguages: [
+      { language: 'English', proficiency: 'Intermediate' },
+    ],
+    learningGoals: 'I want to study abroad in the United States next year.',
     online: false,
   }
 ];
@@ -53,7 +66,7 @@ const LanguageUsers = () => {
   
   const handleChatClick = (userId: string) => {
     // In a real app, you would create a chat or navigate to an existing one
-    navigate('/chat');
+    navigate(`/chat/${userId}`);
   };
   
   return (
@@ -61,40 +74,9 @@ const LanguageUsers = () => {
       <h2 className="text-2xl font-bold mb-6 text-center">Connect with Language Partners</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto px-4">
         {MOCK_USERS.map(user => (
-          <div key={user.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-            <div className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="relative">
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name}
-                    className="w-12 h-12 rounded-full" 
-                  />
-                  {user.online && (
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-medium">{user.name}</h3>
-                  <div className="text-sm text-muted-foreground flex items-center gap-1">
-                    <span className={user.online ? 'text-green-500' : 'text-gray-400'}>
-                      {user.online ? 'Online' : 'Offline'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-2 text-sm mb-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Native language:</span>
-                  <span className="font-medium">{user.nativeLanguage}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Learning:</span>
-                  <span className="font-medium">{user.learningLanguage}</span>
-                </div>
-              </div>
-              
+          <div key={user.id} className="flex flex-col h-full">
+            <UserProfileCard user={user} compact={true} onClick={() => {}} />
+            <div className="p-3 border-t">
               <Button 
                 onClick={() => handleChatClick(user.id)}
                 className="w-full" 
