@@ -14,7 +14,7 @@ const MOCK_USERS = [
     bio: 'Spanish teacher looking to practice English and make international friends.',
     nativeLanguage: 'Spanish',
     learningLanguages: [
-      { language: 'English', proficiency: 'Intermediate' },
+      { language: 'English', proficiency: 'Intermediate' as const },
     ],
     learningGoals: 'I want to improve my English for my teaching career.',
     online: true,
@@ -27,7 +27,7 @@ const MOCK_USERS = [
     bio: 'Software engineer interested in learning English for work and travel.',
     nativeLanguage: 'Japanese',
     learningLanguages: [
-      { language: 'English', proficiency: 'Advanced' },
+      { language: 'English', proficiency: 'Advanced' as const },
     ],
     learningGoals: 'I want to communicate better with international colleagues.',
     online: false,
@@ -40,8 +40,8 @@ const MOCK_USERS = [
     bio: 'Culinary student wanting to learn Spanish for travel around Latin America.',
     nativeLanguage: 'French',
     learningLanguages: [
-      { language: 'Spanish', proficiency: 'Beginner' },
-      { language: 'Italian', proficiency: 'Beginner' },
+      { language: 'Spanish', proficiency: 'Beginner' as const },
+      { language: 'Italian', proficiency: 'Beginner' as const },
     ],
     learningGoals: 'I want to be able to understand basic conversations during travel.',
     online: true,
@@ -54,7 +54,7 @@ const MOCK_USERS = [
     bio: 'Business student who loves movies and music. Want to improve my English.',
     nativeLanguage: 'Mandarin',
     learningLanguages: [
-      { language: 'English', proficiency: 'Intermediate' },
+      { language: 'English', proficiency: 'Intermediate' as const },
     ],
     learningGoals: 'I want to study abroad in the United States next year.',
     online: false,
