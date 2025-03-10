@@ -16,14 +16,21 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    // Debug connection
+    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("Auth attempt with email:", email);
 
     try {
       if (isLogin) {
         // 🔐 LOGIN USER WITH SUPABASE
+        console.log("Attempting login...");
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
+        console.log("Login response:", data, error);
 
         if (error) throw error;
 
@@ -35,6 +42,7 @@ const Auth = () => {
         navigate(data.user ? '/dashboard' : '/onboarding'); // Redirect based on onboarding status
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
+        console.log("Attempting signup...");
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -42,6 +50,8 @@ const Auth = () => {
             data: { username: name }, // Store name in metadata
           },
         });
+
+        console.log("Signup response:", data, error);
 
         if (error) throw error;
 
@@ -53,7 +63,7 @@ const Auth = () => {
         navigate('/onboarding'); // New users go to onboarding
       }
     } catch (error: any) {
-      console.error('Authentication error:', error.message);
+      console.error('Authentication error:', error);
       toast({
         title: "Authentication failed",
         description: error.message || "Please try again.",
