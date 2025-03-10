@@ -1,7 +1,9 @@
 
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { BookOpen, Clock, ChevronLeft, Search } from 'lucide-react';
+import AdBanner from '@/components/AdBanner';
+import { trackPageView } from '@/utils/analytics';
 
 // Mock blog data - this would come from your backend in a real implementation
 const BLOG_POSTS = [
@@ -116,6 +118,12 @@ const BLOG_POSTS = [
 // Blog List Page Component
 const BlogList = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Track page view for analytics
+    trackPageView('/blog');
+  }, []);
   
   const filteredPosts = BLOG_POSTS.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -141,6 +149,9 @@ const BlogList = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+      
+      {/* AdBanner at the top of content */}
+      <AdBanner adSlot="1234567890" className="mb-8" />
       
       {/* Featured post */}
       {!searchTerm && (
@@ -225,6 +236,9 @@ const BlogList = () => {
         ))}
       </div>
       
+      {/* AdBanner at the bottom of content */}
+      <AdBanner adSlot="9876543210" className="mt-12" />
+      
       {filteredPosts.length === 0 && (
         <div className="text-center py-12">
           <h3 className="text-xl font-medium mb-2">No articles found</h3>
@@ -241,6 +255,14 @@ const BlogList = () => {
 const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = BLOG_POSTS.find(post => post.slug === slug);
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Track page view for analytics
+    if (slug) {
+      trackPageView(`/blog/${slug}`);
+    }
+  }, [slug]);
   
   if (!post) {
     return (
@@ -292,10 +314,16 @@ const BlogDetail = () => {
         />
       </div>
       
+      {/* AdBanner before content */}
+      <AdBanner adSlot="3456789012" className="mb-8" />
+      
       <div 
         className="prose prose-slate max-w-none mb-8"
         dangerouslySetInnerHTML={{ __html: post.content }} 
       />
+      
+      {/* AdBanner after content */}
+      <AdBanner adSlot="5678901234" className="mb-8" />
       
       <div className="border-t pt-6">
         <h3 className="font-semibold mb-2">Tags:</h3>

@@ -1,9 +1,10 @@
 
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
@@ -15,7 +16,24 @@ import Settings from "./pages/Settings";
 import Blog from "./pages/Blog";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import Legal from "./pages/Legal";
 import AppLayout from "./components/AppLayout";
+import { initializeAnalytics, trackPageView } from "./utils/analytics";
+
+// Initialize analytics with placeholder tracking ID
+// This would be replaced with your actual Google Analytics tracking ID
+initializeAnalytics("G-XXXXXXXXXX");
+
+// Page tracker component to handle analytics
+const PageTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location]);
+  
+  return null;
+};
 
 const queryClient = new QueryClient();
 
@@ -25,6 +43,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PageTracker />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Index />} />
@@ -32,6 +51,7 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<Blog />} />
+          <Route path="/legal/:page" element={<Legal />} />
           
           {/* App routes with layout */}
           <Route element={<AppLayout />}>
