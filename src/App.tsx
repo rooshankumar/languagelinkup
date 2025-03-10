@@ -12,6 +12,7 @@ import ChatList from "./pages/ChatList";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Blog from "./pages/Blog";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import AppLayout from "./components/AppLayout";
@@ -29,6 +30,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<Blog />} />
           
           {/* App routes with layout */}
           <Route element={<AppLayout />}>

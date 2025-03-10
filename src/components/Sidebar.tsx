@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { MessageCircle, Globe, Settings, User, LogOut, Languages } from 'lucide-react';
+import { MessageCircle, Globe, Settings, User, LogOut, Languages, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
@@ -29,6 +29,11 @@ const Sidebar = ({ className }: SidebarProps) => {
       label: 'Dashboard',
       icon: Languages,
       href: '/dashboard',
+    },
+    {
+      label: 'Blog',
+      icon: BookOpen,
+      href: '/blog',
     },
     {
       label: 'Profile',
