@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // This allows connections from any IP address
     port: 3001,
-    strictPort: true, // Ensures Vite only uses the specified port
+    strictPort: false, // Allow Vite to use another port if 3001 is occupied
   },
   plugins: [
     react(),
