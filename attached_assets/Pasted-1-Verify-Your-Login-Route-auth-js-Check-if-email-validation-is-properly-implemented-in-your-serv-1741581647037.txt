@@ -1,0 +1,165 @@
+1️⃣ Verify Your Login Route (auth.js)
+Check if email validation is properly implemented in your server/routes/auth.js.
+It should find the user in the database and compare hashed passwords before allowing login.
+
+✅ Fix: Update Login Route
+
+javascript
+Copy
+Edit
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";  // Ensure correct model import
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const router = express.Router();
+
+// User login
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    // Compare hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    // Send token in HTTP-only cookie
+    res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "Strict" });
+
+    res.json({ message: "Login successful", token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+export default router;
+📌 Now, test your login:
+
+Try logging in with an invalid email → it should return "Invalid email or password".
+Try logging in with a wrong password → it should return "Invalid email or password".
+📌 2️⃣ Verify Password Hashing in Signup Route
+Check if your signup route hashes passwords correctly before storing them.
+
+✅ Fix: Update Signup Route
+
+javascript
+Copy
+Edit
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new user
+    user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+✅ Now test signup:
+
+Try registering the same email twice → it should block duplicate accounts.
+Check MongoDB → passwords should be hashed (not stored as plain text).
+📌 3️⃣ Ensure JWT Token is Required for Protected Routes
+Your server/middleware/auth.js must verify JWT tokens before allowing access.
+
+✅ Fix: Update Auth Middleware
+
+javascript
+Copy
+Edit
+import jwt from "jsonwebtoken";
+
+export const authMiddleware = (req, res, next) => {
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized - No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized - Invalid token" });
+  }
+};
+✅ Now test protected routes:
+
+Try accessing /api/users/profile without logging in → it should reject the request.
+If logged in, it should allow access.
+📌 4️⃣ Verify Frontend is Sending Correct API Requests
+Make sure your frontend is sending the JWT token in every API request.
+
+✅ Fix: Update API Hook Modify src/hooks/useApi.ts to include JWT token:
+
+typescript
+Copy
+Edit
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,  // Ensure cookies are sent
+});
+
+export default api;
+📌 Now, test in Postman or browser and ensure API requests include the JWT token.
+
+📌 5️⃣ Debugging & Fixing Common Issues
+✅ Check if JWT Secret is Set
+Ensure your .env file contains:
+
+ini
+Copy
+Edit
+JWT_SECRET=your-very-strong-secret
+✅ Restart Server
+After changes, restart Replit:
+
+bash
+Copy
+Edit
+kill 1
+npm start
+✅ Clear Cookies in Browser
+If JWT tokens were previously saved, clear them and try again.
+
+🚀 Final Test Plan
+Test Case	Expected Result
+Signup with duplicate email	❌ Should return error
+Signup with new email	✅ Should hash password & save user
+Login with invalid email/password	❌ Should return error
+Login with correct credentials	✅ Should return JWT token
+Access protected routes without login	❌ Should reject request
+Access protected routes after login	✅ Should allow access
+Once all tests pass, your authentication system is fixed and secure! 🎉
