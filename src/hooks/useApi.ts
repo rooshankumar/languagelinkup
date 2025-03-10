@@ -1,112 +1,88 @@
+import { useState } from 'react';
+import { toast } from './use-toast';
 
-import { useState, useCallback } from 'react';
-
-interface ApiOptions {
-  endpoint: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: any;
-  token?: string;
-  contentType?: string;
-}
-
-export interface ApiResponse<T> {
+interface ApiResponse<T> {
   data: T | null;
   error: string | null;
   loading: boolean;
-  success: boolean;
 }
 
-export function useApi<T>() {
-  const [state, setState] = useState<ApiResponse<T>>({
-    data: null,
-    error: null,
-    loading: false,
-    success: false
-  });
+interface ApiOptions {
+  headers?: Record<string, string>;
+  withCredentials?: boolean;
+}
 
-  const fetchData = useCallback(async ({ 
-    endpoint, 
-    method = 'GET', 
-    body = null, 
-    token = null,
-    contentType = 'application/json'
-  }: ApiOptions): Promise<ApiResponse<T>> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+const API_URL = '/api';
+
+function useApi() {
+  const [loading, setLoading] = useState(false);
+
+  const request = async <T>(
+    endpoint: string,
+    method: string = 'GET',
+    body?: any,
+    options: ApiOptions = {}
+  ): Promise<ApiResponse<T>> => {
     try {
-      // Build headers
+      setLoading(true);
+
+      const token = localStorage.getItem('token');
+
       const headers: Record<string, string> = {
-        'Content-Type': contentType,
+        'Content-Type': 'application/json',
+        ...options.headers
       };
-      
-      // Add auth token if provided
+
+      // Add authorization header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
-      // Build fetch options
-      const options: RequestInit = {
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method,
         headers,
-        credentials: 'include', // Include cookies
-      };
-      
-      // Add body for non-GET requests if provided
-      if (method !== 'GET' && body) {
-        options.body = contentType === 'application/json' 
-          ? JSON.stringify(body) 
-          : body;
-      }
-      
-      // Make the request
-      const response = await fetch(`/api${endpoint}`, options);
-      
-      // Parse JSON response
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include', // Always include credentials for cookies
+      });
+
       const data = await response.json();
-      
-      // Handle error responses
+
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
-      
-      // Update state with success
-      setState({
-        data,
-        error: null,
-        loading: false,
-        success: true
+
+      return { data, error: null, loading: false };
+    } catch (error: any) {
+      console.error(`API Error (${endpoint}):`, error);
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
       });
-      
-      return {
-        data,
-        error: null,
-        loading: false,
-        success: true
-      };
-      
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      // Update state with error
-      setState({
-        data: null,
-        error: errorMessage,
-        loading: false,
-        success: false
-      });
-      
-      return {
-        data: null,
-        error: errorMessage,
-        loading: false,
-        success: false
-      };
+      return { data: null, error: error.message, loading: false };
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+  const get = <T>(endpoint: string, options?: ApiOptions) => 
+    request<T>(endpoint, 'GET', undefined, options);
+
+  const post = <T>(endpoint: string, body: any, options?: ApiOptions) => 
+    request<T>(endpoint, 'POST', body, options);
+
+  const put = <T>(endpoint: string, body: any, options?: ApiOptions) => 
+    request<T>(endpoint, 'PUT', body, options);
+
+  const del = <T>(endpoint: string, options?: ApiOptions) => 
+    request<T>(endpoint, 'DELETE', undefined, options);
 
   return {
-    ...state,
-    fetchData
+    get,
+    post,
+    put,
+    del,
+    loading
   };
 }
 

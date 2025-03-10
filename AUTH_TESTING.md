@@ -1,4 +1,3 @@
-
 # Authentication Testing Guide
 
 ## Prerequisites
@@ -40,7 +39,7 @@
 1. Without logging in, try to access:
    - /dashboard
    - /profile
-   
+
 2. Expected results:
    - Should be redirected to login page
 
@@ -69,17 +68,3 @@
 4. **Token Storage**
    - Frontend should store token in localStorage or cookies
    - Authorization headers should be formatted correctly
-
-## Testing with Postman
-
-1. Create a collection for your auth tests
-2. Add registration and login requests
-3. Set up environment variables to store the JWT token from login
-4. Use the token in the Authorization header for subsequent requests
-
-## Testing in Browser
-
-1. Open browser console
-2. Submit registration/login forms
-3. Check localStorage for token
-4. Access protected routes and verify authentication works

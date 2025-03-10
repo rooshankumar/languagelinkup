@@ -1,77 +1,71 @@
-
-import express from 'express';
-import User from '../models/User.js';
-import { protect, admin } from '../middleware/auth.js';
+import express from "express";
+import auth from "../middleware/auth.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
-// @route   GET /api/users/profile
-// @desc    Get user profile
-// @access  Private
-router.get('/profile', protect, async (req, res) => {
+// Get user profile
+router.get("/profile", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id).select("-password");
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Profile retrieval error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// @route   PUT /api/users/profile
-// @desc    Update user profile
-// @access  Private
-router.put('/profile', protect, async (req, res) => {
+// Update user profile
+router.put("/profile", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const { username, bio, nativeLanguage, learningLanguages } = req.body;
 
+    // Build update object
+    const updateFields = {};
+    if (username) updateFields.username = username;
+    if (bio !== undefined) updateFields.bio = bio;
+    if (nativeLanguage) updateFields.nativeLanguage = nativeLanguage;
+    if (learningLanguages) updateFields.learningLanguages = learningLanguages;
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updateFields },
+      { new: true }
+    ).select("-password");
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get user stats
+router.get("/stats", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("streak points lastActive");
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
-
-    // Update basic fields if provided
-    if (req.body.username) user.username = req.body.username;
-    if (req.body.email) user.email = req.body.email;
-    if (req.body.nativeLanguage) user.nativeLanguage = req.body.nativeLanguage;
-    if (req.body.bio) user.bio = req.body.bio;
-    if (req.body.learningLanguages) user.learningLanguages = req.body.learningLanguages;
-    if (req.body.profilePicture) user.profilePicture = req.body.profilePicture;
-    
-    // For password, we need to handle differently due to hashing
-    if (req.body.password) {
-      user.password = req.body.password;
-    }
-
-    // Update onboarding status if provided
-    if (req.body.isOnboarded !== undefined) {
-      user.isOnboarded = req.body.isOnboarded;
-    }
-
-    const updatedUser = await user.save();
-
     res.json({
-      _id: updatedUser._id,
-      username: updatedUser.username,
-      email: updatedUser.email,
-      nativeLanguage: updatedUser.nativeLanguage,
-      learningLanguages: updatedUser.learningLanguages,
-      bio: updatedUser.bio,
-      profilePicture: updatedUser.profilePicture,
-      isOnboarded: updatedUser.isOnboarded
+      streak: user.streak,
+      points: user.points,
+      lastActive: user.lastActive
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Stats retrieval error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // @route   GET /api/users
-// @desc    Get all users (admin only)
+// @desc    Get all users (admin only)  -- Retained from original code
 // @access  Private/Admin
-router.get('/', protect, admin, async (req, res) => {
+router.get('/', auth, admin, async (req, res) => { //Using auth instead of protect
   try {
     const users = await User.find({}).select('-password');
     res.json(users);
