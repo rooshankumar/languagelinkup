@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages } from 'lucide-react';
-import { supabase } from "../lib/supabaseClient";
- // Import Supabase client
+import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
