@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages } from 'lucide-react';
-import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
-import { validateEnv } from "@/lib/env";
-
-// Enhanced debugging
-console.log("Auth component loaded");
-console.log("Supabase imported:", !!supabase);
-console.log("Environment variables:", import.meta.env.VITE_SUPABASE_URL ? "URL exists" : "URL missing", 
-  import.meta.env.VITE_SUPABASE_ANON_KEY ? "Key exists" : "Key missing");
+import { supabase } from "../lib/supabaseClient";
+ // Import Supabase client
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,101 +14,47 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const [envError, setEnvError] = useState(false);
-  
-  useEffect(() => {
-    const result = validateEnv();
-    console.log("Environment validation result:", result);
-    if (!result.valid) {
-      setEnvError(true);
-      console.error("Environment validation failed:", result.missingVars);
-    }
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Input validation
-      if (!email || !password) {
-        throw new Error("Email and password are required");
-      }
-      
-      if (!isLogin && !name) {
-        throw new Error("Name is required for signup");
-      }
-
-      // Process email and password
-      const cleanEmail = email.trim();
-      const cleanPassword = password.trim();
-      
       if (isLogin) {
         // 🔐 LOGIN USER WITH SUPABASE
-        console.log("Attempting login with:", cleanEmail);
-        
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: cleanPassword,
+          email,
+          password,
         });
 
-        if (error) {
-          console.error("Login error:", error);
-          throw error;
-        }
-        
-        if (data && data.user) {
-          console.log("Login successful, user:", data.user.id);
-          toast({
-            title: "Logged in successfully",
-            description: `Welcome back to MyLanguage, ${data.user.email}!`,
-          });
-          
-          navigate('/dashboard');
-        } else {
-          throw new Error("No user data returned. Please try again.");
-        }
+        if (error) throw error;
+
+        toast({
+          title: "Logged in successfully",
+          description: `Welcome back to MyLanguage, ${data.user.email}!`,
+        });
+
+        navigate(data.user ? '/dashboard' : '/onboarding'); // Redirect based on onboarding status
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
-        console.log("Attempting signup with:", cleanEmail);
-        
         const { data, error } = await supabase.auth.signUp({
-          email: cleanEmail,
-          password: cleanPassword,
+          email,
+          password,
           options: {
-            data: { username: name.trim() },
+            data: { username: name }, // Store name in metadata
           },
         });
 
-        if (error) {
-          console.error("Signup error:", error);
-          throw error;
-        }
-        
-        if (data.user) {
-          console.log("Signup successful, user:", data.user.id);
-          
-          // Check if email confirmation is required
-          if (data.session) {
-            // User is automatically signed in
-            toast({
-              title: "Account created successfully",
-              description: "Welcome to MyLanguage!",
-            });
-            navigate('/onboarding');
-          } else {
-            // Email confirmation is required
-            toast({
-              title: "Verification email sent",
-              description: "Please check your email to confirm your account.",
-            });
-          }
-        } else {
-          throw new Error("Signup failed. Please try again.");
-        }
+        if (error) throw error;
+
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to MyLanguage!",
+        });
+
+        navigate('/onboarding'); // New users go to onboarding
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
+      console.error('Authentication error:', error.message);
       toast({
         title: "Authentication failed",
         description: error.message || "Please try again.",
@@ -132,13 +72,6 @@ const Auth = () => {
           <Languages className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">MyLanguage</h1>
         </div>
-        
-        {envError && (
-          <div className="bg-destructive/20 border border-destructive text-destructive p-4 rounded-md mb-6">
-            <h3 className="font-bold">Missing Environment Variables</h3>
-            <p>The application is missing required environment variables. Please check your .env file.</p>
-          </div>
-        )}
 
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
           <h2 className="text-2xl font-bold mb-6 text-center">

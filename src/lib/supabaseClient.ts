@@ -1,22 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = 'https://czubndssgwedqqzlsazn.supabase.co'; // Replace with your actual Supabase URL
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6dWJuZHNzZ3dlZHFxemxzYXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTU1MzksImV4cCI6MjA1NzE3MTUzOX0.yZDlA181ESw0_zLM-pY3Eu3gkaneQawkm_u7_PtkQRo'; // Replace with your actual Anon Key
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase credentials. Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in .env file');
-}
-
-// Create Supabase client
-export const supabase = createClient(supabaseUrl || "", supabaseAnonKey || "");
-
-// Test connection
-console.log("Testing Supabase connection...");
-supabase.auth.getSession().then(({ data }) => {
-  console.log("Supabase connection status:", data.session ? "Active session found" : "No active session");
-}).catch(err => {
-  console.error("Error connecting to Supabase:", err.message);
-  console.error("Full error:", err);
-});
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
