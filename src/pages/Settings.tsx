@@ -1,31 +1,95 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, Settings as SettingsIcon, Moon, Sun, Bell } from 'lucide-react';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const Settings = () => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
-  
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Fetch user settings from Supabase
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      setUserId(user.id);
+
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('dark_mode, notifications')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching settings:', error);
+      } else if (data) {
+        setDarkMode(data.dark_mode);
+        setNotifications(data.notifications);
+      }
+    };
+
+    fetchSettings();
+
+    // Listen for real-time changes
+    const subscription = supabase
+      .channel('settings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_settings' }, (payload) => {
+        if (payload.new.user_id === userId) {
+          setDarkMode(payload.new.dark_mode);
+          setNotifications(payload.new.notifications);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [userId]);
+
+  // Toggle dark mode and update Supabase
+  const toggleDarkMode = async () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+
     toast({
-      title: `${!darkMode ? 'Dark' : 'Light'} mode activated`,
-      description: `App theme has been changed to ${!darkMode ? 'dark' : 'light'} mode`,
+      title: `${newMode ? 'Dark' : 'Light'} mode activated`,
+      description: `App theme changed to ${newMode ? 'dark' : 'light'} mode`,
     });
+
+    if (userId) {
+      await supabase
+        .from('user_settings')
+        .upsert({ user_id: userId, dark_mode: newMode }, { onConflict: ['user_id'] });
+    }
   };
-  
-  const toggleNotifications = () => {
-    setNotifications(!notifications);
+
+  // Toggle notifications and update Supabase
+  const toggleNotifications = async () => {
+    const newNotifications = !notifications;
+    setNotifications(newNotifications);
+
     toast({
-      title: `Notifications ${!notifications ? 'enabled' : 'disabled'}`,
-      description: `You will ${!notifications ? 'now' : 'no longer'} receive notifications`,
+      title: `Notifications ${newNotifications ? 'enabled' : 'disabled'}`,
+      description: `You will ${newNotifications ? 'now' : 'no longer'} receive notifications`,
     });
+
+    if (userId) {
+      await supabase
+        .from('user_settings')
+        .upsert({ user_id: userId, notifications: newNotifications }, { onConflict: ['user_id'] });
+    }
   };
-  
+
   const settingsSections = [
     {
       id: 'profile',
@@ -47,7 +111,7 @@ const Settings = () => {
       },
     },
   ];
-  
+
   const preferenceSections = [
     {
       id: 'theme',
@@ -68,11 +132,11 @@ const Settings = () => {
       action: toggleNotifications,
     },
   ];
-  
+
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Settings</h1>
-      
+
       <div className="space-y-8">
         <section>
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -104,7 +168,7 @@ const Settings = () => {
             ))}
           </div>
         </section>
-        
+
         <section>
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <SettingsIcon className="h-5 w-5 text-primary" />
@@ -126,7 +190,7 @@ const Settings = () => {
                       <p className="text-sm text-muted-foreground">{section.description}</p>
                     </div>
                   </div>
-                  
+
                   {section.toggle && (
                     <label className="inline-flex items-center cursor-pointer">
                       <input 
