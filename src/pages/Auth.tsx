@@ -1,9 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages } from 'lucide-react';
+import { supabase } from "../lib/supabaseClient";
+ // Import Supabase client
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,32 +17,47 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      // These will connect to your backend authentication later
       if (isLogin) {
-        // Login logic will go here
-        console.log('Login with:', { email, password });
+        // 🔐 LOGIN USER WITH SUPABASE
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
         toast({
           title: "Logged in successfully",
-          description: "Welcome back to MyLanguage!",
+          description: `Welcome back to MyLanguage, ${data.user.email}!`,
         });
+
+        navigate(data.user ? '/dashboard' : '/onboarding'); // Redirect based on onboarding status
       } else {
-        // Sign up logic will go here
-        console.log('Sign up with:', { name, email, password });
+        // ✨ SIGN UP USER WITH SUPABASE
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username: name }, // Store name in metadata
+          },
+        });
+
+        if (error) throw error;
+
         toast({
           title: "Account created successfully",
           description: "Welcome to MyLanguage!",
         });
+
+        navigate('/onboarding'); // New users go to onboarding
       }
-      
-      // Navigate to onboarding if new user, otherwise dashboard
-      navigate(isLogin ? '/dashboard' : '/onboarding');
-    } catch (error) {
-      console.error('Authentication error:', error);
+    } catch (error: any) {
+      console.error('Authentication error:', error.message);
       toast({
         title: "Authentication failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -56,12 +72,12 @@ const Auth = () => {
           <Languages className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">MyLanguage</h1>
         </div>
-        
+
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
           <h2 className="text-2xl font-bold mb-6 text-center">
             {isLogin ? 'Welcome Back' : 'Join MyLanguage'}
           </h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
@@ -79,7 +95,7 @@ const Auth = () => {
                 />
               </div>
             )}
-            
+
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium">
                 Email Address
@@ -94,7 +110,7 @@ const Auth = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium">
                 Password
@@ -109,7 +125,7 @@ const Auth = () => {
                 required
               />
             </div>
-            
+
             <Button 
               type="submit" 
               className="w-full mt-6" 
@@ -118,7 +134,7 @@ const Auth = () => {
               {isLogin ? 'Sign In' : 'Create Account'}
             </Button>
           </form>
-          
+
           <div className="mt-4 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
