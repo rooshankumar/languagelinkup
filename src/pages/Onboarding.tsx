@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages, ArrowRight, Check } from 'lucide-react';
+import { supabase } from "@/lib/supabaseClient";
 
 // Sample language data
 const LANGUAGES = [
@@ -34,22 +35,75 @@ const Onboarding = () => {
   const [nativeLanguage, setNativeLanguage] = useState('');
   const [learningLanguage, setLearningLanguage] = useState('');
   const [proficiencyLevel, setProficiencyLevel] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Check if user is authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        // Redirect to auth if not logged in
+        toast({
+          title: "Authentication required",
+          description: "Please log in to continue.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      setUserId(session.user.id);
+    };
+    
+    checkAuth();
+  }, [navigate]);
+
   const handleSubmit = async () => {
-    // This will connect to your backend later
-    console.log('Saving language preferences:', {
-      nativeLanguage,
-      learningLanguage,
-      proficiencyLevel
-    });
+    if (!userId) {
+      toast({
+        title: "Authentication error",
+        description: "Please log in again to continue.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
     
-    toast({
-      title: "Profile completed!",
-      description: "Your language preferences have been saved.",
-    });
+    setIsLoading(true);
     
-    navigate('/dashboard');
+    try {
+      // Save language preferences to Supabase
+      const { error } = await supabase
+        .from('user_languages')
+        .upsert({
+          user_id: userId,
+          native_language: nativeLanguage,
+          learning_language: learningLanguage,
+          proficiency_level: proficiencyLevel,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Profile completed!",
+        description: "Your language preferences have been saved.",
+      });
+      
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Error saving preferences:', error.message);
+      toast({
+        title: "Error saving preferences",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -192,6 +246,7 @@ const Onboarding = () => {
                 <Button 
                   onClick={handleSubmit}
                   disabled={!proficiencyLevel}
+                  isLoading={isLoading}
                 >
                   Complete Profile
                 </Button>
