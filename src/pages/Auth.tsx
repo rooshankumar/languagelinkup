@@ -6,8 +6,11 @@ import { Languages } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 import { validateEnv } from "@/lib/env";
 
-// Verify supabase is imported
+// Enhanced debugging
+console.log("Auth component loaded");
 console.log("Supabase imported:", !!supabase);
+console.log("Environment variables:", import.meta.env.VITE_SUPABASE_URL ? "URL exists" : "URL missing", 
+  import.meta.env.VITE_SUPABASE_ANON_KEY ? "Key exists" : "Key missing");
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,8 +20,15 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const [envError, setEnvError] = useState(false);
+  
   useEffect(() => {
-    validateEnv();
+    const result = validateEnv();
+    console.log("Environment validation result:", result);
+    if (!result.valid) {
+      setEnvError(true);
+      console.error("Environment validation failed:", result.missingVars);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +132,13 @@ const Auth = () => {
           <Languages className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">MyLanguage</h1>
         </div>
+        
+        {envError && (
+          <div className="bg-destructive/20 border border-destructive text-destructive p-4 rounded-md mb-6">
+            <h3 className="font-bold">Missing Environment Variables</h3>
+            <p>The application is missing required environment variables. Please check your .env file.</p>
+          </div>
+        )}
 
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
           <h2 className="text-2xl font-bold mb-6 text-center">

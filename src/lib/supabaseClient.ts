@@ -10,11 +10,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl || "", supabaseAnonKey || "");
 
 // Test connection
+console.log("Testing Supabase connection...");
 supabase.auth.getSession().then(({ data }) => {
   console.log("Supabase connection status:", data.session ? "Active session found" : "No active session");
 }).catch(err => {
   console.error("Error connecting to Supabase:", err.message);
+  console.error("Full error:", err);
 });
