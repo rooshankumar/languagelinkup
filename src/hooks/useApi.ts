@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import api from './api'; // Import the new axios instance
 
 interface ApiOptions {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: any;
-  requireAuth?: boolean;
 }
 
 interface ApiResponse<T> {
@@ -19,7 +19,7 @@ export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiRespon
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const fetchData = useCallback(
     async (overrideOptions?: Partial<ApiOptions>): Promise<T | null> => {
@@ -29,8 +29,7 @@ export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiRespon
 
         const options = {
           url: '',
-          method: 'GET' as const,
-          requireAuth: true,
+          method: 'GET',
           ...initialOptions,
           ...overrideOptions,
         };
@@ -39,51 +38,32 @@ export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiRespon
           throw new Error('URL is required');
         }
 
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        };
-
-        // Add authorization header if required and user is logged in
-        if (options.requireAuth && user?.token) {
-          headers['Authorization'] = `Bearer ${user.token}`;
-        } else if (options.requireAuth && !user?.token) {
-          // If auth is required but no token exists, redirect to login
-          logout();
-          throw new Error('Authentication required');
-        }
-
-        const fetchOptions: RequestInit = {
+        let axiosOptions = {
           method: options.method,
-          headers,
+          url: options.url,
         };
 
-        // Add body for non-GET requests
-        if (options.method !== 'GET' && options.body) {
-          fetchOptions.body = JSON.stringify(options.body);
+        if(options.body){
+          axiosOptions.data = options.body;
         }
 
-        const response = await fetch(options.url, fetchOptions);
-        const responseData = await response.json();
 
-        if (!response.ok) {
-          // Handle token expiration/invalid
-          if (response.status === 401 && options.requireAuth) {
-            logout();
-          }
-          throw new Error(responseData.message || 'Something went wrong');
-        }
-
-        setData(responseData);
-        return responseData;
-      } catch (err) {
+        const response = await api(axiosOptions);
+        setData(response.data);
+        return response.data;
+      } catch (err:any) {
         const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
         setError(errorMessage);
+        // Handle 401 unauthorized specifically
+        if (err.response && err.response.status === 401) {
+          logout();
+        }
         return null;
       } finally {
         setLoading(false);
       }
     },
-    [initialOptions, user, logout]
+    [initialOptions, logout]
   );
 
   return { data, error, loading, fetchData };

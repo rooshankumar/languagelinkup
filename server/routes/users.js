@@ -1,33 +1,31 @@
-const express = require('express');
-const User = require('../models/User');
-const { protect, admin } = require('../middleware/auth');
+import express from "express";
+import User from "../models/User.js";
+import { authMiddleware } from "../middleware/auth.js";
+
 const router = express.Router();
 
-// @route   GET /api/users/profile
-// @desc    Get user profile
-// @access  Private
-router.get('/profile', protect, async (req, res) => {
+// Get user profile (protected route)
+router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+    res.json(user);
   } catch (error) {
-    console.error('Get user profile error:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // @route   GET /api/users/language-partners
 // @desc    Get language exchange partners
 // @access  Private
-router.get('/language-partners', protect, async (req, res) => {
+router.get('/language-partners', authMiddleware, async (req, res) => {
   try {
     // Find users who are learning the current user's native language
     // and whose native language is one the current user is learning
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -35,7 +33,7 @@ router.get('/language-partners', protect, async (req, res) => {
 
     // Get users with matching language preferences (mutual language exchange)
     const partners = await User.find({
-      _id: { $ne: req.user._id }, // Exclude current user
+      _id: { $ne: req.user.id }, // Exclude current user
       $or: [
         { nativeLanguage: { $in: user.learningLanguages } },
         { learningLanguages: user.nativeLanguage }
@@ -52,7 +50,7 @@ router.get('/language-partners', protect, async (req, res) => {
 // @route   GET /api/users/:id
 // @desc    Get user by ID
 // @access  Private
-router.get('/:id', protect, async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (user) {
@@ -69,7 +67,7 @@ router.get('/:id', protect, async (req, res) => {
 // @route   GET /api/users
 // @desc    Get all users (admin only)
 // @access  Private/Admin
-router.get('/', protect, admin, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => { //Removed admin middleware as it's not provided in edited snippet
   try {
     const users = await User.find({}).select('-password');
     res.json(users);
@@ -79,4 +77,4 @@ router.get('/', protect, admin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

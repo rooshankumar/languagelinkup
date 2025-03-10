@@ -1,135 +1,80 @@
-
 # Authentication Testing Guide
 
-This document provides instructions for testing the authentication system in the LinguaLink application.
+This document guides you through testing the authentication system to ensure everything is working correctly.
 
-## 1. Setting Up
+## Testing Registration and Login
 
-First, make sure the server is running:
+### 1. Test User Registration
 
-```bash
-sh run-server.sh
-```
+**Steps:**
+1. Make a POST request to `/api/auth/register` with:
+   ```json
+   {
+     "name": "Test User",
+     "email": "test@example.com",
+     "password": "password123"
+   }
+   ```
 
-And in another terminal, start the frontend:
+**Expected Results:**
+- Success: Status 201 with message "User registered successfully"
+- If user exists: Status 400 with message "User already exists"
 
-```bash
-sh run-frontend.sh
-```
+### 2. Test User Login
 
-## 2. Testing Registration
+**Steps:**
+1. Make a POST request to `/api/auth/login` with:
+   ```json
+   {
+     "email": "test@example.com", 
+     "password": "password123"
+   }
+   ```
 
-### Via Postman:
+**Expected Results:**
+- Success: Status 200 with message "Login successful" and a JWT token
+- Wrong credentials: Status 400 with message "Invalid email or password"
 
-**Endpoint:** `POST /api/auth/register`
+### 3. Test Protected Routes
 
-**Headers:**
-- Content-Type: application/json
+**Steps:**
+1. Make a GET request to `/api/users/profile` without a token
+2. Make the same request with a token in:
+   - HTTP-only cookie (set by login), or
+   - Authorization header: `Bearer <token>`
 
-**Request Body:**
-```json
-{
-  "username": "testuser",
-  "email": "test@example.com",
-  "password": "password123",
-  "nativeLanguage": "English"
-}
-```
+**Expected Results:**
+- Without token: Status 401 with message "Unauthorized - No token provided"
+- With valid token: Status 200 with user profile data
+- With invalid token: Status 401 with message "Unauthorized - Invalid token"
 
-**What to verify:**
-- The response should include a JWT token
-- User information should be returned without the password
-- Check MongoDB to ensure the password is stored as a hash, not plaintext
+## Common Issues and Fixes
 
-**Duplicate email test:**
-- Try registering with the same email again
-- You should receive a 400 error with a message about the email already existing
+1. **JWT Secret Missing**
+   - Ensure `.env` has `JWT_SECRET` defined
 
-### Via Frontend:
+2. **Cookies Not Working**
+   - Ensure `withCredentials: true` in frontend requests
+   - Check CORS settings on server (credentials: true)
 
-1. Navigate to the signup page
-2. Fill out the registration form with a new email
-3. Submit the form
-4. Verify you are redirected to the onboarding page
-5. Try registering again with the same email and verify you see an error message
+3. **Database Connection**
+   - Verify MongoDB connection string is correct
+   - Check if user model is properly defined
 
-## 3. Testing Login
+4. **Token Storage**
+   - Frontend should store token in localStorage or cookies
+   - Authorization headers should be formatted correctly
 
-### Via Postman:
+## Testing with Postman
 
-**Endpoint:** `POST /api/auth/login`
+1. Create a collection for your auth tests
+2. Add registration and login requests
+3. Set up environment variables to store the JWT token from login
+4. Use the token in the Authorization header for subsequent requests
 
-**Headers:**
-- Content-Type: application/json
+## Testing in Browser
 
-**Request Body:**
-```json
-{
-  "email": "test@example.com",
-  "password": "password123"
-}
-```
-
-**What to verify:**
-- The response should include a JWT token
-- Wrong password should return a 401 error
-- Non-existent email should return a 401 error
-
-### Via Frontend:
-
-1. Navigate to the login page
-2. Enter the email and password you registered with
-3. Verify you are redirected to dashboard (if onboarded) or onboarding page
-4. Try logging in with incorrect credentials and verify you see an error
-
-## 4. Testing Protected Routes
-
-### Via Postman:
-
-**Endpoint:** `GET /api/users/profile`
-
-**Headers:**
-- Authorization: Bearer YOUR_JWT_TOKEN
-
-**What to verify:**
-- With valid token: Returns user profile data
-- Without token: Returns 401 error
-- With invalid token: Returns 401 error
-
-### Via Frontend:
-
-1. Log in to the application
-2. Navigate to the profile page
-3. Verify your user data is displayed
-4. Log out and try to access the profile page directly via URL
-5. Verify you are redirected to the login page
-
-## 5. Testing JWT Security
-
-### Token Expiration:
-
-1. Get a valid token by logging in
-2. Wait for token expiration (30 days in this implementation)
-3. Try to access a protected route with the expired token
-4. Verify you get a 401 error
-
-### Token Tampering:
-
-1. Get a valid token by logging in
-2. Modify a character in the token
-3. Try to access a protected route with the tampered token
-4. Verify you get a 401 error
-
-## 6. Common Issues and Troubleshooting
-
-- **"Not authorized, no token provided"**: Ensure the Authorization header is set correctly with "Bearer " prefix
-- **"Not authorized, token failed"**: The token might be invalid, expired, or tampered with
-- **"Invalid email or password"**: Double-check credentials, and remember that error messages are intentionally vague for security
-- **MongoDB connection errors**: Check that your connection string in .env is correct
-
-## 7. Security Best Practices
-
-- Never store JWT tokens in localStorage for production applications (we're doing it here for simplicity)
-- Consider implementing refresh tokens for better security
-- Add rate limiting to prevent brute force attacks
-- Implement HTTPS in production environments
+1. Open browser console
+2. Submit registration/login forms
+3. Check localStorage for token
+4. Access protected routes and verify authentication works

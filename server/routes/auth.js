@@ -1,98 +1,66 @@
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import dotenv from "dotenv";
 
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { protect, generateToken } = require('../middleware/auth');
+dotenv.config();
+
 const router = express.Router();
 
-// @route   POST /api/auth/register
-// @desc    Register a new user
-// @access  Public
-router.post('/register', async (req, res) => {
+// User login
+router.post("/login", async (req, res) => {
   try {
-    const { username, email, password, nativeLanguage } = req.body;
+    const { email, password } = req.body;
 
-    // Check if required fields are provided
-    if (!username || !email || !password || !nativeLanguage) {
-      return res.status(400).json({ message: 'Please provide all required fields' });
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+    // Compare hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Create new user (password will be hashed by pre-save middleware)
-    const user = await User.create({
-      username,
-      email,
-      password,
-      nativeLanguage
-    });
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        nativeLanguage: user.nativeLanguage,
-        isOnboarded: user.isOnboarded,
-        token: generateToken(user._id)
-      });
-    } else {
-      res.status(400).json({ message: 'Invalid user data' });
-    }
+    // Send token in HTTP-only cookie
+    res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "Strict" });
+
+    res.json({ message: "Login successful", token });
   } catch (error) {
-    console.error('Registration error:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// @route   POST /api/auth/login
-// @desc    Authenticate user & get token
-// @access  Public
-router.post('/login', async (req, res) => {
+// User registration
+router.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    
-    // Check if email and password are provided
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
+    const { name, email, password } = req.body;
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User already exists" });
     }
-    
-    // Find user by email
-    const user = await User.findOne({ email });
-    
-    // Check if user exists
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    
-    // Check if password matches
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    
-    // Return user data and token
-    res.json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      nativeLanguage: user.nativeLanguage,
-      learningLanguages: user.learningLanguages,
-      profilePicture: user.profilePicture,
-      isOnboarded: user.isOnboarded,
-      streak: user.streak,
-      token: generateToken(user._id)
-    });
-      
-    // Update last active timestamp
-    await User.findByIdAndUpdate(user._id, { lastActive: new Date() });
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new user
+    user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    console.error('Login error:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -155,4 +123,4 @@ router.put('/updateprofile', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

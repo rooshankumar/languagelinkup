@@ -26,11 +26,11 @@ const io = socketIo(server, {
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
+  origin: process.env.CLIENT_URL || '*', //Maintaining original behavior for origin, adjust as needed.
   credentials: true
 }));
-app.use(cookieParser());
 
 // Set static folder for SEO files
 app.use(express.static(path.join(__dirname, 'public')));
