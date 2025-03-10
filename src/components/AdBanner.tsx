@@ -12,7 +12,9 @@ const AdBanner: React.FC<AdBannerProps> = ({
   adFormat = 'auto',
   className = '',
 }) => {
-  const adRef = useRef<HTMLDivElement>(null);
+  // Change the ref type from HTMLDivElement to HTMLElement
+  // This is more generic and will work with the <ins> element
+  const adRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // This would normally initialize the ad, but for now it's just a placeholder
