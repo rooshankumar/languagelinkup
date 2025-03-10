@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/supabaseClient"; // Import Supabase
+import { supabase } from "@/lib/supabaseClient"; // Import Supabase
 import Button from "@/components/Button";
 import { toast } from "@/hooks/use-toast";
 import { LogOut, Save, Pencil, User } from "lucide-react";
