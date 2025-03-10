@@ -1,3 +1,4 @@
+
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -8,7 +9,68 @@ dotenv.config();
 
 const router = express.Router();
 
-// User login
+// Generate JWT
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
+
+// @route   POST /api/auth/register
+// @desc    Register a new user
+// @access  Public
+router.post("/register", async (req, res) => {
+  try {
+    const { username, email, password, nativeLanguage } = req.body;
+
+    // Check for required fields
+    if (!username || !email || !password || !nativeLanguage) {
+      return res.status(400).json({ message: "Please fill in all fields" });
+    }
+
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists with this email" });
+    }
+
+    // Create user - password will be hashed in the pre-save hook
+    const user = new User({
+      username,
+      email,
+      password,
+      nativeLanguage
+    });
+
+    // Save user to database
+    const savedUser = await user.save();
+
+    // Generate token
+    const token = generateToken(savedUser._id);
+
+    // Set HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    // Send back user data (without password)
+    res.status(201).json({
+      _id: savedUser._id,
+      username: savedUser.username,
+      email: savedUser.email,
+      nativeLanguage: savedUser.nativeLanguage,
+      isOnboarded: savedUser.isOnboarded,
+      token
+    });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ message: "Server error during registration" });
+  }
+});
+
+// @route   POST /api/auth/login
+// @desc    Authenticate user & get token
+// @access  Public
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -19,107 +81,78 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Compare hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Compare passwords
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    // Generate token
+    const token = generateToken(user._id);
 
-    // Send token in HTTP-only cookie
-    res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "Strict" });
+    // Set HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
 
-    res.json({ message: "Login successful", token });
+    // Send back user data
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      nativeLanguage: user.nativeLanguage,
+      isOnboarded: user.isOnboarded,
+      token
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error during login" });
   }
 });
 
-// User registration
-router.post("/register", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create new user
-    user = new User({ name, email, password: hashedPassword });
-    await user.save();
-
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
+// @route   POST /api/auth/logout
+// @desc    Logout user / clear cookie
+// @access  Public
+router.post("/logout", (req, res) => {
+  res.cookie('token', '', {
+    httpOnly: true,
+    expires: new Date(0)
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 // @route   GET /api/auth/me
-// @desc    Get current user profile
+// @desc    Get user profile
 // @access  Private
-router.get('/me', protect, async (req, res) => {
+router.get("/me", async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    // Get token from authorization header or cookie
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.token) {
+      token = req.cookies.token;
     }
-  } catch (error) {
-    console.error('Get profile error:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
 
-// @route   PUT /api/auth/updateprofile
-// @desc    Update user profile
-// @access  Private
-router.put('/updateprofile', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    
-    if (user) {
-      user.username = req.body.username || user.username;
-      user.nativeLanguage = req.body.nativeLanguage || user.nativeLanguage;
-      user.learningLanguages = req.body.learningLanguages || user.learningLanguages;
-      user.bio = req.body.bio || user.bio;
-      user.profilePicture = req.body.profilePicture || user.profilePicture;
-      user.isOnboarded = req.body.isOnboarded !== undefined ? req.body.isOnboarded : user.isOnboarded;
-      
-      // If password is included, it will be hashed by pre-save middleware
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
-      
-      const updatedUser = await user.save();
-      
-      res.json({
-        _id: updatedUser._id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        nativeLanguage: updatedUser.nativeLanguage,
-        learningLanguages: updatedUser.learningLanguages,
-        profilePicture: updatedUser.profilePicture,
-        bio: updatedUser.bio,
-        isOnboarded: updatedUser.isOnboarded,
-        token: generateToken(updatedUser._id)
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    if (!token) {
+      return res.status(401).json({ message: "Not authorized, no token" });
     }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user data
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
   } catch (error) {
-    console.error('Update profile error:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Get profile error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

@@ -1,52 +1,57 @@
+
 # Authentication Testing Guide
 
-This document guides you through testing the authentication system to ensure everything is working correctly.
+## Prerequisites
 
-## Testing Registration and Login
-
-### 1. Test User Registration
-
-**Steps:**
-1. Make a POST request to `/api/auth/register` with:
-   ```json
-   {
-     "name": "Test User",
-     "email": "test@example.com",
-     "password": "password123"
-   }
+1. Make sure both the frontend and backend are running:
+   ```
+   npm run dev:all
    ```
 
-**Expected Results:**
-- Success: Status 201 with message "User registered successfully"
-- If user exists: Status 400 with message "User already exists"
+2. Verify the MongoDB connection is working (check server logs)
 
-### 2. Test User Login
+## Testing Registration
 
-**Steps:**
-1. Make a POST request to `/api/auth/login` with:
-   ```json
-   {
-     "email": "test@example.com", 
-     "password": "password123"
-   }
-   ```
+1. Go to the signup page
+2. Fill in a new user with details:
+   - Username: test_user
+   - Email: test@example.com
+   - Password: password123
+   - Native Language: English
 
-**Expected Results:**
-- Success: Status 200 with message "Login successful" and a JWT token
-- Wrong credentials: Status 400 with message "Invalid email or password"
+3. Expected results:
+   - Success: User created, redirected to dashboard/onboarding
+   - Error if email exists: "User already exists with this email"
 
-### 3. Test Protected Routes
+## Testing Login
 
-**Steps:**
-1. Make a GET request to `/api/users/profile` without a token
-2. Make the same request with a token in:
-   - HTTP-only cookie (set by login), or
-   - Authorization header: `Bearer <token>`
+1. Go to the login page
+2. Use credentials created above:
+   - Email: test@example.com
+   - Password: password123
 
-**Expected Results:**
-- Without token: Status 401 with message "Unauthorized - No token provided"
-- With valid token: Status 200 with user profile data
-- With invalid token: Status 401 with message "Unauthorized - Invalid token"
+3. Expected results:
+   - Success: Logged in, redirected to dashboard
+   - Error if wrong email: "Invalid email or password"
+   - Error if wrong password: "Invalid email or password"
+
+## Testing Protected Routes
+
+1. Without logging in, try to access:
+   - /dashboard
+   - /profile
+   
+2. Expected results:
+   - Should be redirected to login page
+
+3. After logging in, these routes should be accessible
+
+## Testing Logout
+
+1. Click logout button when logged in
+2. Expected results:
+   - Redirected to home/login
+   - Protected routes no longer accessible
 
 ## Common Issues and Fixes
 
