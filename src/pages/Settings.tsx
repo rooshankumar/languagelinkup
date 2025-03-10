@@ -4,11 +4,12 @@ import { User, Lock, Settings as SettingsIcon, Moon, Sun, Bell } from 'lucide-re
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabaseClient';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL || '',
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-);
+//const supabase = createClient(
+//  import.meta.env.VITE_SUPABASE_URL || '',
+//  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+//);
 
 const Settings = () => {
   const navigate = useNavigate();
