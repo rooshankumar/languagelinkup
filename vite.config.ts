@@ -8,7 +8,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // This allows connections from any IP address
-    port: 8080,
+    port: 3001,
     strictPort: true, // Ensures Vite only uses the specified port
   },
   plugins: [
