@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
+import { validateEnv } from "@/lib/env";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,10 +14,14 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    validateEnv();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Debug connection
     console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
     console.log("Auth attempt with email:", email);
