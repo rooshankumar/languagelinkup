@@ -11,16 +11,6 @@ export default defineConfig(({ mode }) => ({
     port: 3001,
     strictPort: false, // Allow Vite to use another port if 3001 is occupied
     allowedHosts: ["6200a603-aca2-41ec-8408-5a623a11af8a-00-xkbyhzmr5g6t.pike.replit.dev", "all"],
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
-      },
-      '/socket.io': {
-        target: 'ws://localhost:3000',
-        ws: true
-      }
-    }
   },
   plugins: [
     react(),

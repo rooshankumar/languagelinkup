@@ -1,106 +1,136 @@
-// AuthContext.tsx - React Context for Authentication
-'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { signIn, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { toast } from '../components/ui/use-toast';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Button from '@/components/Button';
+import { toast } from '@/hooks/use-toast';
+import { Languages } from 'lucide-react';
 
-interface User {
-  _id: string;
-  username: string;
-  email: string;
-  nativeLanguage: string;
-  learningLanguages: string[];
-  profilePicture: string;
-  isOnboarded: boolean;
-  token?: string;
-}
+const Auth = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
-  logout: () => void;
-}
-
-interface RegisterData {
-  username: string;
-  email: string;
-  password: string;
-  nativeLanguage: string;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('user');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      // These will connect to your backend authentication later
+      if (isLogin) {
+        // Login logic will go here
+        console.log('Login with:', { email, password });
+        toast({
+          title: "Logged in successfully",
+          description: "Welcome back to MyLanguage!",
+        });
+      } else {
+        // Sign up logic will go here
+        console.log('Sign up with:', { name, email, password });
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to MyLanguage!",
+        });
       }
-    }
-    setLoading(false);
-  }, []);
-
-  const register = async (userData: RegisterData) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
+      
+      // Navigate to onboarding if new user, otherwise dashboard
+      navigate(isLogin ? '/dashboard' : '/onboarding');
+    } catch (error) {
+      console.error('Authentication error:', error);
+      toast({
+        title: "Authentication failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
-      setUser(data);
-      localStorage.setItem('user', JSON.stringify(data));
-      toast({ title: 'Success', description: 'Welcome to MyLanguage!' });
-      router.push('/onboarding');
-    } catch (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
-
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const result = await signIn('credentials', { redirect: false, email, password });
-      if (result?.error) throw new Error(result.error);
-      window.location.href = '/dashboard';
-    } catch (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = () => {
-    signOut();
-    setUser(null);
-    localStorage.removeItem('user');
-    router.push('/');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-background to-background/60">
+      <div className="w-full max-w-md mx-auto">
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <Languages className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold">MyLanguage</h1>
+        </div>
+        
+        <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            {isLogin ? 'Welcome Back' : 'Join MyLanguage'}
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <label htmlFor="name" className="block text-sm font-medium">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full p-2 rounded-md border border-input bg-background"
+                  placeholder="Enter your name"
+                  required={!isLogin}
+                />
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 rounded-md border border-input bg-background"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-2 rounded-md border border-input bg-background"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full mt-6" 
+              isLoading={isLoading}
+            >
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </Button>
+          </form>
+          
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-};
+export default Auth;
