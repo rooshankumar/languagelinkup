@@ -6,6 +6,47 @@ import { toast } from '@/hooks/use-toast';
 import { Languages, ArrowRight, Check } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
 
+// Function to ensure user_languages table exists
+const ensureUserLanguagesTable = async () => {
+  // First check if the table exists
+  const { error: checkError } = await supabase
+    .from('user_languages')
+    .select('*')
+    .limit(1);
+  
+  // If we get a 404, the table likely doesn't exist
+  if (checkError && checkError.code === '42P01') {
+    console.log('Table does not exist, creating user_languages table');
+    
+    // Run SQL to create the table
+    const { error: createError } = await supabase.rpc('create_user_languages_table');
+    
+    if (createError) {
+      console.error('Error creating table:', createError);
+      
+      // Alternative approach - create using raw SQL
+      const { error: sqlError } = await supabase.sql`
+        CREATE TABLE IF NOT EXISTS user_languages (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL REFERENCES auth.users(id),
+          native_language VARCHAR(10) NOT NULL,
+          learning_language VARCHAR(10) NOT NULL,
+          proficiency_level VARCHAR(20) NOT NULL,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id)
+        );
+      `;
+      
+      if (sqlError) {
+        console.error('Error creating table with raw SQL:', sqlError);
+        return false;
+      }
+    }
+  }
+  
+  return true;
+};
+
 // Sample language data
 const LANGUAGES = [
   { id: 'en', name: 'English', flag: '🇺🇸' },
@@ -75,6 +116,13 @@ const Onboarding = () => {
     setIsLoading(true);
     
     try {
+      // Ensure the user_languages table exists before trying to insert data
+      const tableExists = await ensureUserLanguagesTable();
+      
+      if (!tableExists) {
+        throw new Error("Could not create or access user_languages table");
+      }
+      
       // Save language preferences to Supabase
       const { error } = await supabase
         .from('user_languages')
@@ -86,7 +134,10 @@ const Onboarding = () => {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase upsert error:', error);
+        throw new Error(`Database error: ${error.message || error.code || 'Unknown error'}`);
+      }
       
       toast({
         title: "Profile completed!",
