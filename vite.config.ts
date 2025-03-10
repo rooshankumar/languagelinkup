@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0", // This allows connections from any IP address
     port: 3001,
     strictPort: false, // Allow Vite to use another port if 3001 is occupied
-    allowedHosts: ["6200a603-aca2-41ec-8408-5a623a11af8a-00-xkbyhzmr5g6t.pike.replit.dev", "all"],
+    allowedHosts: ["6200a603-aca2-41ec-8408-5a623a11af8a-00-xkbyhzmr5g6t.pike.replit.dev", "7001cd1e-73c4-47f9-8864-33504126e24a-00-2gqtw3rglxf6u.sisko.replit.dev", "all"],
   },
   plugins: [
     react(),
