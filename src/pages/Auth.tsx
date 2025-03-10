@@ -27,13 +27,17 @@ const Auth = () => {
         });
 
         if (error) throw error;
+        
+        if (!data.user) {
+          throw new Error("Authentication failed - no user data returned");
+        }
 
         toast({
           title: "Logged in successfully",
           description: `Welcome back to MyLanguage, ${data.user.email}!`,
         });
 
-        navigate(data.user ? '/dashboard' : '/onboarding'); // Redirect based on onboarding status
+        navigate('/dashboard');
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
         const { data, error } = await supabase.auth.signUp({
@@ -45,6 +49,10 @@ const Auth = () => {
         });
 
         if (error) throw error;
+        
+        if (!data.user) {
+          throw new Error("Account creation failed - no user data returned");
+        }
 
         toast({
           title: "Account created successfully",
