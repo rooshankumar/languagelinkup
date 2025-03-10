@@ -1,0 +1,19 @@
+.env
+
+MONGODB_URI="mongodb+srv://isthisroshan:Patna123@cluster0.s8ird.mongodb.net/myLanguage?retryWrites=true&w=majority"
+CLOUDINARY_CLOUD_NAME="dx6ulcmub"
+CLOUDINARY_API_KEY="364494895834259"
+CLOUDINARY_API_SECRET="9OvPdkR00Efe6LIJyu3JcyP4Mls"
+
+
+.env.local
+
+
+MONGODB_URI="mongodb+srv://isthisroshan:Patna123@cluster0.s8ird.mongodb.net/myLanguage?retryWrites=true&w=majority"
+NEXTAUTH_SECRET="your-nextauth-secret-key-here"
+NEXTAUTH_URL="https://mylanguageapp.replit.app"
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME="dx6ulcmub"
+CLOUDINARY_API_KEY="364494895834259"
+CLOUDINARY_API_SECRET="9OvPdkR00Efe6LIJyu3JcyP4Mls"
