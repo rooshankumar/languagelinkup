@@ -6,6 +6,9 @@ import { Languages } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 import { validateEnv } from "@/lib/env";
 
+// Verify supabase is imported
+console.log("Supabase imported:", !!supabase);
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
@@ -24,12 +27,19 @@ const Auth = () => {
 
     // Debug connection
     console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("Supabase Key available:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
     console.log("Auth attempt with email:", email);
 
     try {
       if (isLogin) {
         // 🔐 LOGIN USER WITH SUPABASE
         console.log("Attempting login...");
+        
+        // Check if supabase client is properly initialized
+        if (!supabase) {
+          throw new Error("Supabase client not initialized");
+        }
+        
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
