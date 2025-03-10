@@ -1,183 +1,179 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiPost, apiGet } from '@/hooks/useApi';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '../components/ui/use-toast';
 
 interface User {
   _id: string;
   username: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
   nativeLanguage: string;
-  learningLanguages: Array<{
-    language: string;
-    level: string;
-  }>;
+  learningLanguages: string[];
+  profilePicture: string;
   isOnboarded: boolean;
   streak?: {
     count: number;
     lastUpdated: string;
   };
+  token?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (userData: any) => Promise<boolean>;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => Promise<boolean>;
+  updateUser: (userData: Partial<User>) => void;
+}
+
+interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  nativeLanguage: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Load user from localStorage on initial render
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  
+  // Load user from localStorage on initial load
   useEffect(() => {
-    const loadUser = async () => {
-      const storedToken = localStorage.getItem('authToken');
-      const storedUser = localStorage.getItem('user');
-      
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        
-        try {
-          // Verify token is still valid
-          const userData = await apiGet<User>('/auth/me', storedToken);
-          setUser(userData);
-        } catch (err) {
-          console.error('Session expired or invalid');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
-        }
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        localStorage.removeItem('user');
       }
-      
-      setIsLoading(false);
-    };
-    
-    loadUser();
+    }
+    setLoading(false);
   }, []);
-
-  // Register a new user
-  const register = async (userData: any): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-    
+  
+  // Register new user
+  const register = async (userData: RegisterData) => {
     try {
-      const response = await apiPost<{token: string, _id: string} & User>('/auth/register', userData);
+      setLoading(true);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
       
-      if (response && response.token) {
-        localStorage.setItem('authToken', response.token);
-        localStorage.setItem('user', JSON.stringify(response));
-        setToken(response.token);
-        setUser(response);
-        return true;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
       }
       
-      return false;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
-      setError(message);
-      return false;
+      // Save user to state and localStorage
+      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
+      
+      toast({
+        title: 'Registration successful',
+        description: 'Welcome to MyLanguage!',
+      });
+      
+      navigate('/onboarding');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Registration failed';
+      toast({
+        title: 'Registration failed',
+        description: message,
+        variant: 'destructive',
+      });
+      console.error('Register error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-
+  
   // Login user
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-    
+  const login = async (email: string, password: string) => {
     try {
-      const response = await apiPost<{token: string} & User>('/auth/login', { email, password });
+      setLoading(true);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
       
-      if (response && response.token) {
-        localStorage.setItem('authToken', response.token);
-        localStorage.setItem('user', JSON.stringify(response));
-        setToken(response.token);
-        setUser(response);
-        return true;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid credentials');
       }
       
-      return false;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setError(message);
-      return false;
+      // Save user to state and localStorage
+      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
+      
+      toast({
+        title: 'Login successful',
+        description: 'Welcome back!',
+      });
+      
+      // Redirect based on onboarding status
+      if (data.isOnboarded) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Login failed';
+      toast({
+        title: 'Login failed',
+        description: message,
+        variant: 'destructive',
+      });
+      console.error('Login error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-
+  
   // Logout user
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setToken(null);
     setUser(null);
+    localStorage.removeItem('user');
+    toast({
+      title: 'Logout successful',
+      description: 'You have been logged out.',
+    });
+    navigate('/');
   };
-
-  // Update user information
-  const updateUser = async (userData: Partial<User>): Promise<boolean> => {
-    if (!token) return false;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await apiPost<User>('/users/profile', userData, token);
-      
-      if (response) {
-        const updatedUser = { ...user, ...response };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        return true;
-      }
-      
-      return false;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      setError(message);
-      return false;
-    } finally {
-      setIsLoading(false);
+  
+  // Update user data
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
     }
   };
-
-  const value = {
-    user,
-    token,
-    isAuthenticated: !!user,
-    isLoading,
-    error,
-    login,
-    register,
-    logout,
-    updateUser,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
   
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
   return context;
-}
+};

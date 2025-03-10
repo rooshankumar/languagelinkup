@@ -1,16 +1,18 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '@/components/Button';
-import { toast } from '@/hooks/use-toast';
-import { Languages } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { toast } from '../components/ui/use-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nativeLanguage, setNativeLanguage] = useState('English');
   const [isLoading, setIsLoading] = useState(false);
+  const { login, register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,115 +20,137 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      // These will connect to your backend authentication later
       if (isLogin) {
-        // Login logic will go here
-        console.log('Login with:', { email, password });
-        toast({
-          title: "Logged in successfully",
-          description: "Welcome back to MyLanguage!",
-        });
+        // Login logic
+        await login(email, password);
       } else {
-        // Sign up logic will go here
-        console.log('Sign up with:', { name, email, password });
-        toast({
-          title: "Account created successfully",
-          description: "Welcome to MyLanguage!",
+        // Registration logic
+        if (!username || !email || !password || !nativeLanguage) {
+          toast({
+            title: "Registration failed",
+            description: "Please fill in all fields",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        await register({
+          username,
+          email,
+          password,
+          nativeLanguage
         });
       }
-      
-      // Navigate to onboarding if new user, otherwise dashboard
-      navigate(isLogin ? '/dashboard' : '/onboarding');
     } catch (error) {
       console.error('Authentication error:', error);
-      toast({
-        title: "Authentication failed",
-        description: "Please check your credentials and try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-background to-background/60">
-      <div className="w-full max-w-md mx-auto">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Languages className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">MyLanguage</h1>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border border-border">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-foreground">
+            {isLogin ? 'Welcome Back' : 'Create Account'}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {isLogin ? 'Sign in to continue to MyLanguage' : 'Sign up to start your language journey'}
+          </p>
         </div>
         
-        <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
-          <h2 className="text-2xl font-bold mb-6 text-center">
-            {isLogin ? 'Welcome Back' : 'Join MyLanguage'}
-          </h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2 rounded-md border border-input bg-background"
-                  placeholder="Enter your name"
-                  required={!isLogin}
-                />
-              </div>
-            )}
-            
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          {!isLogin && (
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email Address
+              <label htmlFor="username" className="block text-sm font-medium">
+                Username
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="w-full p-2 rounded-md border border-input bg-background"
-                placeholder="you@example.com"
-                required
+                placeholder="johndoe"
               />
             </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 rounded-md border border-input bg-background"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full mt-6" 
-              isLoading={isLoading}
-            >
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </Button>
-          </form>
+          )}
           
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
+          <div className="space-y-2">
+            <label htmlFor="email" className="block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-2 rounded-md border border-input bg-background"
+              placeholder="you@example.com"
+              required
+            />
           </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="password" className="block text-sm font-medium">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 rounded-md border border-input bg-background"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          
+          {!isLogin && (
+            <div className="space-y-2">
+              <label htmlFor="nativeLanguage" className="block text-sm font-medium">
+                Native Language
+              </label>
+              <select
+                id="nativeLanguage"
+                value={nativeLanguage}
+                onChange={(e) => setNativeLanguage(e.target.value)}
+                className="w-full p-2 rounded-md border border-input bg-background"
+                required
+              >
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Russian">Russian</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Italian">Italian</option>
+              </select>
+            </div>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+          </Button>
+        </form>
+        
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm text-primary hover:underline"
+            type="button"
+          >
+            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+          </button>
         </div>
       </div>
     </div>
