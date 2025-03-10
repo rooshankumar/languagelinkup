@@ -26,56 +26,76 @@ const Auth = () => {
     setIsLoading(true);
 
     // Debug connection
+    console.log("Form submission - Email:", email, "Password:", password ? "Provided" : "Empty");
     console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
     console.log("Supabase Key available:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-    console.log("Auth attempt with email:", email);
-
+    
     try {
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+      
       if (isLogin) {
         // 🔐 LOGIN USER WITH SUPABASE
-        console.log("Attempting login...");
-        
-        // Check if supabase client is properly initialized
-        if (!supabase) {
-          throw new Error("Supabase client not initialized");
-        }
+        console.log("Attempting login with:", email);
         
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: email.trim(),
+          password: password.trim(),
         });
 
         console.log("Login response:", data, error);
 
         if (error) throw error;
-
-        toast({
-          title: "Logged in successfully",
-          description: `Welcome back to MyLanguage, ${data.user.email}!`,
-        });
-
-        navigate(data.user ? '/dashboard' : '/onboarding'); // Redirect based on onboarding status
+        
+        if (data && data.user) {
+          console.log("Login successful, user:", data.user.id);
+          toast({
+            title: "Logged in successfully",
+            description: `Welcome back to MyLanguage, ${data.user.email}!`,
+          });
+          
+          // Short timeout to ensure toast is visible before redirect
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 500);
+        } else {
+          throw new Error("Login successful but no user data returned");
+        }
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
-        console.log("Attempting signup...");
+        console.log("Attempting signup with:", email);
+        
+        if (!name) {
+          throw new Error("Name is required for signup");
+        }
+        
         const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: email.trim(),
+          password: password.trim(),
           options: {
-            data: { username: name }, // Store name in metadata
+            data: { username: name.trim() },
           },
         });
 
         console.log("Signup response:", data, error);
 
         if (error) throw error;
-
-        toast({
-          title: "Account created successfully",
-          description: "Welcome to MyLanguage!",
-        });
-
-        navigate('/onboarding'); // New users go to onboarding
+        
+        if (data && data.user) {
+          console.log("Signup successful, user:", data.user.id);
+          toast({
+            title: "Account created successfully",
+            description: "Welcome to MyLanguage!",
+          });
+          
+          // Short timeout to ensure toast is visible before redirect
+          setTimeout(() => {
+            navigate('/onboarding');
+          }, 500);
+        } else {
+          throw new Error("Signup successful but no user data returned");
+        }
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
