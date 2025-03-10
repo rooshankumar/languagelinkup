@@ -16,14 +16,16 @@ const formattedUrl = supabaseUrl
     : `https://${supabaseUrl}`
   : '';
 
-// Create Supabase client with proper error handling
+// Create Supabase client
+let supabase;
+
 try {
   if (!formattedUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase URL or Anon Key');
   }
   
   console.log("Creating Supabase client with URL:", formattedUrl);
-  export const supabase = createClient(formattedUrl, supabaseAnonKey);
+  supabase = createClient(formattedUrl, supabaseAnonKey);
   
   // Test connection
   supabase.auth.getSession().then(({ data }) => {
@@ -35,8 +37,10 @@ try {
 } catch (error) {
   console.error("Failed to initialize Supabase client:", error);
   // Provide a fallback client that will produce clear errors when used
-  export const supabase = createClient(
+  supabase = createClient(
     'https://placeholder.supabase.co', 
     'placeholder-key'
   );
 }
+
+export { supabase };
