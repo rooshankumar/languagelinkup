@@ -25,28 +25,33 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Debug connection
-    console.log("Form submission - Email:", email, "Password:", password ? "Provided" : "Empty");
-    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-    console.log("Supabase Key available:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-    
     try {
+      // Input validation
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
       
+      if (!isLogin && !name) {
+        throw new Error("Name is required for signup");
+      }
+
+      // Process email and password
+      const cleanEmail = email.trim();
+      const cleanPassword = password.trim();
+      
       if (isLogin) {
         // 🔐 LOGIN USER WITH SUPABASE
-        console.log("Attempting login with:", email);
+        console.log("Attempting login with:", cleanEmail);
         
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password: password.trim(),
+          email: cleanEmail,
+          password: cleanPassword,
         });
 
-        console.log("Login response:", data, error);
-
-        if (error) throw error;
+        if (error) {
+          console.error("Login error:", error);
+          throw error;
+        }
         
         if (data && data.user) {
           console.log("Login successful, user:", data.user.id);
@@ -55,46 +60,47 @@ const Auth = () => {
             description: `Welcome back to MyLanguage, ${data.user.email}!`,
           });
           
-          // Short timeout to ensure toast is visible before redirect
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 500);
+          navigate('/dashboard');
         } else {
-          throw new Error("Login successful but no user data returned");
+          throw new Error("No user data returned. Please try again.");
         }
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
-        console.log("Attempting signup with:", email);
-        
-        if (!name) {
-          throw new Error("Name is required for signup");
-        }
+        console.log("Attempting signup with:", cleanEmail);
         
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: password.trim(),
+          email: cleanEmail,
+          password: cleanPassword,
           options: {
             data: { username: name.trim() },
           },
         });
 
-        console.log("Signup response:", data, error);
-
-        if (error) throw error;
+        if (error) {
+          console.error("Signup error:", error);
+          throw error;
+        }
         
-        if (data && data.user) {
+        if (data.user) {
           console.log("Signup successful, user:", data.user.id);
-          toast({
-            title: "Account created successfully",
-            description: "Welcome to MyLanguage!",
-          });
           
-          // Short timeout to ensure toast is visible before redirect
-          setTimeout(() => {
+          // Check if email confirmation is required
+          if (data.session) {
+            // User is automatically signed in
+            toast({
+              title: "Account created successfully",
+              description: "Welcome to MyLanguage!",
+            });
             navigate('/onboarding');
-          }, 500);
+          } else {
+            // Email confirmation is required
+            toast({
+              title: "Verification email sent",
+              description: "Please check your email to confirm your account.",
+            });
+          }
         } else {
-          throw new Error("Signup successful but no user data returned");
+          throw new Error("Signup failed. Please try again.");
         }
       }
     } catch (error: any) {
