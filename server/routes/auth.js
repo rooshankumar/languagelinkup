@@ -1,80 +1,58 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
-import auth from "../middleware/auth.js";
+import User from "../models/User.js"; // Ensure correct import
+import auth from "../middleware/auth.js"; // Middleware for protected routes
 import dotenv from "dotenv";
 
 dotenv.config();
-
 const router = express.Router();
 
-// Generate JWT
+// Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
-// User registration
+// **User Registration**
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password, nativeLanguage } = req.body;
+    const { username, email, password, nativeLanguage, profilePicture } = req.body;
 
     if (!username || !email || !password || !nativeLanguage) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists with this email" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
-      nativeLanguage
+      nativeLanguage,
+      profilePicture: profilePicture || undefined
     });
 
-    // Save user to database
-    const savedUser = await newUser.save();
+    await newUser.save();
 
-    // Create JWT token
-    const token = jwt.sign(
-      { id: savedUser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    // Generate token
+    const token = generateToken(newUser._id);
 
-    // Set token in cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    });
-
-    // Return user data (excluding password)
-    const userResponse = {
-      _id: savedUser._id,
-      username: savedUser.username,
-      email: savedUser.email,
-      nativeLanguage: savedUser.nativeLanguage,
-      isOnboarded: savedUser.isOnboarded
-    };
-
-    res.status(201).json({ user: userResponse, token });
+    res.status(201).json({ user: newUser, token });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error during registration" });
+    console.error("Registration Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// User login
+// **User Login**
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -83,61 +61,45 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Check if user exists
+    // Find user
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+    if (!user) return res.status(400).json({ message: "Invalid email or password" });
 
-    // Compare hashed password
+    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+    if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    // Generate JWT
+    const token = generateToken(user._id);
 
-    // Set token in cookie
-    res.cookie('token', token, {
+    res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
-    // Return user data (excluding password)
-    const userResponse = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      nativeLanguage: user.nativeLanguage,
-      isOnboarded: user.isOnboarded
-    };
-
-    res.json({ user: userResponse, token });
+    res.json({ user, token });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error during login" });
-  }
-});
-
-// Get current user
-router.get("/me", auth, async (req, res) => {
-  try {
-    res.json(req.user);
-  } catch (error) {
-    console.error("Get current user error:", error);
+    console.error("Login Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Logout user
+// **Get Current User**
+router.get("/me", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (error) {
+    console.error("Get User Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// **Logout**
 router.post("/logout", (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
 });
 

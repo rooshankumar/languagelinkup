@@ -1,160 +1,106 @@
+// AuthContext.tsx - React Context for Authentication
+'use client';
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { signIn, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast } from '../components/ui/use-toast';
-import { useAuth } from '../contexts/AuthContext';
 
-const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [nativeLanguage, setNativeLanguage] = useState('English');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login, register } = useAuth();
-  const navigate = useNavigate();
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  nativeLanguage: string;
+  learningLanguages: string[];
+  profilePicture: string;
+  isOnboarded: boolean;
+  token?: string;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      if (isLogin) {
-        // Login logic
-        await login(email, password);
-      } else {
-        // Registration logic
-        if (!username || !email || !password || !nativeLanguage) {
-          toast({
-            title: "Registration failed",
-            description: "Please fill in all fields",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        await register({
-          username,
-          email,
-          password,
-          nativeLanguage
-        });
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
+  logout: () => void;
+}
+
+interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  nativeLanguage: string;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem('user');
       }
+    }
+    setLoading(false);
+  }, []);
+
+  const register = async (userData: RegisterData) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
+      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
+      toast({ title: 'Success', description: 'Welcome to MyLanguage!' });
+      router.push('/onboarding');
     } catch (error) {
-      console.error('Authentication error:', error);
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      const result = await signIn('credentials', { redirect: false, email, password });
+      if (result?.error) throw new Error(result.error);
+      window.location.href = '/dashboard';
+    } catch (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    signOut();
+    setUser(null);
+    localStorage.removeItem('user');
+    router.push('/');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border border-border">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {isLogin ? 'Sign in to continue to MyLanguage' : 'Sign up to start your language journey'}
-          </p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {!isLogin && (
-            <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-medium">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full p-2 rounded-md border border-input bg-background"
-                placeholder="johndoe"
-              />
-            </div>
-          )}
-          
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 rounded-md border border-input bg-background"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 rounded-md border border-input bg-background"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          
-          {!isLogin && (
-            <div className="space-y-2">
-              <label htmlFor="nativeLanguage" className="block text-sm font-medium">
-                Native Language
-              </label>
-              <select
-                id="nativeLanguage"
-                value={nativeLanguage}
-                onChange={(e) => setNativeLanguage(e.target.value)}
-                className="w-full p-2 rounded-md border border-input bg-background"
-                required
-              >
-                <option value="English">English</option>
-                <option value="Spanish">Spanish</option>
-                <option value="French">French</option>
-                <option value="German">German</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Korean">Korean</option>
-                <option value="Russian">Russian</option>
-                <option value="Arabic">Arabic</option>
-                <option value="Portuguese">Portuguese</option>
-                <option value="Italian">Italian</option>
-              </select>
-            </div>
-          )}
-          
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isLoading}
-          >
-            {isLoading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
-          </Button>
-        </form>
-        
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
-            type="button"
-          >
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-          </button>
-        </div>
-      </div>
-    </div>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 
-export default Auth;
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  return context;
+};
