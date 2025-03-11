@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
@@ -32,45 +31,56 @@ export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = async (): Promise<void> => {
     setLoading(true);
-    
-    // Get current user session
-    const { data: userSession } = await supabase.auth.getUser();
-    
-    if (!userSession?.user) {
+    try {
+      // Get current user
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+
+      if (authError) {
+        console.log('Authentication error:', authError);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.session) {
+        console.log('No active session');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // Get user profile from database
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authData.session.user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error.message);
+        setUser(null);
+      } else if (data) {
+        setUser(data);
+      }
+    } catch (err: any) {
+      console.error('Error in user profile fetch:', err.message);
+      setUser(null);
+    } finally {
       setLoading(false);
-      return;
     }
-    
-    // Fetch user data from DB
-    const { data, error } = await supabase
-      .from('users')
-      .select(`
-        id, username, email, native_language, learning_language, proficiency, bio, avatar, 
-        last_active, is_online, dob, profile_picture, location
-      `)
-      .eq('id', userSession.user.id)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching profile:', error.message);
-    } else if (data) {
-      setUser(data);
-    }
-    
-    setLoading(false);
   };
 
   const updateUserProfile = async (data: Partial<UserProfileData>): Promise<boolean> => {
     if (!user) return false;
-    
+
     // Update user data in Supabase
     const { error } = await supabase
       .from('users')
       .update(data)
       .eq('id', user.id);
-    
+
     if (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -82,7 +92,7 @@ export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ childre
     } else {
       // Update local state with the new data
       setUser(prev => prev ? { ...prev, ...data } : null);
-      
+
       // Set up a subscription to the user's profile
       await fetchUserProfile();
       return true;
@@ -92,7 +102,7 @@ export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ childre
   // Set up a subscription to real-time changes
   useEffect(() => {
     fetchUserProfile();
-    
+
     // Subscribe to changes on the users table
     const subscription = supabase
       .channel('users_changes')
@@ -107,7 +117,7 @@ export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
       })
       .subscribe();
-    
+
     // Cleanup subscription when component unmounts
     return () => {
       subscription.unsubscribe();

@@ -30,18 +30,35 @@ const UserProfileProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
-    // Fetch user profile data on mount (replace with your actual fetching logic)
+    // Fetch user profile data on mount
     const fetchUserProfile = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (user) {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.log("Authentication error:", error);
+          return;
+        }
+        
+        if (!user) {
+          console.log("No authenticated user found");
+          return;
+        }
+        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', user.id)
           .single();
-        if (profileData) setUserProfile(profileData);
-        else console.error("Profile not found:", profileError);
-      } else console.error("User not authenticated:", error);
+          
+        if (profileData) {
+          setUserProfile(profileData);
+        } else if (profileError) {
+          console.log("Profile not found:", profileError);
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+      }
     };
 
     fetchUserProfile();
