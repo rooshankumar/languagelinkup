@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
@@ -19,14 +18,14 @@ export const useTheme = () => {
   });
 
   useEffect(() => {
-    // Update the document class based on the theme
+    localStorage.setItem('theme', theme);
+
+    // Apply the theme to the document
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    // Save the theme to localStorage
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

@@ -1,94 +1,94 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import Button from '@/components/Button';
 import UserProfileCard from '@/components/UserProfileCard';
 import ProfileEdit from '@/components/ProfileEdit';
-import { uploadProfilePicture } from '@/utils/supabaseStorage';
-import { Edit, Save, X } from 'lucide-react';
+
+interface UserProfile {
+  id: string;
+  username: string;
+  email?: string;
+  native_language?: string;
+  learning_language?: string;
+  proficiency?: string;
+  bio?: string;
+  location?: string;
+  avatar_url?: string;
+}
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<any>({});
-  const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Fetch user profile data
   useEffect(() => {
-    const getProfile = async () => {
+    const fetchUserProfile = async () => {
       try {
-        if (!user) {
-          navigate('/');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+          toast({
+            title: "Authentication required",
+            description: "Please log in to view your profile.",
+          });
+          navigate('/auth');
           return;
         }
 
-        setLoading(true);
+        const userId = session.user.id;
+
+        // Fetch user profile from the database
         const { data, error } = await supabase
           .from('users')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', userId)
           .single();
 
         if (error) {
           throw error;
         }
 
-        if (data) {
-          setProfile(data);
-          if (data.profile_picture) {
-            setAvatarUrl(data.profile_picture);
-          }
-        }
+        setUserProfile(data);
       } catch (error: any) {
-        console.error('Error fetching profile:', error.message);
+        console.error('Error fetching user profile:', error.message);
         toast({
-          title: 'Error fetching profile',
-          description: error.message || 'Please try again',
-          variant: 'destructive',
+          title: "Error loading profile",
+          description: "Could not load your profile. Please try again.",
+          variant: "destructive",
         });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    getProfile();
-  }, [user, navigate]);
+    fetchUserProfile();
+  }, [navigate]);
 
-  const handleSaveProfile = async (updatedProfile: any, newProfilePicture?: File) => {
-    setLoading(true);
+  const handleEditProfile = () => {
+    setIsEditing(true);
+  };
 
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSaveProfile = async (updatedProfile: UserProfile) => {
+    setIsLoading(true);
     try {
-      let profilePictureUrl = profile.profile_picture;
-
-      // Upload new profile picture if provided
-      if (newProfilePicture) {
-        profilePictureUrl = await uploadProfilePicture(user!.id, newProfilePicture);
-      }
-
-      // Update the user profile in the database
       const { error } = await supabase
         .from('users')
-        .update({ 
+        .update({
           ...updatedProfile,
-          profile_picture: profilePictureUrl,
           last_active: new Date().toISOString()
         })
-        .eq('id', user!.id);
+        .eq('id', userProfile?.id);
 
       if (error) throw error;
 
-      // Update local state
-      setProfile({
-        ...profile,
-        ...updatedProfile,
-        profile_picture: profilePictureUrl
-      });
-
-      setAvatarUrl(profilePictureUrl);
+      setUserProfile(updatedProfile);
       setIsEditing(false);
 
       toast({
@@ -103,89 +103,57 @@ const Profile = () => {
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  // Format learning languages for profile card
-  const learningLanguages = profile.learning_language
-    ? [{ language: profile.learning_language, proficiency: profile.proficiency || 'Beginner' }]
-    : [];
+  // Format user data for UserProfileCard component
+  const formattedUserData = userProfile ? {
+    id: userProfile.id,
+    name: userProfile.username,
+    avatar: userProfile.avatar_url,
+    location: userProfile.location,
+    bio: userProfile.bio,
+    nativeLanguage: userProfile.native_language,
+    learningLanguages: userProfile.learning_language ? [
+      {
+        language: userProfile.learning_language,
+        proficiency: userProfile.proficiency as 'Beginner' | 'Intermediate' | 'Advanced' | 'Fluent'
+      }
+    ] : [],
+    learningGoals: "Become fluent in conversation",
+    online: true
+  } : null;
 
-  if (loading && !profile.id) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[70vh]">
-        <h2 className="text-2xl font-bold mb-2">Loading profile...</h2>
+      <div className="flex justify-center items-center h-[70vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh]">
-        <h2 className="text-2xl font-bold mb-2">Please sign in</h2>
-        <p className="mb-6">You need to be logged in to view your profile.</p>
-        <Button onClick={() => navigate('/')}>Go to Login</Button>
-      </div>
-    );
-  }
-
-  if (!profile || !profile.id) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh]">
-        <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
-        <p className="mb-6">Could not load profile information.</p>
-        <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
-      </div>
-    );
-  }
-
-  // Prepare user data for profile card
-  const userData = {
-    id: user?.id || '',
-    name: profile.username || 'Anonymous User',
-    avatar: avatarUrl || undefined,
-    location: profile.location,
-    bio: profile.bio,
-    nativeLanguage: profile.native_language,
-    learningLanguages: learningLanguages,
-    learningGoals: profile.learning_goals,
-    online: true,
-  };
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4">
+    <div className="max-w-3xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Profile</h1>
-        {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)} className="flex items-center gap-2">
-            <Edit size={16} />
+        {!isEditing && (
+          <Button onClick={handleEditProfile}>
             Edit Profile
           </Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button onClick={() => setIsEditing(false)} variant="outline" className="flex items-center gap-2">
-              <X size={16} />
-              Cancel
-            </Button>
-            <Button onClick={() => {}} variant="ghost" className="flex items-center gap-2">
-              <Save size={16} />
-              Save Profile
-            </Button>
-          </div>
         )}
       </div>
 
-      {!isEditing ? (
-        <UserProfileCard user={userData} />
-      ) : (
-        <div className="border rounded-lg p-6 space-y-6">
-          <ProfileEdit 
-            userProfile={profile}
-            onCancel={() => setIsEditing(false)}
+      {isEditing ? (
+        <div className="bg-card border rounded-lg shadow-sm p-6">
+          <ProfileEdit
+            userProfile={userProfile}
+            onCancel={handleCancelEdit}
             onSave={handleSaveProfile}
           />
         </div>
+      ) : (
+        formattedUserData && <UserProfileCard user={formattedUserData} />
       )}
     </div>
   );

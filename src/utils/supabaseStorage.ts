@@ -1,29 +1,28 @@
-
 import { supabase } from '@/lib/supabaseClient';
-import { v4 as uuidv4 } from 'uuid';
 
-export const uploadProfilePicture = async (userId: string, file: File): Promise<string> => {
+export const uploadProfilePicture = async (file: File, filePath: string) => {
   try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${uuidv4()}.${fileExt}`;
-    const filePath = `profile-pictures/${fileName}`;
-    
-    const { error: uploadError } = await supabase.storage
+    // Upload the image to Supabase Storage
+    const { data, error } = await supabase.storage
       .from('avatars')
-      .upload(filePath, file, { upsert: true });
-    
-    if (uploadError) {
-      throw uploadError;
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+
+    if (error) {
+      throw error;
     }
-    
-    const { data } = supabase.storage
+
+    // Get the public URL for the uploaded file
+    const { data: publicUrlData } = supabase.storage
       .from('avatars')
       .getPublicUrl(filePath);
-    
-    return data.publicUrl;
+
+    return { url: publicUrlData.publicUrl, error: null };
   } catch (error) {
-    console.error('Error uploading file:', error);
-    throw new Error('Failed to upload profile picture');
+    console.error('Error uploading profile picture:', error);
+    return { url: null, error };
   }
 };
 
