@@ -51,14 +51,7 @@ const ChatList = () => {
           .select(`
             id,
             user1_id,
-            user2_id,
-            messages:messages(
-              id,
-              sender_id,
-              content,
-              created_at,
-              is_read
-            )
+            user2_id
           `)
           .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
           .order('updated_at', { ascending: false });
@@ -84,6 +77,18 @@ const ChatList = () => {
             return null;
           }
 
+          // Get messages for this conversation separately
+          const { data: messageData, error: messageError } = await supabase
+            .from('messages')
+            .select('id, sender_id, content, created_at, is_read')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(10);
+            
+          if (messageError) {
+            console.error('Error fetching messages:', messageError);
+          }
+            
           // Get latest message
           let lastMessage = {
             text: 'Start a conversation',
@@ -94,13 +99,8 @@ const ChatList = () => {
 
           let unreadCount = 0;
 
-          if (conv.messages && conv.messages.length > 0) {
-            // Sort messages by date (newest first)
-            const sortedMessages = [...conv.messages].sort(
-              (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            );
-
-            const latestMessage = sortedMessages[0];
+          if (messageData && messageData.length > 0) {
+            const latestMessage = messageData[0];
             lastMessage = {
               text: latestMessage.content || '',
               timestamp: new Date(latestMessage.created_at),
@@ -109,7 +109,7 @@ const ChatList = () => {
             };
 
             // Count unread messages
-            unreadCount = sortedMessages.filter(m => 
+            unreadCount = messageData.filter(m => 
               m.sender_id !== userId && !m.is_read
             ).length;
           }

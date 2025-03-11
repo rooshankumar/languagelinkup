@@ -58,7 +58,7 @@ const Chat = () => {
         // Get conversation
         const { data: conversation, error: convError } = await supabase
           .from('conversations')
-          .select('user1_id,user2_id')
+          .select('id, user1_id, user2_id')
           .eq('id', chatId)
           .single();
           
@@ -142,7 +142,7 @@ const Chat = () => {
         // Get messages
         const { data: messagesData, error: messagesError } = await supabase
           .from('messages')
-          .select('*')
+          .select('id, sender_id, content, message, created_at, is_read, conversation_id')
           .eq('conversation_id', chatId)
           .order('created_at', { ascending: true });
           
@@ -176,7 +176,7 @@ const Chat = () => {
         const formattedMessages = messagesData.map(msg => ({
           id: msg.id,
           senderId: msg.sender_id,
-          text: msg.message || '', // Changed from content to message
+          text: msg.content || msg.message || '', // Handle both content and message fields
           timestamp: new Date(msg.created_at),
           isRead: msg.is_read
         }));
