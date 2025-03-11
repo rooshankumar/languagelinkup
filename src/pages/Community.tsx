@@ -43,121 +43,148 @@ const Community = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   // Fetch users from the database
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Check if the current user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        navigate('/auth');
+        return;
+      }
+      
+      // Get current user ID
+      const currentUserId = session.user.id;
+      
+      // Fetch all users except the current user
+      // No filter on is_online to show all users
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .neq('id', currentUserId);
+      
+      if (error) {
+        throw error;
+      }
+      
+      console.log('Fetched users from database:', data);
+      
+      if (!data || data.length === 0) {
+        // If no users found, let's create some sample users for testing
+        console.log("No users found, inserting sample users for testing");
         
-        // Check if the current user is authenticated
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          navigate('/auth');
-          return;
+        // Sample users data based on your MOCK_USERS
+        const sampleUsers = [
+          {
+            username: 'Maria Garcia',
+            email: 'maria@example.com',
+            profile_picture: 'https://ui-avatars.com/api/?name=Maria+Garcia&background=random',
+            native_language: 'es',
+            learning_language: 'en',
+            proficiency: 'Intermediate',
+            bio: 'Spanish teacher looking to practice English and make international friends.',
+            is_online: true,
+            last_active: new Date().toISOString()
+          },
+          {
+            username: 'Akira Tanaka',
+            email: 'akira@example.com',
+            profile_picture: 'https://ui-avatars.com/api/?name=Akira+Tanaka&background=random',
+            native_language: 'ja',
+            learning_language: 'en',
+            proficiency: 'Advanced',
+            bio: 'Software engineer interested in learning English for work and travel.',
+            is_online: false,
+            last_active: new Date().toISOString()
+          },
+          {
+            username: 'Sophie Laurent',
+            email: 'sophie@example.com',
+            profile_picture: 'https://ui-avatars.com/api/?name=Sophie+Laurent&background=random',
+            native_language: 'fr',
+            learning_language: 'es',
+            proficiency: 'Beginner',
+            bio: 'Culinary student wanting to learn Spanish for travel around Latin America.',
+            is_online: true,
+            last_active: new Date().toISOString()
+          }
+        ];
+        
+        // Insert sample users
+        for (const user of sampleUsers) {
+          await supabase.from('users').insert([user]);
         }
         
-        // Get current user ID
-        const currentUserId = session.user.id;
-        
-        // Fetch all users except the current user
-        const { data, error } = await supabase
+        // Fetch users again after inserting samples
+        const { data: newData, error: refetchError } = await supabase
           .from('users')
           .select('*')
           .neq('id', currentUserId);
-        
-        if (error) {
-          throw error;
+          
+        if (refetchError) {
+          throw refetchError;
         }
         
-        console.log('Fetched users from database:', data);
+        // Ensure we have complete user data
+        const filteredData = (newData || []).filter(user => 
+          user.username && 
+          user.native_language && 
+          user.learning_language
+        );
         
-        if (!data || data.length === 0) {
-          // If no users found, let's create some sample users for testing
-          console.log("No users found, inserting sample users for testing");
-          
-          // Sample users data based on your MOCK_USERS
-          const sampleUsers = [
-            {
-              username: 'Maria Garcia',
-              email: 'maria@example.com',
-              profile_picture: 'https://ui-avatars.com/api/?name=Maria+Garcia&background=random',
-              native_language: 'es',
-              learning_language: 'en',
-              proficiency: 'Intermediate',
-              bio: 'Spanish teacher looking to practice English and make international friends.',
-              is_online: true,
-              last_active: new Date().toISOString()
-            },
-            {
-              username: 'Akira Tanaka',
-              email: 'akira@example.com',
-              profile_picture: 'https://ui-avatars.com/api/?name=Akira+Tanaka&background=random',
-              native_language: 'ja',
-              learning_language: 'en',
-              proficiency: 'Advanced',
-              bio: 'Software engineer interested in learning English for work and travel.',
-              is_online: false,
-              last_active: new Date().toISOString()
-            },
-            {
-              username: 'Sophie Laurent',
-              email: 'sophie@example.com',
-              profile_picture: 'https://ui-avatars.com/api/?name=Sophie+Laurent&background=random',
-              native_language: 'fr',
-              learning_language: 'es',
-              proficiency: 'Beginner',
-              bio: 'Culinary student wanting to learn Spanish for travel around Latin America.',
-              is_online: true,
-              last_active: new Date().toISOString()
-            }
-          ];
-          
-          // Insert sample users
-          for (const user of sampleUsers) {
-            await supabase.from('users').insert([user]);
-          }
-          
-          // Fetch users again after inserting samples
-          const { data: newData, error: refetchError } = await supabase
-            .from('users')
-            .select('*')
-            .neq('id', currentUserId);
-            
-          if (refetchError) {
-            throw refetchError;
-          }
-          
-          // Ensure we have complete user data
-          const filteredData = (newData || []).filter(user => 
-            user.username && 
-            user.native_language && 
-            user.learning_language
-          );
-          
-          setUsers(filteredData);
-        } else {
-          // Ensure we have complete user data
-          const filteredData = (data || []).filter(user => 
-            user.username && 
-            user.native_language && 
-            user.learning_language
-          );
-          
-          setUsers(filteredData);
-        }
-      } catch (error: any) {
-        console.error('Error fetching users:', error.message);
-        toast({
-          title: "Failed to load users",
-          description: error.message || "Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+        setUsers(filteredData);
+      } else {
+        // Ensure we have complete user data but don't filter by is_online
+        const filteredData = (data || []).filter(user => 
+          user.username && 
+          user.native_language && 
+          user.learning_language
+        );
+        
+        setUsers(filteredData);
       }
-    };
-    
+    } catch (error: any) {
+      console.error('Error fetching users:', error.message);
+      toast({
+        title: "Failed to load users",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Initial fetch of users
+  useEffect(() => {
     fetchUsers();
   }, [navigate]);
+  
+  // Set up realtime subscription for user updates
+  useEffect(() => {
+    // Subscribe to changes in the users table
+    const channel = supabase
+      .channel('user_status_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'users'
+        }, 
+        (payload) => {
+          console.log('User status changed:', payload);
+          // Refresh the user list
+          fetchUsers();
+        }
+      )
+      .subscribe();
+    
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   
   const handleStartChat = async (userId: string) => {
     try {
@@ -230,7 +257,7 @@ const Community = () => {
   };
   
   const filteredUsers = users.filter(user => {
-    // Search filter
+    // Search filter - case insensitive
     if (searchTerm && !user.username.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
@@ -251,13 +278,15 @@ const Community = () => {
       }
     }
     
-    // Online only filter
+    // Online only filter - apply only if the checkbox is checked
     if (onlineOnly && !user.is_online) {
       return false;
     }
     
     return true;
   });
+  
+  console.log('Filtered users count:', filteredUsers.length);
   
   return (
     <div className="max-w-6xl mx-auto p-4">
