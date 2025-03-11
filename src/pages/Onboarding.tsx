@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { Languages, ArrowRight, Check, Calendar, Upload, User } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
 
-const LANGUAGES = [
+export const LANGUAGES = [
   { id: 'en', name: 'English', flag: '🇺🇸' },
   { id: 'es', name: 'Spanish', flag: '🇪🇸' },
   { id: 'fr', name: 'French', flag: '🇫🇷' },
