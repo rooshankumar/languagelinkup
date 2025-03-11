@@ -67,54 +67,54 @@ const Onboarding = () => {
       checkAuth();
   }, [navigate]);
 
-const handleSubmit = async () => {
-  if (!userId) {
-    toast({
-      title: "Authentication error",
-      description: "Please log in again to continue.",
-      variant: "destructive",
-    });
-    navigate('/auth');
-    return;
-  }
+  const handleSubmit = async () => {
+    if (!userId) {
+      toast({
+        title: "Authentication error",
+        description: "Please log in again to continue.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
+    console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
 
-  try {
-    const { error } = await supabase
-      .from('users')
-      .upsert({
-        id: userId,
-        username: username || "User",
-        email: (await supabase.auth.getUser()).data?.user?.email || '',
-        native_language: nativeLanguage,
-        learning_language: learningLanguage,
-        proficiency: proficiencyLevel,
-        last_active: new Date().toISOString(),
-        is_online: true,
-      }, { onConflict: ['id'] });
+    try {
+      const { error } = await supabase
+        .from('users')
+        .upsert({
+          id: userId,
+          username: username || "User", // Use existing username
+          email: (await supabase.auth.getUser()).data?.user?.email || '',
+          native_language: nativeLanguage,
+          learning_language: learningLanguage,
+          proficiency: proficiencyLevel,
+          last_active: new Date().toISOString(),
+          is_online: true,
+        }, { onConflict: ['id'] }); // Prevent row conflicts
 
-    if (error) throw error;
+      if (error) throw error;
 
-    toast({
-      title: "Profile completed!",
-      description: "Your language preferences have been saved.",
-    });
+      toast({
+        title: "Profile completed!",
+        description: "Your language preferences have been saved.",
+      });
 
-    navigate('/profile'); // Redirect to profile after completion
-  } catch (error: any) {
-    console.error('Error saving preferences:', error.message);
-    toast({
-      title: "Error saving preferences",
-      description: error.message || "Please try again later.",
-      variant: "destructive",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+      navigate('/profile'); // Redirect to profile after completion
+    } catch (error: any) {
+      console.error('Error saving preferences:', error.message);
+      toast({
+        title: "Error saving preferences",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-background to-background/60">
