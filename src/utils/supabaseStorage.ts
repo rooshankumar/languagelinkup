@@ -1,47 +1,103 @@
+
 import { supabase } from '@/lib/supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
-export const uploadProfilePicture = async (file: File, filePath: string) => {
+// Name of the bucket
+const BUCKET_NAME = 'user_uploads';
+
+// Function to ensure bucket exists
+const ensureBucketExists = async () => {
   try {
-    // Upload the image to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-
-    if (error) {
-      throw error;
+    // Check if bucket exists
+    const { data: buckets, error: getBucketsError } = await supabase
+      .storage
+      .listBuckets();
+    
+    if (getBucketsError) {
+      console.error('Error checking buckets:', getBucketsError);
+      throw getBucketsError;
     }
-
-    // Get the public URL for the uploaded file
-    const { data: publicUrlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    return { url: publicUrlData.publicUrl, error: null };
+    
+    // If bucket doesn't exist, create it
+    if (!buckets.some(bucket => bucket.name === BUCKET_NAME)) {
+      const { error: createBucketError } = await supabase
+        .storage
+        .createBucket(BUCKET_NAME, {
+          public: true,
+          fileSizeLimit: 1024 * 1024 * 2 // 2MB limit
+        });
+      
+      if (createBucketError) {
+        console.error('Error creating bucket:', createBucketError);
+        throw createBucketError;
+      }
+      
+      console.log(`Bucket "${BUCKET_NAME}" created successfully`);
+    }
   } catch (error) {
-    console.error('Error uploading profile picture:', error);
-    return { url: null, error };
+    console.error('ensureBucketExists error:', error);
+    throw error;
   }
 };
 
-export const deleteProfilePicture = async (filePath: string): Promise<void> => {
+// Upload a profile picture
+export const uploadProfilePicture = async (file: File, userId: string): Promise<string> => {
   try {
-    // Extract the path from the full URL if needed
-    const path = filePath.includes('avatars/') 
-      ? filePath.split('avatars/')[1] 
-      : filePath;
+    await ensureBucketExists();
     
-    const { error } = await supabase.storage
-      .from('avatars')
-      .remove([path]);
+    // Create a unique file path for this user
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${userId}/${uuidv4()}.${fileExt}`;
+    
+    // Upload the file
+    const { error: uploadError } = await supabase
+      .storage
+      .from(BUCKET_NAME)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+    
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError);
+      throw uploadError;
+    }
+    
+    // Get the public URL
+    const { data } = supabase
+      .storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(filePath);
+    
+    return data.publicUrl;
+  } catch (error: any) {
+    console.error('uploadProfilePicture error:', error);
+    throw new Error(`Error uploading profile picture: ${error.message}`);
+  }
+};
+
+// Delete a profile picture
+export const deleteProfilePicture = async (url: string): Promise<void> => {
+  try {
+    // Extract the file path from the URL
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const filePath = pathParts.slice(pathParts.indexOf(BUCKET_NAME) + 1).join('/');
+    
+    if (!filePath) {
+      throw new Error('Invalid file path');
+    }
+    
+    const { error } = await supabase
+      .storage
+      .from(BUCKET_NAME)
+      .remove([filePath]);
     
     if (error) {
       throw error;
     }
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    throw new Error('Failed to delete profile picture');
+  } catch (error: any) {
+    console.error('deleteProfilePicture error:', error);
+    throw new Error(`Error deleting profile picture: ${error.message}`);
   }
 };
