@@ -89,7 +89,7 @@ const Settings = () => {
                       <p className="text-sm text-muted-foreground">{section.description}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={section.action}>
                     Manage
                   </Button>
                 </div>

@@ -1,32 +1,48 @@
 
 import { supabase } from '@/lib/supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
-// Get a public URL for an avatar
-export const getAvatarUrl = (path: string | null): string | null => {
-  if (!path) return null;
-  
-  const { data } = supabase.storage
-    .from('avatars')
-    .getPublicUrl(path);
-    
-  return data?.publicUrl || null;
-};
-
-// Upload an avatar to storage
-export const uploadAvatar = async (file: File, userId: string): Promise<string | null> => {
+export const uploadProfilePicture = async (userId: string, file: File): Promise<string> => {
   try {
     const fileExt = file.name.split('.').pop();
-    const filePath = `${userId}-${Date.now()}.${fileExt}`;
+    const fileName = `${userId}/${uuidv4()}.${fileExt}`;
+    const filePath = `profile-pictures/${fileName}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+    
+    if (uploadError) {
+      throw uploadError;
+    }
+    
+    const { data } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+    
+    return data.publicUrl;
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw new Error('Failed to upload profile picture');
+  }
+};
+
+export const deleteProfilePicture = async (filePath: string): Promise<void> => {
+  try {
+    // Extract the path from the full URL if needed
+    const path = filePath.includes('avatars/') 
+      ? filePath.split('avatars/')[1] 
+      : filePath;
     
     const { error } = await supabase.storage
       .from('avatars')
-      .upload(filePath, file);
-      
-    if (error) throw error;
+      .remove([path]);
     
-    return filePath;
+    if (error) {
+      throw error;
+    }
   } catch (error) {
-    console.error('Error uploading avatar:', error);
-    return null;
+    console.error('Error deleting file:', error);
+    throw new Error('Failed to delete profile picture');
   }
 };
