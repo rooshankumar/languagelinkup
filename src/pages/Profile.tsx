@@ -4,11 +4,35 @@ import { supabase } from "@/lib/supabaseClient";
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import UserProfileCard from '@/components/UserProfileCard';
+import { LANGUAGES } from '@/pages/Onboarding';
 
 const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  
+  // Function to calculate age from date of birth
+  const calculateAge = (dob: string | null): number | null => {
+    if (!dob) return null;
+    
+    const birthDate = new Date(dob);
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+  
+  // Function to get full language name from language code
+  const getLanguageName = (code: string): string => {
+    const language = LANGUAGES.find(lang => lang.id === code);
+    return language ? language.name : code;
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,7 +54,8 @@ const Profile = () => {
       const { data, error } = await supabase
         .from('users')
         .select(`
-          id, username, email, native_language, learning_language, proficiency, bio, avatar, last_active, is_online
+          id, username, email, native_language, learning_language, proficiency, bio, avatar, 
+          last_active, is_online, dob, profile_picture
         `)
         .eq('id', userSession.user.id)
         .single();
@@ -71,21 +96,71 @@ const Profile = () => {
         user={{
           id: userData.id,
           name: userData.username || "Anonymous",
-          avatar: userData.avatar || 'https://ui-avatars.com/api/?name=User',
+          avatar: userData.profile_picture || userData.avatar || 'https://ui-avatars.com/api/?name=User',
           location: userData.location || 'Not specified',
           bio: userData.bio || "No bio available",
-          nativeLanguage: userData.native_language,
-          learningLanguages: [{ language: userData.learning_language, proficiency: userData.proficiency }],
+          nativeLanguage: getLanguageName(userData.native_language),
+          learningLanguages: [{ 
+            language: getLanguageName(userData.learning_language), 
+            proficiency: userData.proficiency 
+          }],
           online: userData.is_online || false
         }}
       />
 
       {/* Profile Details */}
-      <p><strong>Email:</strong> {userData.email}</p>
-      <p><strong>Native Language:</strong> {userData.native_language}</p>
-      <p><strong>Learning Language:</strong> {userData.learning_language} ({userData.proficiency})</p>
-      <p><strong>Bio:</strong> {userData.bio || "Not provided"}</p>
-      <p><strong>Last Active:</strong> {new Date(userData.last_active).toLocaleString()}</p>
+      <div className="mt-8 bg-card p-6 rounded-lg border shadow-sm">
+        <h2 className="text-xl font-bold mb-4">Profile Details</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Full Name</p>
+            <p className="font-medium">{userData.username || "Not specified"}</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-muted-foreground">Email</p>
+            <p className="font-medium">{userData.email}</p>
+          </div>
+          
+          {userData.dob && (
+            <div>
+              <p className="text-sm text-muted-foreground">Age</p>
+              <p className="font-medium">{calculateAge(userData.dob)} years</p>
+            </div>
+          )}
+          
+          <div>
+            <p className="text-sm text-muted-foreground">Native Language</p>
+            <p className="font-medium">{getLanguageName(userData.native_language)}</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-muted-foreground">Learning Language</p>
+            <p className="font-medium">{getLanguageName(userData.learning_language)} ({userData.proficiency})</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-muted-foreground">Last Active</p>
+            <p className="font-medium">{new Date(userData.last_active).toLocaleString()}</p>
+          </div>
+        </div>
+        
+        {userData.bio && (
+          <div className="mt-4">
+            <p className="text-sm text-muted-foreground">Bio</p>
+            <p className="font-medium">{userData.bio}</p>
+          </div>
+        )}
+        
+        <div className="mt-6">
+          <Button 
+            onClick={() => navigate('/settings')} 
+            variant="outline"
+          >
+            Edit Profile
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -54,7 +54,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            data: { username: name }, // Store name in metadata
+            data: { username: name, full_name: name }, // Store name in metadata
           },
         });
 
@@ -72,6 +72,8 @@ const Auth = () => {
             proficiency: null,
             bio: null,
             avatar: null,
+            dob: null,
+            profile_picture: null,
             last_active: new Date().toISOString(),
             is_online: true,
           }

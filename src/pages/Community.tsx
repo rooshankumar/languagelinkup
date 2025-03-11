@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { Search, Filter, MessageCircle, Languages, Globe, User } from 'lucide-react';
+import { LANGUAGES } from '@/pages/Onboarding';
 
 // Mock data - will be replaced with API calls
 const MOCK_USERS = [
@@ -85,6 +86,12 @@ const LANGUAGES = [
   'Mandarin',
   'Russian'
 ];
+
+// Function to get full language name from language code
+const getLanguageName = (code: string): string => {
+  const language = LANGUAGES.find(lang => lang.id === code);
+  return language ? language.name : code;
+};
 
 const Community = () => {
   const navigate = useNavigate();
