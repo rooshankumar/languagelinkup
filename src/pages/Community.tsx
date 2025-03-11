@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
@@ -76,16 +75,16 @@ const MOCK_USERS = [
 ];
 
 // Available languages for filtering
-const LANGUAGES = [
-  'Any Language',
-  'English',
-  'Spanish',
-  'French',
-  'German',
-  'Japanese',
-  'Mandarin',
-  'Russian'
-];
+//const LANGUAGES = [  //Removed local definition
+//  'Any Language',
+//  'English',
+//  'Spanish',
+//  'French',
+//  'German',
+//  'Japanese',
+//  'Mandarin',
+//  'Russian'
+//];
 
 // Function to get full language name from language code
 const getLanguageName = (code: string): string => {
@@ -100,40 +99,44 @@ const Community = () => {
   const [learningLanguageFilter, setLearningLanguageFilter] = useState('Any Language');
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  
+
+  const filterLanguages = ['Any Language', ...new Set(
+    [...MOCK_USERS.map(user => user.nativeLanguage), ...MOCK_USERS.map(user => user.learningLanguage)]
+  )];
+
   const handleStartChat = (userId: string) => {
     // In a real app, this would create a chat or navigate to an existing one
     console.log('Starting chat with user ID:', userId);
-    
+
     // For now, just navigate to the corresponding mock chat
     const chatId = MOCK_USERS.findIndex(user => user.id === userId) + 1;
     navigate(`/chat/${chatId}`);
   };
-  
+
   const filteredUsers = MOCK_USERS.filter(user => {
     // Search filter
     if (searchTerm && !user.name.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
-    
+
     // Native language filter
     if (nativeLanguageFilter !== 'Any Language' && user.nativeLanguage !== nativeLanguageFilter) {
       return false;
     }
-    
+
     // Learning language filter
     if (learningLanguageFilter !== 'Any Language' && user.learningLanguage !== learningLanguageFilter) {
       return false;
     }
-    
+
     // Online only filter
     if (onlineOnly && !user.online) {
       return false;
     }
-    
+
     return true;
   });
-  
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -146,7 +149,7 @@ const Community = () => {
           Filters
         </Button>
       </div>
-      
+
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -159,11 +162,11 @@ const Community = () => {
           />
         </div>
       </div>
-      
+
       {showFilters && (
         <div className="bg-card p-4 rounded-lg shadow-sm mb-6 border">
           <h2 className="font-medium mb-3">Filter Language Partners</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm mb-1">Native Language</label>
@@ -172,12 +175,12 @@ const Community = () => {
                 value={nativeLanguageFilter}
                 onChange={(e) => setNativeLanguageFilter(e.target.value)}
               >
-                {LANGUAGES.map(lang => (
+                {filterLanguages.map(lang => (
                   <option key={lang} value={lang}>{lang}</option>
                 ))}
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm mb-1">Learning</label>
               <select
@@ -185,12 +188,12 @@ const Community = () => {
                 value={learningLanguageFilter}
                 onChange={(e) => setLearningLanguageFilter(e.target.value)}
               >
-                {LANGUAGES.map(lang => (
+                {filterLanguages.map(lang => (
                   <option key={lang} value={lang}>{lang}</option>
                 ))}
               </select>
             </div>
-            
+
             <div className="flex items-center">
               <label className="inline-flex items-center cursor-pointer">
                 <input 
@@ -206,7 +209,7 @@ const Community = () => {
           </div>
         </div>
       )}
-      
+
       {filteredUsers.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredUsers.map(user => (
@@ -232,14 +235,14 @@ const Community = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3 text-sm mb-4">
                   <div className="flex items-center">
                     <Globe className="h-4 w-4 text-muted-foreground mr-2" />
                     <span className="text-muted-foreground">Native:</span>
                     <span className="font-medium ml-auto">{user.nativeLanguage}</span>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <Languages className="h-4 w-4 text-muted-foreground mr-2" />
                     <span className="text-muted-foreground">Learning:</span>
@@ -248,9 +251,9 @@ const Community = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <p className="text-sm mb-4 line-clamp-2 text-muted-foreground">{user.bio}</p>
-                
+
                 <Button 
                   onClick={() => handleStartChat(user.id)}
                   className="w-full" 
