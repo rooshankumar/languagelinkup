@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
@@ -8,7 +9,6 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signOut: () => Promise<void>;
-  userProfile: any | null; // Added userProfile
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,86 +27,28 @@ type AuthProviderProps = {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<any | null>(null); // Added userProfile state
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    // Check for active session on mount
+    const checkUser = async () => {
       try {
-        setLoading(true);
-
-        // Check if user is already authenticated
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error('Error fetching session:', error.message);
-          return;
-        }
-
-        if (data?.session?.user) {
-          setUser(data.session.user);
-
-          // Get user profile from database
-          const { data: profileData, error: profileError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error('Error fetching profile:', profileError.message);
-          } else if (profileData) {
-            setUserProfile(profileData);
-          } else {
-            // User exists in auth but not in the users table
-            console.warn('User found in auth but not in users table:', data.session.user.id);
-            // This could happen if the user record wasn't properly created during signup
-            // You might want to handle this case (redirect to onboarding, etc.)
-          }
-        }
+        const { data } = await supabase.auth.getSession();
+        setUser(data.session?.user || null);
       } catch (error) {
-        console.error('Error in fetchUser:', error);
+        console.error('User not authenticated:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
+    checkUser();
 
-    // Set up auth state change listener
+    // Subscribe to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setUserProfile(null);
-          return;
-        }
-
-        if (session?.user) {
-          setUser(session.user);
-
-          // Get user profile on auth changes
-          const { data: profileData, error: profileError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error('Error fetching profile on auth change:', profileError.message);
-          } else if (profileData) {
-            setUserProfile(profileData);
-          } else if (event === 'SIGNED_IN') {
-            // New sign in but no profile - might need onboarding
-            console.warn('New sign in without existing profile - may need onboarding');
-            // Could handle navigation to onboarding here if needed
-          }
-        } else {
-          setUser(null);
-          setUserProfile(null);
-        }
+        setUser(session?.user || null);
+        setLoading(false);
       }
     );
 
@@ -142,7 +84,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn,
     signUp,
     signOut,
-    userProfile, // Added userProfile to the context value
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

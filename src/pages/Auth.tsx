@@ -55,23 +55,11 @@ const Auth = () => {
           password,
           options: {
             data: { username: name, full_name: name }, // Store name in metadata
-            emailRedirectTo: window.location.origin + '/auth', // Redirect to auth page after email verification
           },
         });
 
         if (error) throw error;
         if (!data.user) throw new Error("Account creation failed - no user data returned");
-
-        // Check if email confirmation is required
-        if (data.session === null) {
-          // Email confirmation is required
-          toast({
-            title: "Verification email sent",
-            description: "Please check your email to verify your account before logging in.",
-          });
-          setIsLoading(false);
-          return; // Stop here and wait for email verification
-        }
 
         // ✅ Insert user data into 'users' table on signup
         const { error: insertError } = await supabase.from('users').insert([
@@ -101,18 +89,7 @@ const Auth = () => {
           description: "Welcome to MyLanguage! Complete onboarding to get started.",
         });
 
-        // Clear any session for the previous user
-        await supabase.auth.signOut();
-        
-        // Force re-login to ensure proper session
-        toast({
-          title: "Please log in",
-          description: "Your account has been created. Please log in with your credentials.",
-        });
-        
-        setIsLogin(true); // Switch to login form
-        setIsLoading(false);
-        return;
+        navigate('/onboarding'); // ✅ Ensure new users go to onboarding
       }
     } catch (error: any) {
       console.error('Authentication error:', error.message);
