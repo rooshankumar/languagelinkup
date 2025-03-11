@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { MessageCircle, Users, Book, BarChart3, ArrowRight, Calendar, Clock, Award } from 'lucide-react';
+import UserProfileCard from '@/components/UserProfileCard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
