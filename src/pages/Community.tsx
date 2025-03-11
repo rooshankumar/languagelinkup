@@ -57,6 +57,18 @@ const Community = () => {
       // Get current user ID
       const currentUserId = session.user.id;
       
+      // Fetch all users regardless of whether they're complete or not
+      // This way we can debug what users actually exist in the database
+      const { data: allUsers, error: allUsersError } = await supabase
+        .from('users')
+        .select('*');
+      
+      if (allUsersError) {
+        throw allUsersError;
+      }
+      
+      console.log('ALL users in database:', allUsers);
+      
       // Fetch all users except the current user
       // No filter on is_online to show all users
       const { data, error } = await supabase
@@ -126,23 +138,10 @@ const Community = () => {
           throw refetchError;
         }
         
-        // Ensure we have complete user data
-        const filteredData = (newData || []).filter(user => 
-          user.username && 
-          user.native_language && 
-          user.learning_language
-        );
-        
-        setUsers(filteredData);
+        setUsers(newData || []);
       } else {
-        // Ensure we have complete user data but don't filter by is_online
-        const filteredData = (data || []).filter(user => 
-          user.username && 
-          user.native_language && 
-          user.learning_language
-        );
-        
-        setUsers(filteredData);
+        // Don't filter out users, show all of them
+        setUsers(data || []);
       }
     } catch (error: any) {
       console.error('Error fetching users:', error.message);
@@ -245,7 +244,12 @@ const Community = () => {
   };
   
   // Get language name from code
-  const getLanguageName = (code: string): string => {
+  const getLanguageName = (code: string | null | undefined): string => {
+    // Handle undefined or null values
+    if (!code) {
+      return 'Unknown';
+    }
+    
     // If code is already a full language name, return it
     if (LANGUAGES_FILTER.includes(code)) {
       return code;
@@ -257,21 +261,27 @@ const Community = () => {
   };
   
   const filteredUsers = users.filter(user => {
-    // Search filter - case insensitive
-    if (searchTerm && !user.username.toLowerCase().includes(searchTerm.toLowerCase())) {
+    // Ensure user has basic required fields
+    if (!user || !user.id) {
+      console.log('Skipping invalid user:', user);
       return false;
     }
     
-    // Native language filter
-    if (nativeLanguageFilter !== 'Any Language') {
+    // Search filter - case insensitive (only if username exists)
+    if (searchTerm && user.username && !user.username.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    
+    // Native language filter (only if native_language exists)
+    if (nativeLanguageFilter !== 'Any Language' && user.native_language) {
       const nativeLanguageName = getLanguageName(user.native_language);
       if (nativeLanguageName !== nativeLanguageFilter) {
         return false;
       }
     }
     
-    // Learning language filter
-    if (learningLanguageFilter !== 'Any Language') {
+    // Learning language filter (only if learning_language exists)
+    if (learningLanguageFilter !== 'Any Language' && user.learning_language) {
       const learningLanguageName = getLanguageName(user.learning_language);
       if (learningLanguageName !== learningLanguageFilter) {
         return false;
@@ -279,12 +289,14 @@ const Community = () => {
     }
     
     // Online only filter - apply only if the checkbox is checked
-    if (onlineOnly && !user.is_online) {
+    if (onlineOnly && user.is_online === false) {
       return false;
     }
     
     return true;
   });
+  
+  console.log('Filtered users count:', filteredUsers.length);
   
   console.log('Filtered users count:', filteredUsers.length);
   
@@ -374,11 +386,11 @@ const Community = () => {
                 <div className="flex items-center gap-3 mb-3">
                   <div className="relative">
                     <img 
-                      src={user.profile_picture ? user.profile_picture : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=random`} 
-                      alt={user.username}
+                      src={user.profile_picture ? user.profile_picture : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}&background=random`} 
+                      alt={user.username || 'User'}
                       className="w-12 h-12 rounded-full object-cover" 
                       onError={(e) => {
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=random`;
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}&background=random`;
                       }}
                     />
                     {user.is_online && (
@@ -386,10 +398,10 @@ const Community = () => {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-medium">{user.username}</h3>
+                    <h3 className="font-medium">{user.username || 'No Username'}</h3>
                     <div className="text-sm text-muted-foreground flex items-center gap-1">
                       <span className={user.is_online ? 'text-green-500' : 'text-muted-foreground'}>
-                        {user.is_online ? 'Online now' : `Last active ${new Date(user.last_active).toLocaleDateString()}`}
+                        {user.is_online ? 'Online now' : (user.last_active ? `Last active ${new Date(user.last_active).toLocaleDateString()}` : 'Status unknown')}
                       </span>
                     </div>
                   </div>
@@ -399,14 +411,14 @@ const Community = () => {
                   <div className="flex items-center">
                     <Globe className="h-4 w-4 text-muted-foreground mr-2" />
                     <span className="text-muted-foreground">Native:</span>
-                    <span className="font-medium ml-auto">{getLanguageName(user.native_language)}</span>
+                    <span className="font-medium ml-auto">{user.native_language ? getLanguageName(user.native_language) : 'Not specified'}</span>
                   </div>
                   
                   <div className="flex items-center">
                     <Languages className="h-4 w-4 text-muted-foreground mr-2" />
                     <span className="text-muted-foreground">Learning:</span>
                     <span className="font-medium ml-auto">
-                      {getLanguageName(user.learning_language)} ({user.proficiency})
+                      {user.learning_language ? getLanguageName(user.learning_language) : 'Not specified'} {user.proficiency ? `(${user.proficiency})` : ''}
                     </span>
                   </div>
                 </div>
