@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@/components/Button';
@@ -501,7 +502,7 @@ const Chat = () => {
       </div>
 
       {/* Message input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t flex items-end bg-card">
+      <div className="p-4 border-t flex items-end bg-card">
         <button 
           type="button"
           className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors"
@@ -539,9 +540,10 @@ const Chat = () => {
             disabled={!newMessage.trim()}
             icon={<Send className="h-4 w-4" />}
             aria-label="Send message"
+            onClick={handleSendMessage}
           />
         </div>
-      </form>
+      </div>
     </div>
   );
 };
