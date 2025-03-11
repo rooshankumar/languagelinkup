@@ -83,7 +83,7 @@ const handleSubmit = async () => {
   console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
 
   try {
-    // Get current user session
+    // Get current user session and ensure authentication
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
@@ -104,15 +104,36 @@ const handleSubmit = async () => {
 
     console.log("Updating user data:", userData);
 
-    // Use upsert with onConflict to handle both insert and update
-    const { error } = await supabase
+    // First check if a record exists
+    const { data: existingUser } = await supabase
       .from('users')
-      .upsert(userData, { 
-        onConflict: ['id'],
-        returning: 'minimal' 
-      });
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    let error;
+    
+    if (existingUser) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('users')
+        .update(userData)
+        .eq('id', userId);
+      
+      error = updateError;
+    } else {
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert(userData);
+      
+      error = insertError;
+    }
 
     if (error) {
+      // If still encountering RLS issues, try using auth-based RPC function
+      // This approach requires setting up a Supabase function with appropriate permissions
+      console.error("Standard update/insert failed, error:", error.message);
       throw error;
     }
 
