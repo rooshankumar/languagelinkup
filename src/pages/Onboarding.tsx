@@ -5,8 +5,6 @@ import { toast } from '@/hooks/use-toast';
 import { Languages, ArrowRight, Check } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
 
-
-// Sample language data
 const LANGUAGES = [
   { id: 'en', name: 'English', flag: '🇺🇸' },
   { id: 'es', name: 'Spanish', flag: '🇪🇸' },
@@ -37,15 +35,13 @@ const Onboarding = () => {
   const [proficiencyLevel, setProficiencyLevel] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Check if user is authenticated
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-
       if (!session?.user) {
-        // Redirect to auth if not logged in
         toast({
           title: "Authentication required",
           description: "Please log in to continue.",
@@ -54,8 +50,18 @@ const Onboarding = () => {
         navigate('/auth');
         return;
       }
-
       setUserId(session.user.id);
+
+      // Fetch user details
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!error && userData) {
+        setUsername(userData.username);
+      }
     };
 
     checkAuth();
@@ -74,17 +80,21 @@ const Onboarding = () => {
 
     setIsLoading(true);
 
+    console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
+
     try {
-      // Save language preferences to the existing users table
       const { error } = await supabase
         .from('users')
-        .update({
+        .upsert({
+          id: userId,
+          username: username || "User", // Use existing username
+          email: (await supabase.auth.getUser()).data?.user?.email || '',
           native_language: nativeLanguage,
           learning_language: learningLanguage,
           proficiency: proficiencyLevel,
           last_active: new Date().toISOString(),
-        })
-        .eq('id', userId);
+          is_online: true,
+        });
 
       if (error) throw error;
 
@@ -93,7 +103,7 @@ const Onboarding = () => {
         description: "Your language preferences have been saved.",
       });
 
-      navigate('/dashboard');
+      navigate('/profile'); // Redirect to profile after completion
     } catch (error: any) {
       console.error('Error saving preferences:', error.message);
       toast({
@@ -117,95 +127,17 @@ const Onboarding = () => {
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
           <div className="flex justify-between mb-8">
             {[1, 2, 3].map((i) => (
-              <div 
-                key={i}
-                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  step === i 
-                    ? 'border-primary bg-primary text-primary-foreground' 
-                    : step > i 
-                      ? 'border-primary bg-primary/20 text-primary' 
-                      : 'border-muted-foreground/30 text-muted-foreground/50'
-                }`}
-              >
+              <div key={i} className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                step === i 
+                  ? 'border-primary bg-primary text-primary-foreground' 
+                  : step > i 
+                    ? 'border-primary bg-primary/20 text-primary' 
+                    : 'border-muted-foreground/30 text-muted-foreground/50'
+              }`}>
                 {step > i ? <Check className="h-5 w-5" /> : i}
               </div>
             ))}
           </div>
-
-          {step === 1 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">What's your native language?</h2>
-              <p className="text-muted-foreground">Select the language you speak fluently.</p>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
-                {LANGUAGES.map((language) => (
-                  <button
-                    key={language.id}
-                    onClick={() => setNativeLanguage(language.id)}
-                    className={`flex items-center p-3 rounded-lg border ${
-                      nativeLanguage === language.id 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <span className="text-2xl mr-2">{language.flag}</span>
-                    <span>{language.name}</span>
-                  </button>
-                ))}
-              </div>
-
-              <Button 
-                className="w-full mt-6" 
-                onClick={() => setStep(2)}
-                disabled={!nativeLanguage}
-                icon={<ArrowRight className="h-4 w-4" />}
-                iconPosition="right"
-              >
-                Continue
-              </Button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">What language do you want to learn?</h2>
-              <p className="text-muted-foreground">Select a language you want to practice.</p>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
-                {LANGUAGES.filter(lang => lang.id !== nativeLanguage).map((language) => (
-                  <button
-                    key={language.id}
-                    onClick={() => setLearningLanguage(language.id)}
-                    className={`flex items-center p-3 rounded-lg border ${
-                      learningLanguage === language.id 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <span className="text-2xl mr-2">{language.flag}</span>
-                    <span>{language.name}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setStep(1)}
-                >
-                  Back
-                </Button>
-                <Button 
-                  onClick={() => setStep(3)}
-                  disabled={!learningLanguage}
-                  icon={<ArrowRight className="h-4 w-4" />}
-                  iconPosition="right"
-                >
-                  Continue
-                </Button>
-              </div>
-            </div>
-          )}
 
           {step === 3 && (
             <div className="space-y-6">
@@ -245,7 +177,7 @@ const Onboarding = () => {
                 </Button>
                 <Button 
                   onClick={handleSubmit}
-                  disabled={!proficiencyLevel}
+                  disabled={!nativeLanguage || !learningLanguage || !proficiencyLevel}
                   isLoading={isLoading}
                 >
                   Complete Profile
@@ -253,6 +185,7 @@ const Onboarding = () => {
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

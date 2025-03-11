@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages } from 'lucide-react';
-import { supabase } from "../lib/supabaseClient";
- // Import Supabase client
+import { supabase } from "../lib/supabaseClient"; // Import Supabase client
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -27,9 +26,19 @@ const Auth = () => {
         });
 
         if (error) throw error;
-        
-        if (!data.user) {
-          throw new Error("Authentication failed - no user data returned");
+        if (!data.user) throw new Error("Authentication failed - no user data returned");
+
+        // ✅ Check if user exists in the database
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError || !userData || !userData.native_language || !userData.learning_language) {
+          console.warn("User data incomplete, redirecting to onboarding...");
+          navigate('/onboarding'); // Redirect if user data is missing or incomplete
+          return;
         }
 
         toast({
@@ -37,7 +46,8 @@ const Auth = () => {
           description: `Welcome back to MyLanguage, ${data.user.email}!`,
         });
 
-        navigate('/dashboard');
+        navigate('/profile'); // ✅ Go to profile
+
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
         const { data, error } = await supabase.auth.signUp({
@@ -49,17 +59,30 @@ const Auth = () => {
         });
 
         if (error) throw error;
-        
-        if (!data.user) {
-          throw new Error("Account creation failed - no user data returned");
-        }
+        if (!data.user) throw new Error("Account creation failed - no user data returned");
+
+        // ✅ Insert user data into 'users' table on signup
+        await supabase.from('users').insert([
+          {
+            id: data.user.id,  // Ensure the ID matches the Supabase Auth UUID
+            username: name,
+            email,
+            native_language: null,  // Will be set in onboarding
+            learning_language: null,  // Will be set in onboarding
+            proficiency: null,
+            bio: null,
+            avatar: null,
+            last_active: new Date().toISOString(),
+            is_online: true,
+          }
+        ]);
 
         toast({
           title: "Account created successfully",
-          description: "Welcome to MyLanguage!",
+          description: "Welcome to MyLanguage! Complete onboarding to get started.",
         });
 
-        navigate('/onboarding'); // New users go to onboarding
+        navigate('/onboarding'); // ✅ Ensure new users go to onboarding
       }
     } catch (error: any) {
       console.error('Authentication error:', error.message);
