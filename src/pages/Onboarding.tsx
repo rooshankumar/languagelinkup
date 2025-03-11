@@ -120,7 +120,7 @@ const handleSubmit = async () => {
       if (insertError) throw insertError;
     }
         id: userId,
-        username: username || "User",
+        username: username || "User";
         email: (await supabase.auth.getUser()).data?.user?.email || '',
         native_language: nativeLanguage,
         learning_language: learningLanguage,
