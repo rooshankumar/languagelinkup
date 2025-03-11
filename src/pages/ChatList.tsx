@@ -1,67 +1,169 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, MessageCircle } from 'lucide-react';
 import Button from '@/components/Button';
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
-// Mock data - will be replaced with API calls
-const MOCK_CHATS = [
-  {
-    id: '1',
-    partner: {
-      id: '2',
-      name: 'Maria Garcia',
-      avatar: 'https://ui-avatars.com/api/?name=Maria+Garcia&background=random',
-      language: 'Spanish',
-    },
-    lastMessage: {
-      text: 'You would say "Quiero practicar mi español"',
-      timestamp: new Date(Date.now() - 900000), // 15 minutes ago
-      isRead: true,
-      senderId: '2'
-    },
-    unreadCount: 0,
-    online: true
-  },
-  {
-    id: '2',
-    partner: {
-      id: '3',
-      name: 'Akira Tanaka',
-      avatar: 'https://ui-avatars.com/api/?name=Akira+Tanaka&background=random',
-      language: 'Japanese',
-    },
-    lastMessage: {
-      text: 'I\'m just starting to learn Japanese. Could you help me practice?',
-      timestamp: new Date(Date.now() - 43200000), // 12 hours ago
-      isRead: true,
-      senderId: '1'
-    },
-    unreadCount: 0,
-    online: false
-  },
-  {
-    id: '3',
-    partner: {
-      id: '4',
-      name: 'Sophie Laurent',
-      avatar: 'https://ui-avatars.com/api/?name=Sophie+Laurent&background=random',
-      language: 'French',
-    },
-    lastMessage: {
-      text: 'Bonjour! Comment ça va?',
-      timestamp: new Date(Date.now() - 7200000), // 2 hours ago
-      isRead: false,
-      senderId: '4'
-    },
-    unreadCount: 1,
-    online: true
-  }
-];
+interface ChatPreview {
+  id: string;
+  partner: {
+    id: string;
+    name: string;
+    avatar: string | null;
+    language: string;
+    online: boolean;
+  };
+  lastMessage: {
+    text: string;
+    timestamp: Date;
+    isRead: boolean;
+    senderId: string;
+  };
+  unreadCount: number;
+}
 
 const ChatList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [chats, setChats] = useState<ChatPreview[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchUserAndChats = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get current user
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
+        
+        const userId = session.user.id;
+        setCurrentUserId(userId);
+        
+        // Fetch conversations for this user
+        const { data: conversations, error: conversationsError } = await supabase
+          .from('conversations')
+          .select(`
+            id,
+            user1_id,
+            user2_id,
+            messages:messages(
+              id,
+              sender_id,
+              content,
+              created_at,
+              is_read
+            )
+          `)
+          .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+          .order('updated_at', { ascending: false });
+        
+        if (conversationsError) {
+          throw conversationsError;
+        }
+        
+        // Process each conversation to get the partner user info
+        const chatPromises = conversations.map(async (conv) => {
+          // Determine the partner's ID
+          const partnerId = conv.user1_id === userId ? conv.user2_id : conv.user1_id;
+          
+          // Get partner details
+          const { data: partnerData, error: partnerError } = await supabase
+            .from('users')
+            .select('id, username, profile_picture, native_language, is_online')
+            .eq('id', partnerId)
+            .single();
+            
+          if (partnerError) {
+            console.error('Error fetching partner:', partnerError);
+            return null;
+          }
+          
+          // Get latest message
+          let lastMessage = {
+            text: 'Start a conversation',
+            timestamp: new Date(),
+            isRead: true,
+            senderId: ''
+          };
+          
+          let unreadCount = 0;
+          
+          if (conv.messages && conv.messages.length > 0) {
+            // Sort messages by date (newest first)
+            const sortedMessages = [...conv.messages].sort(
+              (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            
+            const latestMessage = sortedMessages[0];
+            lastMessage = {
+              text: latestMessage.content,
+              timestamp: new Date(latestMessage.created_at),
+              isRead: latestMessage.is_read,
+              senderId: latestMessage.sender_id
+            };
+            
+            // Count unread messages
+            unreadCount = sortedMessages.filter(m => 
+              m.sender_id !== userId && !m.is_read
+            ).length;
+          }
+          
+          return {
+            id: conv.id,
+            partner: {
+              id: partnerData.id,
+              name: partnerData.username,
+              avatar: partnerData.profile_picture,
+              language: partnerData.native_language,
+              online: partnerData.is_online
+            },
+            lastMessage,
+            unreadCount
+          };
+        });
+        
+        // Resolve all promises
+        const chatResults = await Promise.all(chatPromises);
+        const validChats = chatResults.filter(chat => chat !== null) as ChatPreview[];
+        setChats(validChats);
+      } catch (error: any) {
+        console.error('Error fetching chats:', error);
+        toast({
+          title: 'Failed to load chats',
+          description: error.message || 'Please try again later',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserAndChats();
+    
+    // Subscribe to realtime updates for new messages
+    const subscription = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      }, (payload) => {
+        // Refresh the chat list when a new message is received
+        fetchUserAndChats();
+      })
+      .subscribe();
+      
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
   
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -78,9 +180,18 @@ const ChatList = () => {
     }
   };
   
-  const filteredChats = MOCK_CHATS.filter(chat => 
+  const filteredChats = chats.filter(chat => 
     chat.partner.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto h-full flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-muted-foreground">Loading conversations...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="max-w-3xl mx-auto h-full">
@@ -119,11 +230,14 @@ const ChatList = () => {
               <div className="flex items-start">
                 <div className="relative">
                   <img 
-                    src={chat.partner.avatar}
+                    src={chat.partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.partner.name)}&background=random`}
                     alt={chat.partner.name}
                     className="w-12 h-12 rounded-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.partner.name)}&background=random`;
+                    }}
                   />
-                  {chat.online && (
+                  {chat.partner.online && (
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
                   )}
                 </div>
@@ -137,8 +251,8 @@ const ChatList = () => {
                   </div>
                   
                   <div className="flex items-center justify-between mt-1">
-                    <p className={`text-sm truncate ${!chat.lastMessage.isRead && chat.lastMessage.senderId !== '1' ? 'font-medium' : 'text-muted-foreground'}`}>
-                      {chat.lastMessage.senderId === '1' ? 'You: ' : ''}
+                    <p className={`text-sm truncate ${!chat.lastMessage.isRead && chat.lastMessage.senderId !== currentUserId ? 'font-medium' : 'text-muted-foreground'}`}>
+                      {chat.lastMessage.senderId === currentUserId ? 'You: ' : ''}
                       {chat.lastMessage.text}
                     </p>
                     

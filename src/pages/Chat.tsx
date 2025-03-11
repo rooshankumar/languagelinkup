@@ -4,161 +4,242 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@/components/Button';
 import { Send, ArrowLeft, Paperclip, Smile, MoreVertical, Phone, Video } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-// This will be replaced with real-time chat logic when you implement the backend
-const MOCK_CHATS = {
-  '1': {
-    id: '1',
-    partner: {
-      id: '2',
-      name: 'Maria Garcia',
-      avatar: 'https://ui-avatars.com/api/?name=Maria+Garcia&background=random',
-      language: 'Spanish',
-      online: true,
-      lastActive: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
-    },
-    messages: [
-      {
-        id: '1',
-        senderId: '2',
-        text: '¡Hola! ¿Cómo estás?',
-        timestamp: new Date(Date.now() - 3600000)
-      },
-      {
-        id: '2',
-        senderId: '1',
-        text: 'I\'m good! Still learning Spanish. How do you say "I want to practice my Spanish"?',
-        timestamp: new Date(Date.now() - 1800000)
-      },
-      {
-        id: '3',
-        senderId: '2',
-        text: 'You would say "Quiero practicar mi español"',
-        timestamp: new Date(Date.now() - 900000)
-      }
-    ]
-  },
-  '2': {
-    id: '2',
-    partner: {
-      id: '3',
-      name: 'Akira Tanaka',
-      avatar: 'https://ui-avatars.com/api/?name=Akira+Tanaka&background=random',
-      language: 'Japanese',
-      online: false,
-      lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago
-    },
-    messages: [
-      {
-        id: '1',
-        senderId: '3',
-        text: 'こんにちは！元気ですか？',
-        timestamp: new Date(Date.now() - 86400000) // 1 day ago
-      },
-      {
-        id: '2',
-        senderId: '1',
-        text: 'I\'m just starting to learn Japanese. Could you help me practice?',
-        timestamp: new Date(Date.now() - 43200000) // 12 hours ago
-      }
-    ]
-  },
-  '3': {
-    id: '3',
-    partner: {
-      id: '4',
-      name: 'Sophie Laurent',
-      avatar: 'https://ui-avatars.com/api/?name=Sophie+Laurent&background=random',
-      language: 'French',
-      online: true,
-      lastActive: new Date(Date.now() - 10 * 60 * 1000) // 10 minutes ago
-    },
-    messages: [
-      {
-        id: '1',
-        senderId: '4',
-        text: 'Bonjour! Comment ça va?',
-        timestamp: new Date(Date.now() - 7200000) // 2 hours ago
-      }
-    ]
-  }
-};
+import { supabase } from '@/lib/supabaseClient';
 
 interface Message {
   id: string;
   senderId: string;
   text: string;
   timestamp: Date;
+  isRead: boolean;
+}
+
+interface Partner {
+  id: string;
+  name: string;
+  avatar: string | null;
+  language: string;
+  online: boolean;
+  lastActive: Date;
 }
 
 const Chat = () => {
   const { chatId } = useParams<{ chatId: string }>();
-  const [activeChat, setActiveChat] = useState<typeof MOCK_CHATS[keyof typeof MOCK_CHATS] | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [partner, setPartner] = useState<Partner | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // For real app, this would fetch from your API
+  // Fetch messages and conversation data
   useEffect(() => {
-    if (chatId && MOCK_CHATS[chatId as keyof typeof MOCK_CHATS]) {
-      const chat = MOCK_CHATS[chatId as keyof typeof MOCK_CHATS];
-      setActiveChat(chat);
-      setMessages(chat.messages);
-      
-      // Simulate connection to chat server
-      console.log('Connecting to chat server for chat ID:', chatId);
-    } else if (chatId) {
-      toast({
-        title: "Chat not found",
-        description: "This chat does not exist or has been deleted.",
-        variant: "destructive",
-      });
-      navigate('/chats');
-    } else {
-      // No chatId, show chat list
-      navigate('/chats');
+    const fetchChatData = async () => {
+      try {
+        if (!chatId) {
+          navigate('/chats');
+          return;
+        }
+        
+        setIsLoading(true);
+        
+        // Get current user
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
+        
+        const userId = session.user.id;
+        setCurrentUserId(userId);
+        
+        // Get conversation
+        const { data: conversation, error: convError } = await supabase
+          .from('conversations')
+          .select('user1_id, user2_id')
+          .eq('id', chatId)
+          .single();
+          
+        if (convError) {
+          toast({
+            title: "Chat not found",
+            description: "This conversation doesn't exist or you don't have access to it.",
+            variant: "destructive",
+          });
+          navigate('/chats');
+          return;
+        }
+        
+        // Determine partner ID
+        const partnerId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id;
+        
+        // Get partner info
+        const { data: partnerData, error: partnerError } = await supabase
+          .from('users')
+          .select('id, username, profile_picture, native_language, learning_language, is_online, last_active')
+          .eq('id', partnerId)
+          .single();
+          
+        if (partnerError) {
+          console.error('Error fetching partner:', partnerError);
+          toast({
+            title: "Couldn't load partner info",
+            description: "There was an error loading your chat partner's information.",
+            variant: "destructive",
+          });
+          navigate('/chats');
+          return;
+        }
+        
+        setPartner({
+          id: partnerData.id,
+          name: partnerData.username,
+          avatar: partnerData.profile_picture,
+          language: partnerData.native_language,
+          online: partnerData.is_online,
+          lastActive: new Date(partnerData.last_active || Date.now())
+        });
+        
+        // Get messages
+        const { data: messagesData, error: messagesError } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', chatId)
+          .order('created_at', { ascending: true });
+          
+        if (messagesError) {
+          console.error('Error fetching messages:', messagesError);
+          toast({
+            title: "Couldn't load messages",
+            description: "There was an error loading your conversation.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Mark unread messages as read
+        const unreadMessages = messagesData.filter(
+          msg => msg.sender_id !== userId && !msg.is_read
+        );
+        
+        if (unreadMessages.length > 0) {
+          await Promise.all(unreadMessages.map(msg => 
+            supabase
+              .from('messages')
+              .update({ is_read: true })
+              .eq('id', msg.id)
+          ));
+        }
+        
+        // Format messages for display
+        const formattedMessages = messagesData.map(msg => ({
+          id: msg.id,
+          senderId: msg.sender_id,
+          text: msg.content,
+          timestamp: new Date(msg.created_at),
+          isRead: msg.is_read
+        }));
+        
+        setMessages(formattedMessages);
+      } catch (error: any) {
+        console.error('Error in chat setup:', error);
+        toast({
+          title: "Error loading chat",
+          description: error.message || "Please try again later",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchChatData();
+    
+    // Set up real-time message subscription
+    if (chatId) {
+      const subscription = supabase
+        .channel(`chat:${chatId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${chatId}`
+        }, async (payload) => {
+          const newMsg = payload.new;
+          
+          // If this is from the partner, mark as read
+          if (newMsg.sender_id !== currentUserId) {
+            await supabase
+              .from('messages')
+              .update({ is_read: true })
+              .eq('id', newMsg.id);
+          }
+          
+          // Add to messages
+          setMessages(prev => [...prev, {
+            id: newMsg.id,
+            senderId: newMsg.sender_id,
+            text: newMsg.content,
+            timestamp: new Date(newMsg.created_at),
+            isRead: newMsg.sender_id === currentUserId ? false : true
+          }]);
+        })
+        .subscribe();
+        
+      return () => {
+        subscription.unsubscribe();
+      };
     }
-  }, [chatId, navigate]);
+  }, [chatId, navigate, currentUserId]);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeChat) return;
+    if (!newMessage.trim() || !chatId || !currentUserId) return;
 
-    const message: Message = {
-      id: Date.now().toString(),
-      senderId: '1', // Current user ID
-      text: newMessage,
-      timestamp: new Date()
-    };
-
-    setMessages([...messages, message]);
-    setNewMessage('');
-    
-    // Simulate sending to server
-    console.log('Sending message to server:', message);
-    
-    // Simulate typing indicator from partner (will be done by real-time backend)
-    setTimeout(() => setIsTyping(true), 1000);
-    setTimeout(() => {
-      setIsTyping(false);
-      // Simulate response for demo purposes
-      if (activeChat.partner.online) {
-        const response: Message = {
-          id: (Date.now() + 1).toString(),
-          senderId: activeChat.partner.id,
-          text: `This is a simulated response. In the real app, this would come from the actual user through your backend.`,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, response]);
+    try {
+      // Insert message to database
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: chatId,
+          sender_id: currentUserId,
+          content: newMessage,
+          is_read: false
+        })
+        .select();
+        
+      if (error) throw error;
+      
+      // Update conversation timestamp
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', chatId);
+      
+      // Clear message input
+      setNewMessage('');
+      
+      // Simulate partner typing for demo purposes
+      // In a real app, you might use a separate channel for typing indicators
+      if (partner?.online) {
+        setTimeout(() => setIsTyping(true), 1000);
+        setTimeout(() => setIsTyping(false), 3500);
       }
-    }, 3500);
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Couldn't send message",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -179,9 +260,19 @@ const Chat = () => {
     }
   };
 
-  // If no active chat is selected, navigate to chats list
-  if (!activeChat) {
-    return null; // Or a loading spinner
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-muted-foreground">Loading conversation...</p>
+      </div>
+    );
+  }
+
+  // If no partner is found
+  if (!partner) {
+    return null;
   }
 
   return (
@@ -200,22 +291,25 @@ const Chat = () => {
           <div className="flex items-center">
             <div className="relative">
               <img
-                src={activeChat.partner.avatar}
-                alt={activeChat.partner.name}
-                className="w-10 h-10 rounded-full"
+                src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`}
+                alt={partner.name}
+                className="w-10 h-10 rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`;
+                }}
               />
-              <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card ${activeChat.partner.online ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+              <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card ${partner.online ? 'bg-green-500' : 'bg-gray-400'}`}></span>
             </div>
             
             <div className="ml-3">
-              <h2 className="font-semibold">{activeChat.partner.name}</h2>
+              <h2 className="font-semibold">{partner.name}</h2>
               <p className="text-xs text-muted-foreground">
-                {activeChat.partner.online 
+                {partner.online 
                   ? 'Online now' 
                   : `Last active ${
-                      activeChat.partner.lastActive.toDateString() === new Date().toDateString()
-                        ? 'today at ' + formatTime(activeChat.partner.lastActive)
-                        : formatDate(activeChat.partner.lastActive)
+                      partner.lastActive.toDateString() === new Date().toDateString()
+                        ? 'today at ' + formatTime(partner.lastActive)
+                        : formatDate(partner.lastActive)
                     }`
                 }
               </p>
@@ -238,60 +332,77 @@ const Chat = () => {
 
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20">
-        {/* Date separator for demo */}
-        <div className="flex justify-center">
-          <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
-            {formatDate(messages[0]?.timestamp || new Date())}
-          </span>
-        </div>
-        
-        {messages.map((message, index) => {
-          const isCurrentUser = message.senderId === '1';
-          const showDateSeparator = index > 0 && 
-            formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
+        {messages.length > 0 ? (
+          <>
+            {/* Date separator for first message */}
+            <div className="flex justify-center">
+              <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
+                {formatDate(messages[0]?.timestamp || new Date())}
+              </span>
+            </div>
             
-          return (
-            <React.Fragment key={message.id}>
-              {showDateSeparator && (
-                <div className="flex justify-center my-4">
-                  <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
-                    {formatDate(message.timestamp)}
-                  </span>
-                </div>
-              )}
-              
-              <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                {!isCurrentUser && (
-                  <img 
-                    src={activeChat.partner.avatar} 
-                    alt={activeChat.partner.name}
-                    className="h-8 w-8 rounded-full mr-2 self-end"
-                  />
-                )}
+            {messages.map((message, index) => {
+              const isCurrentUser = message.senderId === currentUserId;
+              const showDateSeparator = index > 0 && 
+                formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
                 
-                <div
-                  className={`max-w-[75%] rounded-lg p-3 ${
-                    isCurrentUser
-                      ? 'bg-primary text-primary-foreground rounded-br-none'
-                      : 'bg-card rounded-bl-none'
-                  }`}
-                >
-                  <p className="break-words">{message.text}</p>
-                  <p className={`text-xs mt-1 text-right ${isCurrentUser ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                    {formatTime(message.timestamp)}
-                  </p>
-                </div>
-              </div>
-            </React.Fragment>
-          );
-        })}
+              return (
+                <React.Fragment key={message.id}>
+                  {showDateSeparator && (
+                    <div className="flex justify-center my-4">
+                      <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
+                        {formatDate(message.timestamp)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                    {!isCurrentUser && (
+                      <img 
+                        src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`}
+                        alt={partner.name}
+                        className="h-8 w-8 rounded-full mr-2 self-end object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`;
+                        }}
+                      />
+                    )}
+                    
+                    <div
+                      className={`max-w-[75%] rounded-lg p-3 ${
+                        isCurrentUser
+                          ? 'bg-primary text-primary-foreground rounded-br-none'
+                          : 'bg-card rounded-bl-none'
+                      }`}
+                    >
+                      <p className="break-words">{message.text}</p>
+                      <p className={`text-xs mt-1 text-right ${isCurrentUser ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                        {formatTime(message.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </>
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-center">
+              <p className="text-muted-foreground mb-2">No messages yet</p>
+              <p className="text-sm">Start a conversation with {partner.name}</p>
+            </div>
+          </div>
+        )}
         
         {isTyping && (
           <div className="flex justify-start">
             <img 
-              src={activeChat.partner.avatar} 
-              alt={activeChat.partner.name}
-              className="h-8 w-8 rounded-full mr-2 self-end"
+              src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`}
+              alt={partner.name}
+              className="h-8 w-8 rounded-full mr-2 self-end object-cover"
+              onError={(e) => {
+                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`;
+              }}
             />
             <div className="bg-card rounded-lg rounded-bl-none p-3 max-w-[75%]">
               <div className="flex space-x-1">
