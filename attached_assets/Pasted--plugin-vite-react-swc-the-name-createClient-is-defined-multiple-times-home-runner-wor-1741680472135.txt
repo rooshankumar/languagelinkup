@@ -1,0 +1,90 @@
+[plugin:vite:react-swc] × the name `createClient` is defined multiple times
+    ╭─[/home/runner/workspace/src/lib/supabaseClient.ts:2:1]
+  1 │ 
+  2 │ import { createClient } from '@supabase/supabase-js';
+    ·          ──────┬─────
+    ·                ╰── previous definition of `createClient` here
+  3 │ 
+  4 │ const SUPABASE_URL = 'https://czubndssgwedqqzlsazn.supabase.co';
+  5 │ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6dWJuZHNzZ3dlZHFxemxzYXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTU1MzksImV4cCI6MjA1NzE3MTUzOX0.yZDlA181ESw0_zLM-pY3Eu3gkaneQawkm_u7_PtkQRo';
+  6 │ 
+  7 │ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  8 │   auth: {
+  9 │     persistSession: true,
+ 10 │     autoRefreshToken: true,
+ 11 │     detectSessionInUrl: true,
+ 12 │   },
+ 13 │ });
+ 14 │ 
+ 15 │ // Debug function to check auth status
+ 16 │ export const checkAuthStatus = async () => {
+ 17 │   const { data, error } = await supabase.auth.getSession();
+ 18 │   if (error) {
+ 19 │     console.error('Auth error:', error.message);
+ 20 │     return null;
+ 21 │   }
+ 22 │   return data.session;
+ 23 │ };
+ 24 │ 
+ 25 │ // Console log for debugging
+ 26 │ console.log("Supabase client initialized:", supabase);
+ 27 │ import { createClient } from '@supabase/supabase-js';
+    ·          ──────┬─────
+    ·                ╰── `createClient` redefined here
+ 28 │ 
+ 29 │ // Get environment variables
+ 30 │ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+    ╰────
+  × the name `supabase` is defined multiple times
+    ╭─[/home/runner/workspace/src/lib/supabaseClient.ts:7:1]
+  4 │ const SUPABASE_URL = 'https://czubndssgwedqqzlsazn.supabase.co';
+  5 │ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6dWJuZHNzZ3dlZHFxemxzYXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTU1MzksImV4cCI6MjA1NzE3MTUzOX0.yZDlA181ESw0_zLM-pY3Eu3gkaneQawkm_u7_PtkQRo';
+  6 │ 
+  7 │ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    ·              ────┬───
+    ·                  ╰── previous definition of `supabase` here
+  8 │   auth: {
+  9 │     persistSession: true,
+ 10 │     autoRefreshToken: true,
+ 11 │     detectSessionInUrl: true,
+ 12 │   },
+ 13 │ });
+ 14 │ 
+ 15 │ // Debug function to check auth status
+ 16 │ export const checkAuthStatus = async () => {
+ 17 │   const { data, error } = await supabase.auth.getSession();
+ 18 │   if (error) {
+ 19 │     console.error('Auth error:', error.message);
+ 20 │     return null;
+ 21 │   }
+ 22 │   return data.session;
+ 23 │ };
+ 24 │ 
+ 25 │ // Console log for debugging
+ 26 │ console.log("Supabase client initialized:", supabase);
+ 27 │ import { createClient } from '@supabase/supabase-js';
+ 28 │ 
+ 29 │ // Get environment variables
+ 30 │ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+ 31 │ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+ 32 │ 
+ 33 │ // Validate environment variables
+ 34 │ if (!supabaseUrl || !supabaseKey) {
+ 35 │   console.error('Missing Supabase environment variables. Check your .env file.');
+ 36 │ }
+ 37 │ 
+ 38 │ // Create and export the Supabase client
+ 39 │ export const supabase = createClient(supabaseUrl, supabaseKey);
+    ·              ────┬───
+    ·                  ╰── `supabase` redefined here
+ 40 │ 
+ 41 │ // Log initialization for debugging
+ 42 │ console.log('Supabase client initialized:', {
+    ╰────
+/home/runner/workspace/src/lib/supabaseClient.ts:2:1
+1  |  
+2  |  import { createClient } from '@supabase/supabase-js';
+   |            ^
+3  |  
+4  |  const SUPABASE_URL = 'https://czubndssgwedqqzlsazn.supabase.co';
+Click outside, press Esc key, or fix the code to dismiss.
