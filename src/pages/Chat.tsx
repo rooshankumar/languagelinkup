@@ -73,6 +73,19 @@ const Chat = () => {
             .single();
             
           if (userCheck) {
+            // Check if conversation already exists
+            const { data: existingConv, error: checkError } = await supabase
+              .from('conversations')
+              .select('id')
+              .or(`and(user1_id.eq.${userId},user2_id.eq.${chatId}),and(user1_id.eq.${chatId},user2_id.eq.${userId})`)
+              .single();
+              
+            if (!checkError && existingConv) {
+              // Conversation already exists, redirect to it
+              navigate(`/chat/${existingConv.id}`, { replace: true });
+              return existingConv;
+            }
+            
             // This is a user ID, create a conversation
             const { data: newConversation, error: createError } = await supabase
               .from('conversations')
