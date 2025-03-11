@@ -142,7 +142,7 @@ const handleSubmit = async () => {
       description: "Your language preferences have been saved.",
     });
 
-    navigate('/profile'); // Redirect to profile after completion
+    navigate('/community'); // Redirect to community page after completion
   } catch (error: any) {
     console.error('Error saving preferences:', error.message);
     toast({
