@@ -83,16 +83,42 @@ const handleSubmit = async () => {
   console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
 
   try {
-    // First, create a Supabase client with the user's session token to bypass RLS
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
+    // Get current user session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
       throw new Error("No active session found");
     }
     
-    // Use user's authentication to bypass RLS policies
+    // Create data object to update
+    const userData = {
+      id: userId,
+      username: username || "User",
+      email: session.user.email || '',
+      native_language: nativeLanguage,
+      learning_language: learningLanguage,
+      proficiency: proficiencyLevel,
+      last_active: new Date().toISOString(),
+      is_online: true,
+    };
+    
+    console.log("Updating user data:", userData);
+    
+    // Try direct update instead of upsert
     const { error } = await supabase
       .from('users')
-      .upsert({
+      .update(userData)
+      .eq('id', userId);
+      
+    if (error) {
+      console.error("Update error:", error);
+      // Fallback to insert if update fails
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert([userData]);
+        
+      if (insertError) throw insertError;
+    }
         id: userId,
         username: username || "User",
         email: (await supabase.auth.getUser()).data?.user?.email || '',
