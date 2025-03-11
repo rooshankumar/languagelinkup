@@ -24,3 +24,29 @@ export const checkAuthStatus = async () => {
 
 // Console log for debugging
 console.log("Supabase client initialized:", supabase);
+import { createClient } from '@supabase/supabase-js';
+
+// Get environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Validate environment variables
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables. Check your .env file.');
+}
+
+// Create and export the Supabase client
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Log initialization for debugging
+console.log('Supabase client initialized:', {
+  supabaseUrl,
+  supabaseKey,
+  // Include other non-sensitive details for debugging
+  realtimeUrl: `${supabaseUrl}/realtime/v1`,
+  authUrl: `${supabaseUrl}/auth/v1`,
+  storageUrl: `${supabaseUrl}/storage/v1`,
+  functionsUrl: `${supabaseUrl}/functions/v1`
+});
+
+export default supabase;

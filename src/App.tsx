@@ -66,6 +66,7 @@ const App = () => (
             <Route path="/chats" element={<ChatList />} />
             <Route path="/chat/:chatId" element={<Chat />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/debug/community" element={<React.lazy(() => import('./pages/DebugCommunity'))} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
