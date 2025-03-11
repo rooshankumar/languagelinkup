@@ -63,13 +63,50 @@ const Chat = () => {
           .single();
           
         if (convError) {
-          toast({
-            title: "Chat not found",
-            description: "This conversation doesn't exist or you don't have access to it.",
-            variant: "destructive",
-          });
-          navigate('/chats');
-          return;
+          console.error('Error fetching conversation:', convError);
+          
+          // Check if this is a user ID rather than a conversation ID (for backward compatibility)
+          const { data: userCheck } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', chatId)
+            .single();
+            
+          if (userCheck) {
+            // This is a user ID, create a conversation
+            const { data: newConversation, error: createError } = await supabase
+              .from('conversations')
+              .insert({
+                user1_id: userId,
+                user2_id: chatId,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .select('id, user1_id, user2_id')
+              .single();
+              
+            if (createError) {
+              toast({
+                title: "Couldn't create conversation",
+                description: "There was an error starting this chat.",
+                variant: "destructive",
+              });
+              navigate('/chats');
+              return;
+            }
+            
+            // Update URL to use conversation ID
+            navigate(`/chat/${newConversation.id}`, { replace: true });
+            return newConversation;
+          } else {
+            toast({
+              title: "Chat not found",
+              description: "This conversation doesn't exist or you don't have access to it.",
+              variant: "destructive",
+            });
+            navigate('/chats');
+            return;
+          }
         }
         
         // Determine partner ID

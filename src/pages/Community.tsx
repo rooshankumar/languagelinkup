@@ -93,12 +93,62 @@ const Community = () => {
     fetchUsers();
   }, [navigate]);
   
-  const handleStartChat = (userId: string) => {
-    // In a real app, this would create a chat or navigate to an existing one
-    console.log('Starting chat with user ID:', userId);
-    
-    // Navigate to the chat route
-    navigate(`/chat/${userId}`);
+  const handleStartChat = async (userId: string) => {
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        navigate('/auth');
+        return;
+      }
+      
+      const currentUserId = session.user.id;
+      
+      // First check if a conversation already exists between these users
+      const { data: existingConversation, error: convError } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`)
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        .single();
+      
+      if (convError && convError.code !== 'PGRST116') { // PGRST116 = not found
+        throw convError;
+      }
+      
+      if (existingConversation) {
+        // If conversation exists, navigate to it
+        navigate(`/chat/${existingConversation.id}`);
+        return;
+      }
+      
+      // Create a new conversation
+      const { data: newConversation, error: createError } = await supabase
+        .from('conversations')
+        .insert({
+          user1_id: currentUserId,
+          user2_id: userId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select('id')
+        .single();
+      
+      if (createError) {
+        throw createError;
+      }
+      
+      // Navigate to the new conversation
+      navigate(`/chat/${newConversation.id}`);
+      
+    } catch (error: any) {
+      console.error('Error starting chat:', error);
+      toast({
+        title: "Couldn't start conversation",
+        description: error.message || "Please try again later",
+        variant: "destructive",
+      });
+    }
   };
   
   // Get language name from code
