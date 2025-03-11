@@ -68,7 +68,16 @@ const Community = () => {
           throw error;
         }
         
-        setUsers(data || []);
+        console.log('Fetched users from database:', data);
+        
+        // Ensure we have complete user data
+        const filteredData = (data || []).filter(user => 
+          user.username && 
+          user.native_language && 
+          user.learning_language
+        );
+        
+        setUsers(filteredData);
       } catch (error: any) {
         console.error('Error fetching users:', error.message);
         toast({
@@ -94,6 +103,12 @@ const Community = () => {
   
   // Get language name from code
   const getLanguageName = (code: string): string => {
+    // If code is already a full language name, return it
+    if (LANGUAGES_FILTER.includes(code)) {
+      return code;
+    }
+    
+    // Otherwise, try to find the language by id
     const language = LANGUAGES.find(lang => lang.id === code);
     return language ? language.name : code;
   };
@@ -214,9 +229,12 @@ const Community = () => {
                 <div className="flex items-center gap-3 mb-3">
                   <div className="relative">
                     <img 
-                      src={user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=random`} 
+                      src={user.profile_picture ? user.profile_picture : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=random`} 
                       alt={user.username}
-                      className="w-12 h-12 rounded-full" 
+                      className="w-12 h-12 rounded-full object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=random`;
+                      }}
                     />
                     {user.is_online && (
                       <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-card"></span>

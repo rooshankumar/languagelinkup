@@ -145,20 +145,39 @@ const handleSubmit = async () => {
       const fileName = `${userId}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `profile_pictures/${fileName}`;
       
+      console.log("Uploading profile picture:", filePath);
+      
+      // Check if bucket exists, create if needed
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'user_uploads');
+      
+      if (!bucketExists) {
+        console.log("Creating user_uploads bucket");
+        await supabase.storage.createBucket('user_uploads', {
+          public: true
+        });
+      }
+      
       const { error: uploadError, data } = await supabase.storage
         .from('user_uploads')
-        .upload(filePath, profilePicture);
+        .upload(filePath, profilePicture, {
+          cacheControl: '3600',
+          upsert: true
+        });
         
       if (uploadError) {
         console.error("Error uploading profile picture:", uploadError);
         throw uploadError;
       }
       
+      console.log("Upload successful:", data);
+      
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('user_uploads')
         .getPublicUrl(filePath);
-        
+      
+      console.log("Profile picture public URL:", publicUrl);
       profilePictureURL = publicUrl;
     }
 
