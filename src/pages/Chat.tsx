@@ -58,7 +58,7 @@ const Chat = () => {
         // Get conversation
         const { data: conversation, error: convError } = await supabase
           .from('conversations')
-          .select('user1_id, user2_id')
+          .select('user1_id,user2_id')
           .eq('id', chatId)
           .single();
           

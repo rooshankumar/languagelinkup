@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, MessageCircle } from 'lucide-react';
@@ -30,22 +29,22 @@ const ChatList = () => {
   const [chats, setChats] = useState<ChatPreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchUserAndChats = async () => {
       try {
         setIsLoading(true);
-        
+
         // Get current user
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           navigate('/auth');
           return;
         }
-        
+
         const userId = session.user.id;
         setCurrentUserId(userId);
-        
+
         // Fetch conversations for this user
         const { data: conversations, error: conversationsError } = await supabase
           .from('conversations')
@@ -63,28 +62,28 @@ const ChatList = () => {
           `)
           .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
           .order('updated_at', { ascending: false });
-        
+
         if (conversationsError) {
           throw conversationsError;
         }
-        
+
         // Process each conversation to get the partner user info
         const chatPromises = conversations.map(async (conv) => {
           // Determine the partner's ID
           const partnerId = conv.user1_id === userId ? conv.user2_id : conv.user1_id;
-          
+
           // Get partner details
           const { data: partnerData, error: partnerError } = await supabase
             .from('users')
             .select('id, username, profile_picture, native_language, is_online')
             .eq('id', partnerId)
             .single();
-            
+
           if (partnerError) {
             console.error('Error fetching partner:', partnerError);
             return null;
           }
-          
+
           // Get latest message
           let lastMessage = {
             text: 'Start a conversation',
@@ -92,29 +91,29 @@ const ChatList = () => {
             isRead: true,
             senderId: ''
           };
-          
+
           let unreadCount = 0;
-          
+
           if (conv.messages && conv.messages.length > 0) {
             // Sort messages by date (newest first)
             const sortedMessages = [...conv.messages].sort(
               (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             );
-            
+
             const latestMessage = sortedMessages[0];
             lastMessage = {
-              text: latestMessage.message || '', // Changed from content to message
+              text: latestMessage.content || '',
               timestamp: new Date(latestMessage.created_at),
               isRead: latestMessage.is_read,
               senderId: latestMessage.sender_id
             };
-            
+
             // Count unread messages
             unreadCount = sortedMessages.filter(m => 
               m.sender_id !== userId && !m.is_read
             ).length;
           }
-          
+
           return {
             id: conv.id,
             partner: {
@@ -128,7 +127,7 @@ const ChatList = () => {
             unreadCount
           };
         });
-        
+
         // Resolve all promises
         const chatResults = await Promise.all(chatPromises);
         const validChats = chatResults.filter(chat => chat !== null) as ChatPreview[];
@@ -144,9 +143,9 @@ const ChatList = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchUserAndChats();
-    
+
     // Subscribe to realtime updates for new messages
     const subscription = supabase
       .channel('schema-db-changes')
@@ -159,18 +158,18 @@ const ChatList = () => {
         fetchUserAndChats();
       })
       .subscribe();
-      
+
     return () => {
       subscription.unsubscribe();
     };
   }, [navigate]);
-  
+
   const formatTime = (date: Date) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date >= today) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (date >= yesterday) {
@@ -179,11 +178,11 @@ const ChatList = () => {
       return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
   };
-  
+
   const filteredChats = chats.filter(chat => 
     chat.partner.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
+
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto h-full flex flex-col items-center justify-center">
@@ -192,7 +191,7 @@ const ChatList = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="max-w-3xl mx-auto h-full">
       <div className="p-4 border-b">
@@ -206,7 +205,7 @@ const ChatList = () => {
             New Chat
           </Button>
         </div>
-        
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <input
@@ -218,7 +217,7 @@ const ChatList = () => {
           />
         </div>
       </div>
-      
+
       <div className="overflow-y-auto h-[calc(100vh-10rem)]">
         {filteredChats.length > 0 ? (
           filteredChats.map((chat) => (
@@ -241,7 +240,7 @@ const ChatList = () => {
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
                   )}
                 </div>
-                
+
                 <div className="ml-3 flex-1">
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-medium">{chat.partner.name}</h3>
@@ -249,20 +248,20 @@ const ChatList = () => {
                       {formatTime(chat.lastMessage.timestamp)}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-1">
                     <p className={`text-sm truncate ${!chat.lastMessage.isRead && chat.lastMessage.senderId !== currentUserId ? 'font-medium' : 'text-muted-foreground'}`}>
                       {chat.lastMessage.senderId === currentUserId ? 'You: ' : ''}
                       {chat.lastMessage.text}
                     </p>
-                    
+
                     {chat.unreadCount > 0 && (
                       <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {chat.unreadCount}
                       </span>
                     )}
                   </div>
-                  
+
                   <p className="text-xs text-muted-foreground mt-1">
                     Speaking {chat.partner.language}
                   </p>
