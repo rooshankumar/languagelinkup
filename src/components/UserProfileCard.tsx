@@ -142,4 +142,4 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
   );
 };
 
-export default UserProfileCardd;
+export default UserProfileCard;
