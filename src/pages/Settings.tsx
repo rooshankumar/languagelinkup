@@ -1,22 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, Settings as SettingsIcon, Moon, Sun, Bell } from 'lucide-react';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
+import { useTheme } from '@/hooks/useTheme';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
-  
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    toast({
-      title: `${!darkMode ? 'Dark' : 'Light'} mode activated`,
-      description: `App theme has been changed to ${!darkMode ? 'dark' : 'light'} mode`,
-    });
-  };
   
   const toggleNotifications = () => {
     setNotifications(!notifications);
@@ -52,11 +45,11 @@ const Settings = () => {
     {
       id: 'theme',
       name: 'Dark Mode',
-      icon: darkMode ? Sun : Moon,
+      icon: theme === 'dark' ? Sun : Moon,
       description: 'Toggle between light and dark mode',
       toggle: true,
-      state: darkMode,
-      action: toggleDarkMode,
+      state: theme === 'dark',
+      action: toggleTheme,
     },
     {
       id: 'notifications',
