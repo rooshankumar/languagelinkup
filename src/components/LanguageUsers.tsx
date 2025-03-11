@@ -93,6 +93,8 @@ const LanguageUsers = () => {
         .select('id')
         .or(`and(user1_id.eq.${currentUserId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${currentUserId})`)
         .maybeSingle();
+
+      console.log('Existing conversation check:', existingConv);
         
       if (existingConv) {
         navigate(`/chat/${existingConv.id}`);

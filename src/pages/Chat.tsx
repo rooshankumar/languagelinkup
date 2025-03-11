@@ -90,7 +90,7 @@ const Chat = () => {
             const { data: existingConv, error: checkError } = await supabase
               .from('conversations')
               .select('id')
-              .or(`user1_id.eq.${userId}.and.user2_id.eq.${chatId},user1_id.eq.${chatId}.and.user2_id.eq.${userId}`)
+              .or(`and(user1_id.eq.${userId},user2_id.eq.${chatId}),and(user1_id.eq.${chatId},user2_id.eq.${userId})`)
               .maybeSingle();
 
             if (checkError) {
