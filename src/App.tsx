@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -66,7 +66,9 @@ const App = () => (
             <Route path="/chats" element={<ChatList />} />
             <Route path="/chat/:chatId" element={<Chat />} />
             <Route path="/community" element={<Community />} />
-            <Route path="/debug/community" element={<React.lazy(() => import('./pages/DebugCommunity'))} />
+            <Route path="/debug/community" element={<React.Suspense fallback={<div>Loading...</div>}>
+              <React.lazy(() => import('./pages/DebugCommunity'))} />
+            </React.Suspense>} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
