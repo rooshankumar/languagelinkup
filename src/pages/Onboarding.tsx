@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
@@ -6,46 +5,6 @@ import { toast } from '@/hooks/use-toast';
 import { Languages, ArrowRight, Check } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
 
-// Function to ensure user_languages table exists
-const ensureUserLanguagesTable = async () => {
-  // First check if the table exists
-  const { error: checkError } = await supabase
-    .from('user_languages')
-    .select('*')
-    .limit(1);
-  
-  // If we get a 404, the table likely doesn't exist
-  if (checkError && checkError.code === '42P01') {
-    console.log('Table does not exist, creating user_languages table');
-    
-    // Run SQL to create the table
-    const { error: createError } = await supabase.rpc('create_user_languages_table');
-    
-    if (createError) {
-      console.error('Error creating table:', createError);
-      
-      // Alternative approach - create using raw SQL
-      const { error: sqlError } = await supabase.sql`
-        CREATE TABLE IF NOT EXISTS user_languages (
-          id SERIAL PRIMARY KEY,
-          user_id UUID NOT NULL REFERENCES auth.users(id),
-          native_language VARCHAR(10) NOT NULL,
-          learning_language VARCHAR(10) NOT NULL,
-          proficiency_level VARCHAR(20) NOT NULL,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(user_id)
-        );
-      `;
-      
-      if (sqlError) {
-        console.error('Error creating table with raw SQL:', sqlError);
-        return false;
-      }
-    }
-  }
-  
-  return true;
-};
 
 // Sample language data
 const LANGUAGES = [
@@ -84,7 +43,7 @@ const Onboarding = () => {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session?.user) {
         // Redirect to auth if not logged in
         toast({
@@ -95,10 +54,10 @@ const Onboarding = () => {
         navigate('/auth');
         return;
       }
-      
+
       setUserId(session.user.id);
     };
-    
+
     checkAuth();
   }, [navigate]);
 
@@ -112,38 +71,28 @@ const Onboarding = () => {
       navigate('/auth');
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      // Ensure the user_languages table exists before trying to insert data
-      const tableExists = await ensureUserLanguagesTable();
-      
-      if (!tableExists) {
-        throw new Error("Could not create or access user_languages table");
-      }
-      
-      // Save language preferences to Supabase
+      // Save language preferences to the existing users table
       const { error } = await supabase
-        .from('user_languages')
-        .upsert({
-          user_id: userId,
+        .from('users')
+        .update({
           native_language: nativeLanguage,
           learning_language: learningLanguage,
-          proficiency_level: proficiencyLevel,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-        
-      if (error) {
-        console.error('Supabase upsert error:', error);
-        throw new Error(`Database error: ${error.message || error.code || 'Unknown error'}`);
-      }
-      
+          proficiency: proficiencyLevel,
+          last_active: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
       toast({
         title: "Profile completed!",
         description: "Your language preferences have been saved.",
       });
-      
+
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Error saving preferences:', error.message);
@@ -164,7 +113,7 @@ const Onboarding = () => {
           <Languages className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">MyLanguage</h1>
         </div>
-        
+
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border/40">
           <div className="flex justify-between mb-8">
             {[1, 2, 3].map((i) => (
@@ -182,12 +131,12 @@ const Onboarding = () => {
               </div>
             ))}
           </div>
-          
+
           {step === 1 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">What's your native language?</h2>
               <p className="text-muted-foreground">Select the language you speak fluently.</p>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
                 {LANGUAGES.map((language) => (
                   <button
@@ -204,7 +153,7 @@ const Onboarding = () => {
                   </button>
                 ))}
               </div>
-              
+
               <Button 
                 className="w-full mt-6" 
                 onClick={() => setStep(2)}
@@ -216,12 +165,12 @@ const Onboarding = () => {
               </Button>
             </div>
           )}
-          
+
           {step === 2 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">What language do you want to learn?</h2>
               <p className="text-muted-foreground">Select a language you want to practice.</p>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
                 {LANGUAGES.filter(lang => lang.id !== nativeLanguage).map((language) => (
                   <button
@@ -238,7 +187,7 @@ const Onboarding = () => {
                   </button>
                 ))}
               </div>
-              
+
               <div className="flex justify-between">
                 <Button 
                   variant="outline" 
@@ -257,14 +206,14 @@ const Onboarding = () => {
               </div>
             </div>
           )}
-          
+
           {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">What's your proficiency level?</h2>
               <p className="text-muted-foreground">Select your current level in {
                 LANGUAGES.find(l => l.id === learningLanguage)?.name
               }.</p>
-              
+
               <div className="space-y-3 mt-4">
                 {PROFICIENCY_LEVELS.map((level) => (
                   <button
@@ -286,7 +235,7 @@ const Onboarding = () => {
                   </button>
                 ))}
               </div>
-              
+
               <div className="flex justify-between">
                 <Button 
                   variant="outline" 

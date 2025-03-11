@@ -25,25 +25,10 @@ import { createClient } from '@supabase/supabase-js'
 // This would be replaced with your actual Google Analytics tracking ID
 initializeAnalytics("G-XXXXXXXXXX");
 
-// Supabase client initialization (replace with your actual details)
-const supabase = createClient('czubndssgwedqqzlsazn.supabase.co', 'YOUR_SUPABASE_ANON_KEY');
+// Using supabase client from supabaseClient.ts
+import { supabase } from './lib/supabaseClient';
 
-// Function to create the user_languages table if it doesn't exist
-async function setupDatabase() {
-  try {
-    const { data, error } = await supabase.rpc('create_user_languages_table'); // Assumes you have an rpc function for this
-    if (error) {
-      console.error("Error setting up database:", error);
-      throw error; // Re-throw the error to be handled by the caller.
-    } else {
-      console.log("Database setup successful:", data);
-    }
-
-  } catch (error) {
-    console.error("Failed to set up the database:", error);
-    // Handle the error appropriately (e.g., show an error message to the user).
-  }
-}
+// No need for special setup since we're using the existing users table
 
 
 // Page tracker component to handle analytics
@@ -96,9 +81,6 @@ const App = () => (
   </QueryClientProvider>
 );
 
-useEffect(() => {
-    // Run database setup on app initialization
-    setupDatabase().catch(console.error);
-  }, []);
+// No additional setup needed
 
 export default App;
