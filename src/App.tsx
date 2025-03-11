@@ -68,7 +68,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/debug/community" element={
               <React.Suspense fallback={<div>Loading...</div>}>
-                {React.createElement(React.lazy(() => import('./pages/DebugCommunity')))}
+                <React.lazy(() => import('./pages/DebugCommunity')) />
               </React.Suspense>
             } />
             <Route path="/profile" element={<Profile />} />
