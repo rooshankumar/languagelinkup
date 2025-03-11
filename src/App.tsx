@@ -32,12 +32,12 @@ const UserProfileProvider = ({ children }) => {
   useEffect(() => {
     // Fetch user profile data on mount (replace with your actual fetching logic)
     const fetchUserProfile = async () => {
-      const { data, error } = await supabase.auth.user();
-      if (data) {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (user) {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', data.id)
+          .eq('user_id', user.id)
           .single();
         if (profileData) setUserProfile(profileData);
         else console.error("Profile not found:", profileError);
@@ -49,6 +49,8 @@ const UserProfileProvider = ({ children }) => {
 
 
   const updateUserProfile = async (updatedProfile) => {
+    if (!userProfile) return;
+    
     const { data, error } = await supabase
       .from('profiles')
       .update(updatedProfile)
