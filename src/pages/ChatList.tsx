@@ -103,7 +103,7 @@ const ChatList = () => {
             
             const latestMessage = sortedMessages[0];
             lastMessage = {
-              text: latestMessage.content,
+              text: latestMessage.message || '', // Changed from content to message
               timestamp: new Date(latestMessage.created_at),
               isRead: latestMessage.is_read,
               senderId: latestMessage.sender_id

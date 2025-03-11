@@ -156,6 +156,8 @@ const Chat = () => {
           return;
         }
         
+        console.log('Messages data:', messagesData);
+        
         // Mark unread messages as read
         const unreadMessages = messagesData.filter(
           msg => msg.sender_id !== userId && !msg.is_read
@@ -174,7 +176,7 @@ const Chat = () => {
         const formattedMessages = messagesData.map(msg => ({
           id: msg.id,
           senderId: msg.sender_id,
-          text: msg.content,
+          text: msg.message || '', // Changed from content to message
           timestamp: new Date(msg.created_at),
           isRead: msg.is_read
         }));
@@ -218,7 +220,7 @@ const Chat = () => {
           setMessages(prev => [...prev, {
             id: newMsg.id,
             senderId: newMsg.sender_id,
-            text: newMsg.content,
+            text: newMsg.message || '', // Changed from content to message
             timestamp: new Date(newMsg.created_at),
             isRead: newMsg.sender_id === currentUserId ? false : true
           }]);
@@ -247,7 +249,7 @@ const Chat = () => {
         .insert({
           conversation_id: chatId,
           sender_id: currentUserId,
-          content: newMessage,
+          message: newMessage, // Changed from content to message
           is_read: false
         })
         .select();
