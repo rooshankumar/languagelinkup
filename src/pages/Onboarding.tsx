@@ -83,22 +83,24 @@ const Onboarding = () => {
     console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
 
     try {
+      // Get current user email
+      const { data: userData } = await supabase.auth.getUser();
+      const userEmail = userData?.user?.email || '';
+      
       const { error } = await supabase
         .from('users')
         .upsert([
           {
             id: userId,
-            username: username || "User", // Use existing username
-            email: (await supabase.auth.getUser()).data?.user?.email || '',
+            username: username || "User",
+            email: userEmail,
             native_language: nativeLanguage,
             learning_language: learningLanguage,
             proficiency: proficiencyLevel,
             last_active: new Date().toISOString(),
             is_online: true,
           }
-        ], { onConflict: ['id'] }) // Prevent duplicate inserts
-
-        .select(); // Ensures Supabase returns the correct response
+        ], { onConflict: 'id' }) // Fix onConflict parameter format
 
       if (error) throw error;
 
