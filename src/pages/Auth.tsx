@@ -1,105 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import { toast } from '@/hooks/use-toast';
 import { Languages } from 'lucide-react';
 import { supabase } from "../lib/supabaseClient"; // Import Supabase client
 
+// Auth Context
+const AuthContext = createContext(null);
+
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === null) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const session = supabase.auth.session();
+    setUser(session?.user);
+    setLoading(false);
+    const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user);
+    });
+    return () => {
+      authListener?.unsubscribe();
+    }
+  }, []);
+
+
+  const signIn = async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  };
+
+  const signUp = async (email, password) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, signIn, signUp, signOut, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, signIn, signUp, loading: authLoading } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  const handleAuth = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
 
     try {
       if (isLogin) {
-        // 🔐 LOGIN USER WITH SUPABASE
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-        if (!data.user) throw new Error("Authentication failed - no user data returned");
-
-        // ✅ Check if user exists in the database
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (userError || !userData || !userData.native_language || !userData.learning_language) {
-          console.warn("User data incomplete, redirecting to onboarding...");
-          navigate('/onboarding'); // Redirect if user data is missing or incomplete
-          return;
-        }
-
-        toast({
-          title: "Logged in successfully",
-          description: `Welcome back to MyLanguage, ${data.user.email}!`,
-        });
-
-        navigate('/community'); // ✅ Go directly to community
-
+        // Login logic
+        await signIn(email, password);
+        navigate('/dashboard');
       } else {
-        // ✨ SIGN UP USER WITH SUPABASE
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { username: name, full_name: name }, // Store name in metadata
-          },
-        });
-
-        if (error) throw error;
-        if (!data.user) throw new Error("Account creation failed - no user data returned");
-
-        // ✅ Insert user data into 'users' table on signup
-        const { error: insertError } = await supabase.from('users').insert([
-          {
-            id: data.user.id,  // Ensure the ID matches the Supabase Auth UUID
-            username: name,
-            email,
-            native_language: null,  // Will be set in onboarding
-            learning_language: null,  // Will be set in onboarding
-            proficiency: null,
-            bio: null,
-            avatar: null,
-            dob: null,
-            profile_picture: null,
-            last_active: new Date().toISOString(),
-            is_online: true,
-          }
-        ]);
-        
-        if (insertError) {
-          console.error('Error inserting user data:', insertError.message);
-          // Continue anyway as the user might have been created in Auth but not yet in the users table
-        }
-
-        toast({
-          title: "Account created successfully",
-          description: "Welcome to MyLanguage! Complete onboarding to get started.",
-        });
-
-        navigate('/onboarding'); // ✅ Ensure new users go to onboarding
+        // Signup logic
+        await signUp(email, password);
+        setIsLogin(true);
       }
-    } catch (error: any) {
-      console.error('Authentication error:', error.message);
+    } catch (error) {
+      console.error('Authentication error:', error);
       toast({
-        title: "Authentication failed",
-        description: error.message || "Please try again.",
+        title: "Authentication error",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -116,24 +110,7 @@ const Auth = () => {
             {isLogin ? 'Welcome Back' : 'Join MyLanguage'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2 rounded-md border border-input bg-background"
-                  placeholder="Enter your name"
-                  required={!isLogin}
-                />
-              </div>
-            )}
-
+          <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium">
                 Email Address
@@ -167,7 +144,7 @@ const Auth = () => {
             <Button 
               type="submit" 
               className="w-full mt-6" 
-              isLoading={isLoading}
+              isLoading={loading || authLoading}
             >
               {isLogin ? 'Sign In' : 'Create Account'}
             </Button>
@@ -187,4 +164,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export { Auth, AuthProvider };

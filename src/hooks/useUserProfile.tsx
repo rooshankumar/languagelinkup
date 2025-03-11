@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserProfileData {
   id: string;
@@ -30,22 +31,14 @@ const UserProfileContext = createContext<UserProfileContextType | undefined>(und
 export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user: authUser, session } = useAuth();
 
   const fetchUserProfile = async (): Promise<void> => {
     setLoading(true);
     try {
-      // Get current user
-      const { data: authData, error: authError } = await supabase.auth.getSession();
-
-      if (authError) {
-        console.log('Authentication error:', authError);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      if (!authData.session) {
-        console.log('No active session');
+      // Check if we have an authenticated user
+      if (!authUser || !session) {
+        console.log('No authenticated user');
         setUser(null);
         setLoading(false);
         return;
@@ -55,7 +48,7 @@ export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ childre
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('id', authData.session.user.id)
+        .eq('id', authUser.id)
         .single();
 
       if (error) {

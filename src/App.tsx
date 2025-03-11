@@ -13,7 +13,7 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Blog from "./pages/Blog";
-import Auth from "./pages/Auth";
+import Auth from "./pages/Auth"; // This is the login page
 import Onboarding from "./pages/Onboarding";
 import Legal from "./pages/Legal";
 import AppLayout from "./components/AppLayout";
@@ -34,23 +34,23 @@ const UserProfileProvider = ({ children }) => {
     const fetchUserProfile = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
-        
+
         if (error) {
           console.log("Authentication error:", error);
           return;
         }
-        
+
         if (!user) {
           console.log("No authenticated user found");
           return;
         }
-        
+
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', user.id)
           .single();
-          
+
         if (profileData) {
           setUserProfile(profileData);
         } else if (profileError) {
@@ -67,7 +67,7 @@ const UserProfileProvider = ({ children }) => {
 
   const updateUserProfile = async (updatedProfile) => {
     if (!userProfile) return;
-    
+
     const { data, error } = await supabase
       .from('profiles')
       .update(updatedProfile)
@@ -102,25 +102,25 @@ const PageTracker = () => {
 
 const queryClient = new QueryClient();
 
+const RequireAuth = ({ children }) => {
+  const { userProfile } = useUserProfile();
+  if (!userProfile) {
+    return <Navigate to="/auth" replace />;
+  }
+  return children;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <UserProfileProvider> {/* Added UserProfileProvider */}
+    <UserProfileProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <PageTracker />
           <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<Blog />} />
-            <Route path="/legal/:page" element={<Legal />} />
-
-            {/* App routes with layout */}
-            <Route element={<AppLayout />}>
+            <Route path="/auth" element={<Auth />} /> {/* Added Auth route */}
+            <Route element={<RequireAuth><AppLayout /></RequireAuth>}> {/* Protected routes */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chats" element={<ChatList />} />
               <Route path="/chat/:chatId" element={<Chat />} />
@@ -133,16 +133,16 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
-
-            {/* Redirect /chats to ensure it's the main message page */}
-            <Route path="/messages" element={<Navigate to="/chats" replace />} />
-
-            {/* Catch-all route */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} /> {/* Redirect to dashboard if authenticated */}
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<Blog />} />
+            <Route path="/legal/:page" element={<Legal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </UserProfileProvider> {/* Closed UserProfileProvider */}
+    </UserProfileProvider>
   </QueryClientProvider>
 );
 
