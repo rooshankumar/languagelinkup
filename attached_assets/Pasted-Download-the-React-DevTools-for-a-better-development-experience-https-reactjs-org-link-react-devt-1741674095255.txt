@@ -1,0 +1,31 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+supabaseClient.ts:26 Supabase client initialized: SupabaseClient
+analytics.ts:14 Analytics initialized with tracking ID: G-XXXXXXXXXX
+analytics.ts:24 Page view tracked: /onboarding
+Onboarding.tsx:83 Submitting data: Object
+Onboarding.tsx:105 Updating user data: Object
+analytics.ts:24 Page view tracked: /profile
+czubndssgwedqqzlsazn.supabase.co/rest/v1/users?select=id%2Cusername%2Cemail%2Cnative_language%2Clearning_language%2Cproficiency%2Cbio%2Cavatar%2Clast_active%2Cis_online&id=eq.686bf35c-ef4c-4ce3-9352-a31621ce3eb0:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+Profile.tsx:39 Error fetching profile: JSON object requested, multiple (or no) rows returned
+fetchUserData @ Profile.tsx:39Understand this errorAI
+chunk-FJ2A54M7.js?v=a6c67995:521 Warning: Cannot update a component (`Toaster`) while rendering a different component (`Profile`). To locate the bad setState() call inside `Profile`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    at Profile (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/src/pages/Profile.tsx?t=1741673856673:18:37)
+    at RenderedRoute (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=a6c67995:4069:5)
+    at Outlet (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=a6c67995:4444:26)
+    at div
+    at main
+    at div
+    at AppLayout
+    at RenderedRoute (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=a6c67995:4069:5)
+    at Routes (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=a6c67995:4508:5)
+    at Router (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=a6c67995:4451:15)
+    at BrowserRouter (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=a6c67995:5196:5)
+    at Provider (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/chunk-J2Q5LCOX.js?v=a6c67995:130:15)
+    at TooltipProvider (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=a6c67995:2291:5)
+    at QueryClientProvider (https://8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev:3001/node_modules/.vite/deps/@tanstack_react-query.js?v=a6c67995:2794:3)
+    at App
+printWarning @ chunk-FJ2A54M7.js?v=a6c67995:521Understand this errorAI
+analytics.ts:24 Page view tracked: /onboarding
