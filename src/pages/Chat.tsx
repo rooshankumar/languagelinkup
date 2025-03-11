@@ -87,11 +87,15 @@ const Chat = () => {
           if (userCheck) {
             console.log('Found user, checking for existing conversation');
             // Check if conversation already exists
+            // Fixed query using proper supabase filter syntax
             const { data: existingConv, error: checkError } = await supabase
               .from('conversations')
               .select('id')
-              .or(`and(user1_id.eq.${userId},user2_id.eq.${chatId}),and(user1_id.eq.${chatId},user2_id.eq.${userId})`)
+              .or(`user1_id.eq.${userId},user2_id.eq.${chatId}`)
+              .or(`user1_id.eq.${chatId},user2_id.eq.${userId}`)
               .maybeSingle();
+              
+            console.log('Conversation check results:', existingConv, checkError);
 
             if (checkError) {
               console.error('Error checking for existing conversation:', checkError);

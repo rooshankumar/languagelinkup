@@ -87,13 +87,18 @@ const LanguageUsers = () => {
       
       const currentUserId = currentUser.user.id;
       
-      // Check if conversation exists
-      const { data: existingConv } = await supabase
+      // Check if conversation exists - using proper parameter format
+      const { data: existingConv, error: convCheckError } = await supabase
         .from('conversations')
         .select('id')
-        .or(`and(user1_id.eq.${currentUserId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${currentUserId})`)
+        .or(`user1_id.eq.${currentUserId},user2_id.eq.${userId}`)
+        .or(`user1_id.eq.${userId},user2_id.eq.${currentUserId}`)
         .maybeSingle();
 
+      if (convCheckError) {
+        console.error('Error checking existing conversation:', convCheckError);
+      }
+        
       console.log('Existing conversation check:', existingConv);
         
       if (existingConv) {
@@ -101,14 +106,21 @@ const LanguageUsers = () => {
         return;
       }
       
-      // Create new conversation
+      // Create new conversation - properly formatted
       const { data: newConversation, error: createError } = await supabase
         .from('conversations')
         .insert([
-          { user1_id: currentUserId, user2_id: userId }
+          { 
+            user1_id: currentUserId, 
+            user2_id: userId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
         ])
         .select('id')
         .single();
+        
+      console.log('New conversation creation result:', newConversation, createError);
         
       if (createError) {
         throw createError;
