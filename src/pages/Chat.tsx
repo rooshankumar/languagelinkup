@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@/components/Button';
@@ -42,27 +41,27 @@ const Chat = () => {
           navigate('/chats');
           return;
         }
-        
+
         setIsLoading(true);
-        
+
         // Get current user
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           navigate('/auth');
           return;
         }
-        
+
         const userId = session.user.id;
         setCurrentUserId(userId);
-        
+
         // Get conversation
         let conversation;
         let convError;
-        
+
         // First, check if chatId is a valid UUID (conversation ID)
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         const isUUID = uuidPattern.test(chatId);
-        
+
         if (isUUID) {
           // Try to fetch conversation by ID
           const { data, error } = await supabase
@@ -70,21 +69,21 @@ const Chat = () => {
             .select('id, user1_id, user2_id')
             .eq('id', chatId)
             .single();
-            
+
           conversation = data;
           convError = error;
         }
-          
+
         if (!isUUID || convError) {
           console.log('Looking up as user ID instead of conversation ID');
-          
+
           // Check if this is a user ID rather than a conversation ID
           const { data: userCheck } = await supabase
             .from('users')
             .select('id')
             .eq('id', chatId)
             .single();
-            
+
           if (userCheck) {
             console.log('Found user, checking for existing conversation');
             // Check if conversation already exists
@@ -93,14 +92,25 @@ const Chat = () => {
               .select('id')
               .or(`user1_id.eq.${userId}.and.user2_id.eq.${chatId},user1_id.eq.${chatId}.and.user2_id.eq.${userId}`)
               .maybeSingle();
-              
-            if (!checkError && existingConv) {
+
+            if (checkError) {
+              console.error('Error checking for existing conversation:', checkError);
+              toast({
+                title: "Couldn't load conversation",
+                description: "There was an error loading this conversation.",
+                variant: "destructive",
+              });
+              navigate('/chats');
+              return;
+            }
+
+            if (existingConv) {
               console.log('Existing conversation found:', existingConv);
               // Conversation already exists, redirect to it
               navigate(`/chat/${existingConv.id}`, { replace: true });
               return existingConv;
             }
-            
+
             console.log('Creating new conversation');
             // This is a user ID, create a conversation
             const { data: newConversation, error: createError } = await supabase
@@ -113,7 +123,7 @@ const Chat = () => {
               })
               .select('id, user1_id, user2_id')
               .single();
-              
+
             if (createError) {
               console.error('Error creating conversation:', createError);
               toast({
@@ -124,7 +134,7 @@ const Chat = () => {
               navigate('/chats');
               return;
             }
-            
+
             // Update URL to use conversation ID
             navigate(`/chat/${newConversation.id}`, { replace: true });
             return newConversation;
@@ -138,17 +148,17 @@ const Chat = () => {
             return;
           }
         }
-        
+
         // Determine partner ID
         const partnerId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id;
-        
+
         // Get partner info
         const { data: partnerData, error: partnerError } = await supabase
           .from('users')
           .select('id, username, profile_picture, native_language, learning_language, is_online, last_active')
           .eq('id', partnerId)
           .single();
-          
+
         if (partnerError) {
           console.error('Error fetching partner:', partnerError);
           toast({
@@ -159,7 +169,7 @@ const Chat = () => {
           navigate('/chats');
           return;
         }
-        
+
         setPartner({
           id: partnerData.id,
           name: partnerData.username,
@@ -168,14 +178,14 @@ const Chat = () => {
           online: partnerData.is_online,
           lastActive: new Date(partnerData.last_active || Date.now())
         });
-        
+
         // Get messages
         const { data: messagesData, error: messagesError } = await supabase
           .from('messages')
           .select('id, sender_id, content, message, created_at, is_read, conversation_id')
           .eq('conversation_id', chatId)
           .order('created_at', { ascending: true });
-          
+
         if (messagesError) {
           console.error('Error fetching messages:', messagesError);
           toast({
@@ -185,14 +195,14 @@ const Chat = () => {
           });
           return;
         }
-        
+
         console.log('Messages data:', messagesData);
-        
+
         // Mark unread messages as read
         const unreadMessages = messagesData.filter(
           msg => msg.sender_id !== userId && !msg.is_read
         );
-        
+
         if (unreadMessages.length > 0) {
           await Promise.all(unreadMessages.map(msg => 
             supabase
@@ -201,7 +211,7 @@ const Chat = () => {
               .eq('id', msg.id)
           ));
         }
-        
+
         // Format messages for display
         const formattedMessages = messagesData.map(msg => ({
           id: msg.id,
@@ -210,7 +220,7 @@ const Chat = () => {
           timestamp: new Date(msg.created_at),
           isRead: msg.is_read
         }));
-        
+
         setMessages(formattedMessages);
       } catch (error: any) {
         console.error('Error in chat setup:', error);
@@ -223,9 +233,9 @@ const Chat = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchChatData();
-    
+
     // Set up real-time message subscription
     if (chatId) {
       const subscription = supabase
@@ -237,7 +247,7 @@ const Chat = () => {
           filter: `conversation_id=eq.${chatId}`
         }, async (payload) => {
           const newMsg = payload.new;
-          
+
           // If this is from the partner, mark as read
           if (newMsg.sender_id !== currentUserId) {
             await supabase
@@ -245,7 +255,7 @@ const Chat = () => {
               .update({ is_read: true })
               .eq('id', newMsg.id);
           }
-          
+
           // Add to messages
           setMessages(prev => [...prev, {
             id: newMsg.id,
@@ -256,7 +266,7 @@ const Chat = () => {
           }]);
         })
         .subscribe();
-        
+
       return () => {
         subscription.unsubscribe();
       };
@@ -283,18 +293,18 @@ const Chat = () => {
           is_read: false
         })
         .select();
-        
+
       if (error) throw error;
-      
+
       // Update conversation timestamp
       await supabase
         .from('conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', chatId);
-      
+
       // Clear message input
       setNewMessage('');
-      
+
       // Simulate partner typing for demo purposes
       // In a real app, you might use a separate channel for typing indicators
       if (partner?.online) {
@@ -319,7 +329,7 @@ const Chat = () => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
       return 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -356,7 +366,7 @@ const Chat = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          
+
           <div className="flex items-center">
             <div className="relative">
               <img
@@ -369,7 +379,7 @@ const Chat = () => {
               />
               <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card ${partner.online ? 'bg-green-500' : 'bg-gray-400'}`}></span>
             </div>
-            
+
             <div className="ml-3">
               <h2 className="font-semibold">{partner.name}</h2>
               <p className="text-xs text-muted-foreground">
@@ -385,7 +395,7 @@ const Chat = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <button className="p-2 rounded-full hover:bg-muted transition-colors" aria-label="Audio call">
             <Phone className="h-5 w-5" />
@@ -409,12 +419,12 @@ const Chat = () => {
                 {formatDate(messages[0]?.timestamp || new Date())}
               </span>
             </div>
-            
+
             {messages.map((message, index) => {
               const isCurrentUser = message.senderId === currentUserId;
               const showDateSeparator = index > 0 && 
                 formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
-                
+
               return (
                 <React.Fragment key={message.id}>
                   {showDateSeparator && (
@@ -424,7 +434,7 @@ const Chat = () => {
                       </span>
                     </div>
                   )}
-                  
+
                   <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
                     {!isCurrentUser && (
                       <img 
@@ -436,7 +446,7 @@ const Chat = () => {
                         }}
                       />
                     )}
-                    
+
                     <div
                       className={`max-w-[75%] rounded-lg p-3 ${
                         isCurrentUser
@@ -462,7 +472,7 @@ const Chat = () => {
             </div>
           </div>
         )}
-        
+
         {isTyping && (
           <div className="flex justify-start">
             <img 
@@ -482,7 +492,7 @@ const Chat = () => {
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -494,7 +504,7 @@ const Chat = () => {
         >
           <Paperclip className="h-5 w-5" />
         </button>
-        
+
         <div className="flex-1 mx-2">
           <textarea
             value={newMessage}
@@ -510,7 +520,7 @@ const Chat = () => {
             rows={1}
           />
         </div>
-        
+
         <div className="flex items-center">
           <button 
             type="button"
@@ -518,7 +528,7 @@ const Chat = () => {
           >
             <Smile className="h-5 w-5" />
           </button>
-          
+
           <Button 
             type="submit" 
             className="rounded-full px-3 h-10 w-10"
