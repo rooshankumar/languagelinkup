@@ -90,7 +90,7 @@ const handleSubmit = async () => {
       throw new Error("No active session found");
     }
 
-    // Create data object to update
+    // Create data object to update or insert
     const userData = {
       id: userId,
       username: username || "User",
@@ -104,37 +104,16 @@ const handleSubmit = async () => {
 
     console.log("Updating user data:", userData);
 
-    // Try direct update instead of upsert
+    // Use upsert with onConflict to handle both insert and update
     const { error } = await supabase
       .from('users')
-      .update(userData)
-      .eq('id', userId);
+      .upsert(userData, { 
+        onConflict: ['id'],
+        returning: 'minimal' 
+      });
 
     if (error) {
-      console.error("Update error:", error);
-      // Fallback to insert if update fails
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert([userData]);
-
-      if (insertError) throw insertError;
-    } else {
-          // Create user profile data object - This section was causing the syntax error.  It's now correctly placed inside the 'else' block.
-          const profileData = {
-            id: userId,
-            username: username || "User",
-            email: (await supabase.auth.getUser()).data?.user?.email || '',
-            native_language: nativeLanguage,
-            learning_language: learningLanguage,
-            proficiency: proficiencyLevel,
-            last_active: new Date().toISOString(),
-            is_online: true,
-          };
-
-          //This line was causing the error, it was not part of any assignment.
-          //const { error } = await supabase.from('users').insert(profileData, { onConflict: ['id'] });
-
-
+      throw error;
     }
 
     toast({
