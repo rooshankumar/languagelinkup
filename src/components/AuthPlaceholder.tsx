@@ -5,87 +5,78 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const AuthPlaceholder = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLoginWithReplit = () => {
+    setIsLoading(true);
     
-    // In a real implementation, this would connect to your authentication backend
-    toast({
-      title: isLogin ? "Logged in successfully" : "Account created",
-      description: "Welcome to MyLanguage app!",
-    });
-    
-    navigate('/dashboard');
+    try {
+      window.addEventListener("message", authComplete);
+      const h = 500;
+      const w = 350;
+      const left = window.screen.width / 2 - w / 2;
+      const top = window.screen.height / 2 - h / 2;
+
+      const authWindow = window.open(
+        "https://replit.com/auth_with_repl_site?domain=" + location.host,
+        "_blank",
+        "modal=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=" +
+          w +
+          ", height=" +
+          h +
+          ", top=" +
+          top +
+          ", left=" +
+          left
+      );
+
+      function authComplete(e: MessageEvent) {
+        if (e.data !== "auth_complete") {
+          return;
+        }
+
+        window.removeEventListener("message", authComplete);
+        setIsLoading(false);
+        
+        if (authWindow) {
+          authWindow.close();
+        }
+        
+        toast({
+          title: "Success!",
+          description: "You are now signed in with Replit",
+        });
+        
+        navigate("/");
+        location.reload();
+      }
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to authenticate with Replit",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 rounded-lg border shadow-sm">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        {isLogin ? 'Sign In' : 'Create Account'}
-      </h2>
+    <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto p-6 text-center">
+      <h2 className="text-2xl font-bold mb-4">Sign in to continue</h2>
+      <p className="text-muted-foreground mb-6">
+        You need to be signed in to access this feature and connect with other language learners.
+      </p>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {!isLogin && (
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Your name"
-            />
-          </div>
-        )}
-        
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder="your@email.com"
-            required
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        
-        <Button type="submit" className="w-full">
-          {isLogin ? 'Sign In' : 'Create Account'}
-        </Button>
-      </form>
-      
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-sm text-primary hover:underline"
-        >
-          {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-        </button>
-      </div>
+      <Button 
+        variant="primary"
+        size="lg"
+        isLoading={isLoading}
+        onClick={handleLoginWithReplit}
+        className="w-full"
+      >
+        Login with Replit
+      </Button>
     </div>
   );
 };
