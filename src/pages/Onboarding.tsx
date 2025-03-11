@@ -85,16 +85,20 @@ const Onboarding = () => {
     try {
       const { error } = await supabase
         .from('users')
-        .upsert({
-          id: userId,
-          username: username || "User", // Use existing username
-          email: (await supabase.auth.getUser()).data?.user?.email || '',
-          native_language: nativeLanguage,
-          learning_language: learningLanguage,
-          proficiency: proficiencyLevel,
-          last_active: new Date().toISOString(),
-          is_online: true,
-        });
+        .upsert([
+          {
+            id: userId,
+            username: username || "User", // Use existing username
+            email: (await supabase.auth.getUser()).data?.user?.email || '',
+            native_language: nativeLanguage,
+            learning_language: learningLanguage,
+            proficiency: proficiencyLevel,
+            last_active: new Date().toISOString(),
+            is_online: true,
+          }
+        ], { onConflict: ['id'] }) // Prevent duplicate inserts
+
+        .select(); // Ensures Supabase returns the correct response
 
       if (error) throw error;
 
@@ -138,90 +142,6 @@ const Onboarding = () => {
               </div>
             ))}
           </div>
-
-          {step === 1 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">What's your native language?</h2>
-              <p className="text-muted-foreground">Select the language you speak fluently.</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                {LANGUAGES.map((language) => (
-                  <button
-                    key={language.id}
-                    onClick={() => setNativeLanguage(language.id)}
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      nativeLanguage === language.id 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <span className="text-xl mr-3">{language.flag}</span>
-                      <span>{language.name}</span>
-                    </div>
-                    {nativeLanguage === language.id && (
-                      <Check className="h-5 w-5 text-primary" />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex justify-end">
-                <Button 
-                  onClick={() => setStep(2)}
-                  disabled={!nativeLanguage}
-                  icon={<ArrowRight className="h-4 w-4 ml-2" />}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">What language do you want to learn?</h2>
-              <p className="text-muted-foreground">Select a language you'd like to practice.</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                {LANGUAGES.filter(lang => lang.id !== nativeLanguage).map((language) => (
-                  <button
-                    key={language.id}
-                    onClick={() => setLearningLanguage(language.id)}
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      learningLanguage === language.id 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <span className="text-xl mr-3">{language.flag}</span>
-                      <span>{language.name}</span>
-                    </div>
-                    {learningLanguage === language.id && (
-                      <Check className="h-5 w-5 text-primary" />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setStep(1)}
-                >
-                  Back
-                </Button>
-                <Button 
-                  onClick={() => setStep(3)}
-                  disabled={!learningLanguage}
-                  icon={<ArrowRight className="h-4 w-4 ml-2" />}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
 
           {step === 3 && (
             <div className="space-y-6">
