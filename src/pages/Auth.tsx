@@ -62,7 +62,7 @@ const Auth = () => {
         if (!data.user) throw new Error("Account creation failed - no user data returned");
 
         // ✅ Insert user data into 'users' table on signup
-        const { error: insertError } = await supabase.from('users').insert([
+        await supabase.from('users').insert([
           {
             id: data.user.id,  // Ensure the ID matches the Supabase Auth UUID
             username: name,
@@ -76,10 +76,6 @@ const Auth = () => {
             is_online: true,
           }
         ]);
-        
-        if (insertError) {
-          console.error('Error creating user profile:', insertError.message);
-        }
 
         toast({
           title: "Account created successfully",

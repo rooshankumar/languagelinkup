@@ -37,18 +37,6 @@ const Profile = () => {
 
       if (error) {
         console.error('Error fetching profile:', error.message);
-        
-        // Check if the error is because the record doesn't exist
-        if (error.code === 'PGRST116') {
-          // Record not found - redirect to onboarding
-          toast({
-            title: "Profile not found",
-            description: "Please complete your profile setup.",
-          });
-          navigate('/onboarding');
-          return;
-        }
-        
         toast({
           title: "Error loading profile",
           description: "Could not fetch user data.",
