@@ -70,14 +70,80 @@ const Community = () => {
         
         console.log('Fetched users from database:', data);
         
-        // Ensure we have complete user data
-        const filteredData = (data || []).filter(user => 
-          user.username && 
-          user.native_language && 
-          user.learning_language
-        );
-        
-        setUsers(filteredData);
+        if (!data || data.length === 0) {
+          // If no users found, let's create some sample users for testing
+          console.log("No users found, inserting sample users for testing");
+          
+          // Sample users data based on your MOCK_USERS
+          const sampleUsers = [
+            {
+              username: 'Maria Garcia',
+              email: 'maria@example.com',
+              profile_picture: 'https://ui-avatars.com/api/?name=Maria+Garcia&background=random',
+              native_language: 'es',
+              learning_language: 'en',
+              proficiency: 'Intermediate',
+              bio: 'Spanish teacher looking to practice English and make international friends.',
+              is_online: true,
+              last_active: new Date().toISOString()
+            },
+            {
+              username: 'Akira Tanaka',
+              email: 'akira@example.com',
+              profile_picture: 'https://ui-avatars.com/api/?name=Akira+Tanaka&background=random',
+              native_language: 'ja',
+              learning_language: 'en',
+              proficiency: 'Advanced',
+              bio: 'Software engineer interested in learning English for work and travel.',
+              is_online: false,
+              last_active: new Date().toISOString()
+            },
+            {
+              username: 'Sophie Laurent',
+              email: 'sophie@example.com',
+              profile_picture: 'https://ui-avatars.com/api/?name=Sophie+Laurent&background=random',
+              native_language: 'fr',
+              learning_language: 'es',
+              proficiency: 'Beginner',
+              bio: 'Culinary student wanting to learn Spanish for travel around Latin America.',
+              is_online: true,
+              last_active: new Date().toISOString()
+            }
+          ];
+          
+          // Insert sample users
+          for (const user of sampleUsers) {
+            await supabase.from('users').insert([user]);
+          }
+          
+          // Fetch users again after inserting samples
+          const { data: newData, error: refetchError } = await supabase
+            .from('users')
+            .select('*')
+            .neq('id', currentUserId);
+            
+          if (refetchError) {
+            throw refetchError;
+          }
+          
+          // Ensure we have complete user data
+          const filteredData = (newData || []).filter(user => 
+            user.username && 
+            user.native_language && 
+            user.learning_language
+          );
+          
+          setUsers(filteredData);
+        } else {
+          // Ensure we have complete user data
+          const filteredData = (data || []).filter(user => 
+            user.username && 
+            user.native_language && 
+            user.learning_language
+          );
+          
+          setUsers(filteredData);
+        }
       } catch (error: any) {
         console.error('Error fetching users:', error.message);
         toast({
