@@ -18,9 +18,6 @@ import Onboarding from "./pages/Onboarding";
 import Legal from "./pages/Legal";
 import AppLayout from "./components/AppLayout";
 import { initializeAnalytics, trackPageView } from "./utils/analytics";
-import { createClient } from '@supabase/supabase-js'
-
-
 // Initialize analytics with placeholder tracking ID
 // This would be replaced with your actual Google Analytics tracking ID
 initializeAnalytics("G-XXXXXXXXXX");
