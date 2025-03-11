@@ -65,15 +65,15 @@ const ChatList = () => {
           // Determine the partner's ID
           const partnerId = conv.user1_id === userId ? conv.user2_id : conv.user1_id;
 
-          // Get partner details
+          // Get partner user data
           const { data: partnerData, error: partnerError } = await supabase
             .from('users')
             .select('id, username, profile_picture, native_language, is_online')
             .eq('id', partnerId)
-            .single();
+            .maybeSingle();
 
-          if (partnerError) {
-            console.error('Error fetching partner:', partnerError);
+          if (partnerError || !partnerData) {
+            console.error('Error fetching partner data for conversation', conv.id, ':', partnerError);
             return null;
           }
 
@@ -84,11 +84,11 @@ const ChatList = () => {
             .eq('conversation_id', conv.id)
             .order('created_at', { ascending: false })
             .limit(10);
-            
+
           if (messageError) {
             console.error('Error fetching messages:', messageError);
           }
-            
+
           // Get latest message
           let lastMessage = {
             text: 'Start a conversation',

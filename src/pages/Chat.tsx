@@ -56,16 +56,29 @@ const Chat = () => {
         setCurrentUserId(userId);
         
         // Get conversation
-        const { data: conversation, error: convError } = await supabase
-          .from('conversations')
-          .select('id, user1_id, user2_id')
-          .eq('id', chatId)
-          .single();
+        let conversation;
+        let convError;
+        
+        // First, check if chatId is a valid UUID (conversation ID)
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const isUUID = uuidPattern.test(chatId);
+        
+        if (isUUID) {
+          // Try to fetch conversation by ID
+          const { data, error } = await supabase
+            .from('conversations')
+            .select('id, user1_id, user2_id')
+            .eq('id', chatId)
+            .single();
+            
+          conversation = data;
+          convError = error;
+        }
           
-        if (convError) {
-          console.error('Error fetching conversation:', convError);
+        if (!isUUID || convError) {
+          console.log('Looking up as user ID instead of conversation ID');
           
-          // Check if this is a user ID rather than a conversation ID (for backward compatibility)
+          // Check if this is a user ID rather than a conversation ID
           const { data: userCheck } = await supabase
             .from('users')
             .select('id')
@@ -73,19 +86,22 @@ const Chat = () => {
             .single();
             
           if (userCheck) {
+            console.log('Found user, checking for existing conversation');
             // Check if conversation already exists
             const { data: existingConv, error: checkError } = await supabase
               .from('conversations')
               .select('id')
-              .or(`and(user1_id.eq.${userId},user2_id.eq.${chatId}),and(user1_id.eq.${chatId},user2_id.eq.${userId})`)
-              .single();
+              .or(`user1_id.eq.${userId}.and.user2_id.eq.${chatId},user1_id.eq.${chatId}.and.user2_id.eq.${userId}`)
+              .maybeSingle();
               
             if (!checkError && existingConv) {
+              console.log('Existing conversation found:', existingConv);
               // Conversation already exists, redirect to it
               navigate(`/chat/${existingConv.id}`, { replace: true });
               return existingConv;
             }
             
+            console.log('Creating new conversation');
             // This is a user ID, create a conversation
             const { data: newConversation, error: createError } = await supabase
               .from('conversations')
@@ -99,6 +115,7 @@ const Chat = () => {
               .single();
               
             if (createError) {
+              console.error('Error creating conversation:', createError);
               toast({
                 title: "Couldn't create conversation",
                 description: "There was an error starting this chat.",
