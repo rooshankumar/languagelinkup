@@ -85,11 +85,11 @@ const handleSubmit = async () => {
   try {
     // Get current user session
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       throw new Error("No active session found");
     }
-    
+
     // Create data object to update
     const userData = {
       id: userId,
@@ -101,35 +101,41 @@ const handleSubmit = async () => {
       last_active: new Date().toISOString(),
       is_online: true,
     };
-    
+
     console.log("Updating user data:", userData);
-    
+
     // Try direct update instead of upsert
     const { error } = await supabase
       .from('users')
       .update(userData)
       .eq('id', userId);
-      
+
     if (error) {
       console.error("Update error:", error);
       // Fallback to insert if update fails
       const { error: insertError } = await supabase
         .from('users')
         .insert([userData]);
-        
-      if (insertError) throw insertError;
-    }
-        id: userId,
-        username: username || "User";
-        email: (await supabase.auth.getUser()).data?.user?.email || '',
-        native_language: nativeLanguage,
-        learning_language: learningLanguage,
-        proficiency: proficiencyLevel,
-        last_active: new Date().toISOString(),
-        is_online: true,
-      }, { onConflict: ['id'] });
 
-    if (error) throw error;
+      if (insertError) throw insertError;
+    } else {
+          // Create user profile data object - This section was causing the syntax error.  It's now correctly placed inside the 'else' block.
+          const profileData = {
+            id: userId,
+            username: username || "User",
+            email: (await supabase.auth.getUser()).data?.user?.email || '',
+            native_language: nativeLanguage,
+            learning_language: learningLanguage,
+            proficiency: proficiencyLevel,
+            last_active: new Date().toISOString(),
+            is_online: true,
+          };
+
+          //This line was causing the error, it was not part of any assignment.
+          //const { error } = await supabase.from('users').insert(profileData, { onConflict: ['id'] });
+
+
+    }
 
     toast({
       title: "Profile completed!",
