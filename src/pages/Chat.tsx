@@ -547,3 +547,270 @@ const Chat = () => {
 };
 
 export default Chat;
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Send, ArrowLeft } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const Chat = () => {
+  const { chatId } = useParams();
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [otherUser, setOtherUser] = useState(null);
+  const messagesEndRef = useRef(null);
+  
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        setCurrentUser(data.user);
+        return data.user.id;
+      }
+      return null;
+    };
+    
+    const fetchConversationDetails = async (userId) => {
+      if (!userId) return;
+      
+      try {
+        // Get conversation details
+        const { data: conversation, error } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('id', chatId)
+          .single();
+        
+        if (error) throw error;
+        
+        // Determine the other user in conversation
+        const otherUserId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id;
+        
+        // Fetch other user details
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', otherUserId)
+          .single();
+          
+        if (userError) throw userError;
+        
+        setOtherUser(userData);
+      } catch (error) {
+        console.error('Error fetching conversation details:', error);
+        toast({
+          title: 'Error',
+          description: 'Could not load conversation details',
+          variant: 'destructive',
+        });
+      }
+    };
+    
+    const fetchMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', chatId)
+          .order('created_at', { ascending: true });
+          
+        if (error) throw error;
+        
+        setMessages(data || []);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+        toast({
+          title: 'Error',
+          description: 'Could not load messages',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const initialize = async () => {
+      const userId = await getCurrentUser();
+      if (userId) {
+        await fetchConversationDetails(userId);
+        await fetchMessages();
+        
+        // Subscribe to new messages
+        const subscription = supabase
+          .channel('messages')
+          .on('postgres_changes', 
+            { 
+              event: 'INSERT', 
+              schema: 'public', 
+              table: 'messages',
+              filter: `conversation_id=eq.${chatId}`
+            }, 
+            (payload) => {
+              setMessages((prev) => [...prev, payload.new]);
+              
+              // Mark messages as read if they're from the other user
+              if (payload.new.sender_id !== userId) {
+                markMessageAsRead(payload.new.id);
+              }
+            }
+          )
+          .subscribe();
+          
+        return () => {
+          supabase.removeChannel(subscription);
+        };
+      } else {
+        navigate('/auth');
+      }
+    };
+    
+    initialize();
+  }, [chatId, navigate]);
+  
+  // Scroll to bottom whenever messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+  
+  const markMessageAsRead = async (messageId) => {
+    try {
+      await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('id', messageId);
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+    }
+  };
+  
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    
+    if (!newMessage.trim()) return;
+    if (!currentUser) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to send messages',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert([{ 
+          conversation_id: chatId, 
+          sender_id: currentUser.id, 
+          content: newMessage,
+          created_at: new Date().toISOString(),
+          is_read: false
+        }]);
+        
+      if (error) throw error;
+      
+      // Update conversation's updated_at timestamp
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', chatId);
+        
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  const goBack = () => {
+    navigate('/chats');
+  };
+  
+  if (loading) {
+    return <div className="flex justify-center items-center h-full py-20">Loading conversation...</div>;
+  }
+  
+  return (
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto">
+      {/* Chat header */}
+      <div className="flex items-center p-4 border-b">
+        <Button variant="ghost" size="icon" onClick={goBack} className="mr-2">
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        
+        {otherUser && (
+          <div className="flex items-center">
+            <Avatar className="mr-2">
+              <AvatarImage src={otherUser.profile_picture} alt={otherUser.username} />
+              <AvatarFallback>{otherUser.username?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-medium">{otherUser.username}</h3>
+              <p className="text-xs text-muted-foreground">
+                {otherUser.is_online ? 'Online' : 'Offline'}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Messages container */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            No messages yet. Start the conversation!
+          </div>
+        ) : (
+          messages.map((message) => (
+            <div 
+              key={message.id} 
+              className={`flex ${message.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
+            >
+              <div 
+                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  message.sender_id === currentUser?.id 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted'
+                }`}
+              >
+                <p>{message.content}</p>
+                <p className="text-xs opacity-70 mt-1">
+                  {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      {/* Message input */}
+      <div className="p-4 border-t">
+        <form onSubmit={sendMessage} className="flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1"
+          />
+          <Button type="submit" disabled={!newMessage.trim()}>
+            <Send className="h-4 w-4 mr-2" />
+            Send
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Chat;
