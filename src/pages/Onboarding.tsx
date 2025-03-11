@@ -61,7 +61,22 @@ const Onboarding = () => {
           navigate('/auth');
           return;
         }
+        
         setUserId(session.user.id);
+        
+        // Check if user has already completed onboarding
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('native_language, learning_language')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (!userError && userData && userData.native_language && userData.learning_language) {
+          // User has already completed onboarding, redirect to community
+          console.log("Onboarding already completed, redirecting to community...");
+          navigate('/community');
+          return;
+        }
       };
 
       checkAuth();
@@ -104,31 +119,14 @@ const handleSubmit = async () => {
 
     console.log("Updating user data:", userData);
 
-    // First check if a record exists
-    const { data: existingUser } = await supabase
+    // Always use upsert to handle both insert and update cases
+    // This will prevent the duplicate key error
+    const { error } = await supabase
       .from('users')
-      .select('id')
-      .eq('id', userId)
-      .single();
-
-    let error;
-    
-    if (existingUser) {
-      // Update existing record
-      const { error: updateError } = await supabase
-        .from('users')
-        .update(userData)
-        .eq('id', userId);
-      
-      error = updateError;
-    } else {
-      // Insert new record
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert(userData);
-      
-      error = insertError;
-    }
+      .upsert(userData, { 
+        onConflict: ['id'],
+        returning: 'minimal' 
+      });
 
     if (error) {
       // If still encountering RLS issues, try using auth-based RPC function

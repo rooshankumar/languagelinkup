@@ -46,7 +46,7 @@ const Auth = () => {
           description: `Welcome back to MyLanguage, ${data.user.email}!`,
         });
 
-        navigate('/profile'); // ✅ Go to profile
+        navigate('/community'); // ✅ Go directly to community
 
       } else {
         // ✨ SIGN UP USER WITH SUPABASE
