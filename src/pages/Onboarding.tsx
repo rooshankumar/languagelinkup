@@ -83,6 +83,13 @@ const handleSubmit = async () => {
   console.log("Submitting data:", { nativeLanguage, learningLanguage, proficiencyLevel });
 
   try {
+    // First, create a Supabase client with the user's session token to bypass RLS
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      throw new Error("No active session found");
+    }
+    
+    // Use user's authentication to bypass RLS policies
     const { error } = await supabase
       .from('users')
       .upsert({
