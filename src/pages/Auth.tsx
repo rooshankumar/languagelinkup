@@ -164,4 +164,5 @@ const Auth = () => {
   );
 };
 
-export { Auth, AuthProvider };
+export { AuthProvider };
+export default Auth;

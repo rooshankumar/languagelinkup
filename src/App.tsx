@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Blog from "./pages/Blog";
 import Auth from "./pages/Auth"; // This is the login page
+import { AuthProvider } from "./contexts/AuthContext";
 import Onboarding from "./pages/Onboarding";
 import Legal from "./pages/Legal";
 import AppLayout from "./components/AppLayout";
@@ -112,8 +113,9 @@ const RequireAuth = ({ children }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <UserProfileProvider>
-      <TooltipProvider>
+    <AuthProvider>
+      <UserProfileProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -142,7 +144,8 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </UserProfileProvider>
+      </UserProfileProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
