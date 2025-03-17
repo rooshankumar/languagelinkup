@@ -22,6 +22,51 @@ interface Partner {
   lastActive: Date;
 }
 
+const chatService = {
+  sendMessage: async (conversationId: string, message: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: supabase.auth.user()?.id, // Get user ID directly from supabase
+          message,
+          is_read: false
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+      return { data, error };
+    } catch (error) {
+      throw error;
+    }
+  },
+  subscribeToConversation: (conversationId: string, callback: (newMsg: any) => void) => {
+    return supabase
+      .channel(`chat:${conversationId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        callback(payload.new);
+      })
+      .subscribe();
+  },
+  markAsRead: async (messageIds: string[]) => {
+    if (messageIds.length === 0) return;
+    await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .in('id', messageIds);
+  }
+};
+
+
 const Chat = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -94,7 +139,7 @@ const Chat = () => {
               .or(`user1_id.eq.${userId},user2_id.eq.${chatId}`)
               .or(`user1_id.eq.${chatId},user2_id.eq.${userId}`)
               .maybeSingle();
-              
+
             console.log('Conversation check results:', existingConv, checkError);
 
             if (checkError) {
@@ -208,12 +253,7 @@ const Chat = () => {
         );
 
         if (unreadMessages.length > 0) {
-          await Promise.all(unreadMessages.map(msg => 
-            supabase
-              .from('messages')
-              .update({ is_read: true })
-              .eq('id', msg.id)
-          ));
+          await chatService.markAsRead(unreadMessages.map(msg => msg.id));
         }
 
         // Format messages for display
@@ -242,34 +282,21 @@ const Chat = () => {
 
     // Set up real-time message subscription
     if (chatId) {
-      const subscription = supabase
-        .channel(`chat:${chatId}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${chatId}`
-        }, async (payload) => {
-          const newMsg = payload.new;
-
-          // If this is from the partner, mark as read
-          if (newMsg.sender_id !== currentUserId) {
-            await supabase
-              .from('messages')
-              .update({ is_read: true })
-              .eq('id', newMsg.id);
-          }
-
-          // Add to messages
-          setMessages(prev => [...prev, {
-            id: newMsg.id,
-            senderId: newMsg.sender_id,
-            text: newMsg.message || '', // Changed from content to message
-            timestamp: new Date(newMsg.created_at),
-            isRead: newMsg.sender_id === currentUserId ? false : true
-          }]);
-        })
-        .subscribe();
+      const subscription = chatService.subscribeToConversation(chatId, async (newMsg) => {
+        // Only add message if it's not from current user
+        if (newMsg.sender_id !== currentUserId) {
+          // Mark message as read immediately
+          await chatService.markAsRead([newMsg.id]);
+        }
+        // Add to messages
+        setMessages(prev => [...prev, {
+          id: newMsg.id,
+          senderId: newMsg.sender_id,
+          text: newMsg.message || '',
+          timestamp: new Date(newMsg.created_at),
+          isRead: newMsg.sender_id === currentUserId ? false : true
+        }]);
+      });
 
       return () => {
         subscription.unsubscribe();
@@ -287,34 +314,21 @@ const Chat = () => {
     if (!newMessage.trim() || !chatId || !currentUserId) return;
 
     try {
-      // Insert message to database
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: chatId,
-          sender_id: currentUserId,
-          message: newMessage, // Changed from content to message
-          is_read: false
-        })
-        .select();
-
+      const { data, error } = await chatService.sendMessage(chatId, newMessage.trim());
       if (error) throw error;
 
-      // Update conversation timestamp
-      await supabase
-        .from('conversations')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', chatId);
-
-      // Clear message input
       setNewMessage('');
 
-      // Simulate partner typing for demo purposes
-      // In a real app, you might use a separate channel for typing indicators
-      if (partner?.online) {
-        setTimeout(() => setIsTyping(true), 1000);
-        setTimeout(() => setIsTyping(false), 3500);
-      }
+      // Add message to UI immediately
+      const newMsg = {
+        id: data.id,
+        senderId: currentUserId,
+        text: newMessage.trim(),
+        timestamp: new Date(),
+        isRead: false
+      };
+
+      setMessages(prev => [...prev, newMsg]);
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
