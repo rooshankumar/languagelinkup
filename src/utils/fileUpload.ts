@@ -20,10 +20,13 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
 
   // ✅ Upload file to Supabase Storage
   const { data, error } = await supabase.storage
-    .from("user_uploads") // Ensure this matches your bucket name
+    .from("user_uploads")
     .upload(filePath, file, {
       upsert: true,
       cacheControl: "3600",
+      metadata: {
+        owner: userId
+      }
     });
 
   if (error) {
