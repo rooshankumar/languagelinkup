@@ -20,14 +20,11 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
 
   // ✅ Upload file to Supabase Storage
   const { data, error } = await supabase.storage
-    .from("avatars")
+    .from("avatars") // Ensure this matches your bucket name
     .upload(filePath, file, {
       upsert: true,
       cacheControl: "3600",
-      metadata: {
-        user_id: userId,
-        mime_type: file.type
-      }
+      contentType: file.type, // Explicitly set the content type
     });
 
   if (error) {
@@ -37,7 +34,7 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
 
   // ✅ Get Public URL
   const { data: urlData } = supabase.storage
-    .from("user_uploads")
+    .from("avatars") // Ensure this matches your bucket name
     .getPublicUrl(filePath);
 
   return urlData.publicUrl;
