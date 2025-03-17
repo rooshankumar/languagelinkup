@@ -1,144 +1,192 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Settings as SettingsIcon, Moon, Sun, Bell } from 'lucide-react';
-import Button from '@/components/Button';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
-import { useTheme } from '@/hooks/useTheme';
+import Button from '@/components/Button';
+import UserProfileCard from '@/components/UserProfileCard';
+import ProfileEdit from '@/components/ProfileEdit';
 
-const Settings = () => {
+interface UserProfile {
+  id: string;
+  username: string;
+  email?: string;
+  native_language?: string;
+  learning_language?: string;
+  proficiency?: string;
+  bio?: string;
+  location?: string;
+  dob?: string;
+  avatar_url?: string | File; // Updated to handle file uploads
+}
+
+const Profile = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
-  const [notifications, setNotifications] = useState(true);
-  
-  const toggleNotifications = () => {
-    setNotifications(!notifications);
-    toast({
-      title: `Notifications ${!notifications ? 'enabled' : 'disabled'}`,
-      description: `You will ${!notifications ? 'now' : 'no longer'} receive notifications`,
-    });
-  };
-  
-  const settingsSections = [
-    {
-      id: 'profile',
-      name: 'Profile',
-      icon: User,
-      description: 'Update your profile information',
-      action: () => navigate('/profile'),
-    },
-    {
-      id: 'password',
-      name: 'Password Reset',
-      icon: Lock,
-      description: 'Change your password',
-      action: () => {
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session?.user) {
+          toast({
+            title: "Authentication required",
+            description: "Please log in to view your profile.",
+          });
+          navigate('/auth');
+          return;
+        }
+
+        const userId = session.user.id;
+
+        // Fetch user profile from the database
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, username, email, native_language, learning_language, proficiency, bio, location, dob, avatar_url')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        setUserProfile(data);
+      } catch (error: any) {
+        console.error('Error fetching user profile:', error.message);
         toast({
-          title: "Feature coming soon",
-          description: "Password reset will be available soon",
+          title: "Error loading profile",
+          description: "Could not load your profile. Please try again.",
+          variant: "destructive",
         });
-      },
-    },
-  ];
-  
-  const preferenceSections = [
-    {
-      id: 'theme',
-      name: 'Dark Mode',
-      icon: theme === 'dark' ? Sun : Moon,
-      description: 'Toggle between light and dark mode',
-      toggle: true,
-      state: theme === 'dark',
-      action: toggleTheme,
-    },
-    {
-      id: 'notifications',
-      name: 'Notifications',
-      icon: Bell,
-      description: 'Enable or disable notifications',
-      toggle: true,
-      state: notifications,
-      action: toggleNotifications,
-    },
-  ];
-  
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [navigate]);
+
+  const handleEditProfile = () => setIsEditing(true);
+  const handleCancelEdit = () => setIsEditing(false);
+
+  const handleSaveProfile = async (updatedProfile: UserProfile) => {
+    setIsLoading(true);
+    try {
+      const userId = userProfile?.id;
+      if (!userId) throw new Error("User ID not found.");
+
+      let avatarUrl = userProfile.avatar_url;
+
+      // Check if user uploaded a new image
+      if (updatedProfile.avatar_url && updatedProfile.avatar_url instanceof File) {
+        const file = updatedProfile.avatar_url;
+        const filePath = `profile_pictures/${userId}-${Date.now()}.${file.name.split('.').pop()}`;
+
+        console.log("Uploading profile picture to:", filePath);
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('user_uploads')
+          .upload(filePath, file, { upsert: true });
+
+        if (uploadError) {
+          console.error("Error uploading image:", uploadError.message);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('user_uploads')
+            .getPublicUrl(filePath);
+          avatarUrl = publicUrl;
+        }
+      }
+
+      // Update user profile in the database
+      const { error } = await supabase
+        .from('users')
+        .update({
+          username: updatedProfile.username,
+          bio: updatedProfile.bio,
+          native_language: updatedProfile.native_language,
+          learning_language: updatedProfile.learning_language,
+          proficiency: updatedProfile.proficiency,
+          location: updatedProfile.location,
+          dob: updatedProfile.dob || null,
+          avatar_url: avatarUrl,
+          last_active: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      setUserProfile({ ...updatedProfile, avatar_url: avatarUrl });
+      setIsEditing(false);
+
+      toast({
+        title: 'Profile updated',
+        description: 'Your profile has been successfully updated.',
+      });
+    } catch (error: any) {
+      console.error('Error updating profile:', error.message);
+      toast({
+        title: 'Error updating profile',
+        description: error.message || 'Could not update your profile. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Format user data for UserProfileCard component
+  const formattedUserData = userProfile ? {
+    id: userProfile.id,
+    name: userProfile.username,
+    avatar: userProfile.avatar_url,
+    location: userProfile.location,
+    bio: userProfile.bio,
+    nativeLanguage: userProfile.native_language,
+    learningLanguages: userProfile.learning_language ? [
+      {
+        language: userProfile.learning_language,
+        proficiency: userProfile.proficiency as 'Beginner' | 'Intermediate' | 'Advanced' | 'Fluent'
+      }
+    ] : [],
+    learningGoals: "Become fluent in conversation",
+    online: true
+  } : null;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[70vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Settings</h1>
-      
-      <div className="space-y-8">
-        <section>
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            Account Settings
-          </h2>
-          <div className="space-y-4">
-            {settingsSections.map((section) => (
-              <div 
-                key={section.id}
-                className="p-4 border rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
-                onClick={section.action}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-md text-primary">
-                      <section.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{section.name}</h3>
-                      <p className="text-sm text-muted-foreground">{section.description}</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={section.action}>
-                    Manage
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5 text-primary" />
-            Preferences
-          </h2>
-          <div className="space-y-4">
-            {preferenceSections.map((section) => (
-              <div 
-                key={section.id}
-                className="p-4 border rounded-lg hover:bg-muted/30 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-md text-primary">
-                      <section.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{section.name}</h3>
-                      <p className="text-sm text-muted-foreground">{section.description}</p>
-                    </div>
-                  </div>
-                  
-                  {section.toggle && (
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer"
-                        checked={section.state}
-                        onChange={section.action}
-                      />
-                      <div className="relative w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">My Profile</h1>
+        {!isEditing && (
+          <Button onClick={handleEditProfile}>
+            Edit Profile
+          </Button>
+        )}
       </div>
+
+      {isEditing ? (
+        <div className="bg-card border rounded-lg shadow-sm p-6">
+          <ProfileEdit
+            userProfile={userProfile}
+            onCancel={handleCancelEdit}
+            onSave={handleSaveProfile}
+          />
+        </div>
+      ) : (
+        formattedUserData && <UserProfileCard user={formattedUserData} />
+      )}
     </div>
   );
 };
 
-export default Settings;
+export default Profile;

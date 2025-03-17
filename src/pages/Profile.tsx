@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';
-import { toast } from '@/hooks/use-toast';
-import Button from '@/components/Button';
-import UserProfileCard from '@/components/UserProfileCard';
-import ProfileEdit from '@/components/ProfileEdit';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "@/hooks/use-toast";
+import Button from "@/components/Button";
+import UserProfileCard from "@/components/UserProfileCard";
+import ProfileEdit from "@/components/ProfileEdit";
 
 interface UserProfile {
   id: string;
@@ -15,7 +15,7 @@ interface UserProfile {
   proficiency?: string;
   bio?: string;
   location?: string;
-  avatar_url?: string;
+  avatar_url?: string | File; // Allow file input
 }
 
 const Profile = () => {
@@ -34,7 +34,7 @@ const Profile = () => {
             title: "Authentication required",
             description: "Please log in to view your profile.",
           });
-          navigate('/auth');
+          navigate("/auth");
           return;
         }
 
@@ -42,18 +42,16 @@ const Profile = () => {
 
         // Fetch user profile from the database
         const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
+          .from("users")
+          .select("*")
+          .eq("id", userId)
           .single();
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         setUserProfile(data);
       } catch (error: any) {
-        console.error('Error fetching user profile:', error.message);
+        console.error("Error fetching user profile:", error.message);
         toast({
           title: "Error loading profile",
           description: "Could not load your profile. Please try again.",
@@ -67,6 +65,25 @@ const Profile = () => {
     fetchUserProfile();
   }, [navigate]);
 
+  // Function to upload avatar to Supabase storage
+  const uploadFile = async (file: File) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("User not authenticated");
+
+    const userId = session.user.id;
+    const filePath = `profile_pictures/${userId}-${Date.now()}.${file.name.split('.').pop()}`;
+
+    const { data, error } = await supabase.storage
+      .from("user_uploads")
+      .upload(filePath, file, { upsert: true });
+
+    if (error) throw error;
+
+    // Retrieve the public URL of the uploaded file
+    const { publicUrl } = supabase.storage.from("user_uploads").getPublicUrl(filePath);
+    return publicUrl;
+  };
+
   const handleEditProfile = () => {
     setIsEditing(true);
   };
@@ -78,29 +95,43 @@ const Profile = () => {
   const handleSaveProfile = async (updatedProfile: UserProfile) => {
     setIsLoading(true);
     try {
+      let avatarUrl = userProfile?.avatar_url;
+
+      // If a new file is uploaded, process it
+      if (updatedProfile.avatar_url instanceof File) {
+        avatarUrl = await uploadFile(updatedProfile.avatar_url);
+      }
+
+      // Update the user profile in Supabase
       const { error } = await supabase
-        .from('users')
+        .from("users")
         .update({
-          ...updatedProfile,
-          last_active: new Date().toISOString()
+          username: updatedProfile.username,
+          bio: updatedProfile.bio,
+          native_language: updatedProfile.native_language,
+          learning_language: updatedProfile.learning_language,
+          proficiency: updatedProfile.proficiency,
+          location: updatedProfile.location,
+          avatar_url: avatarUrl,
+          last_active: new Date().toISOString(),
         })
-        .eq('id', userProfile?.id);
+        .eq("id", userProfile?.id);
 
       if (error) throw error;
 
-      setUserProfile(updatedProfile);
+      setUserProfile({ ...updatedProfile, avatar_url: avatarUrl });
       setIsEditing(false);
 
       toast({
-        title: 'Profile updated',
-        description: 'Your profile has been successfully updated.',
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
       });
     } catch (error: any) {
-      console.error('Error updating profile:', error.message);
+      console.error("Error updating profile:", error.message);
       toast({
-        title: 'Error updating profile',
-        description: error.message || 'Could not update your profile. Please try again.',
-        variant: 'destructive',
+        title: "Error updating profile",
+        description: error.message || "Could not update your profile. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -108,22 +139,26 @@ const Profile = () => {
   };
 
   // Format user data for UserProfileCard component
-  const formattedUserData = userProfile ? {
-    id: userProfile.id,
-    name: userProfile.username,
-    avatar: userProfile.avatar_url,
-    location: userProfile.location,
-    bio: userProfile.bio,
-    nativeLanguage: userProfile.native_language,
-    learningLanguages: userProfile.learning_language ? [
-      {
-        language: userProfile.learning_language,
-        proficiency: userProfile.proficiency as 'Beginner' | 'Intermediate' | 'Advanced' | 'Fluent'
+  const formattedUserData = userProfile
+    ? {
+        id: userProfile.id,
+        name: userProfile.username,
+        avatar: userProfile.avatar_url,
+        location: userProfile.location,
+        bio: userProfile.bio,
+        nativeLanguage: userProfile.native_language,
+        learningLanguages: userProfile.learning_language
+          ? [
+              {
+                language: userProfile.learning_language,
+                proficiency: userProfile.proficiency as "Beginner" | "Intermediate" | "Advanced" | "Fluent",
+              },
+            ]
+          : [],
+        learningGoals: "Become fluent in conversation",
+        online: true,
       }
-    ] : [],
-    learningGoals: "Become fluent in conversation",
-    online: true
-  } : null;
+    : null;
 
   if (isLoading) {
     return (
@@ -138,9 +173,7 @@ const Profile = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Profile</h1>
         {!isEditing && (
-          <Button onClick={handleEditProfile}>
-            Edit Profile
-          </Button>
+          <Button onClick={handleEditProfile}>Edit Profile</Button>
         )}
       </div>
 
