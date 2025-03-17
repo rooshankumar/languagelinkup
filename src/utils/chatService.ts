@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabaseClient';
 
 export interface Message {
@@ -11,6 +10,17 @@ export interface Message {
 }
 
 export const chatService = {
+  async getConversation(conversationId: string) {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   async createConversation(user1Id: string, user2Id: string) {
     try {
       const { data, error } = await supabase
@@ -23,7 +33,7 @@ export const chatService = {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return { data, error: null };
     } catch (error: any) {
