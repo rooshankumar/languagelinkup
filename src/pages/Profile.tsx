@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import Button from "@/components/Button";
 import UserProfileCard from "@/components/UserProfileCard";
 import ProfileEdit from "@/components/ProfileEdit";
-import { uploadProfilePicture } from '@/utils/fileUpload';
+import { uploadProfilePicture } from "@/utils/fileUpload";
 
 interface UserProfile {
   id: string;
@@ -16,7 +16,7 @@ interface UserProfile {
   proficiency?: string;
   bio?: string;
   location?: string;
-  avatar_url?: string | File; // Allow file input
+  avatar_url?: string | File;
 }
 
 const Profile = () => {
@@ -41,7 +41,6 @@ const Profile = () => {
 
         const userId = session.user.id;
 
-        // Fetch user profile from the database
         const { data, error } = await supabase
           .from("users")
           .select("*")
@@ -66,11 +65,10 @@ const Profile = () => {
     fetchUserProfile();
   }, [navigate]);
 
-  // Function to upload avatar to Supabase storage
   const uploadFile = async (file: File) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("User not authenticated");
-    
+
     return await uploadProfilePicture(file, session.user.id);
   };
 
@@ -87,17 +85,15 @@ const Profile = () => {
     try {
       let avatarUrl = userProfile?.avatar_url;
 
-      // If a new file is uploaded, process it
+      // ✅ Upload new profile picture if provided
       if (updatedProfile.avatar_url instanceof File) {
         avatarUrl = await uploadFile(updatedProfile.avatar_url);
       }
 
-      // Update the user profile in Supabase
-      // First verify we have the current user's ID
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) throw new Error("Not authenticated");
 
-      // Ensure we're updating our own profile
+      // ✅ Update user profile in the database
       const { error } = await supabase
         .from("users")
         .update({
@@ -108,12 +104,13 @@ const Profile = () => {
           proficiency: updatedProfile.proficiency,
           location: updatedProfile.location,
           avatar_url: avatarUrl,
-          last_active: new Date().toISOString(),
+          updated_at: new Date().toISOString(), // Ensure updated_at is set
         })
         .eq("id", session.user.id);
 
       if (error) throw error;
 
+      // ✅ Update local state with the new profile data
       setUserProfile({ ...updatedProfile, avatar_url: avatarUrl });
       setIsEditing(false);
 
@@ -133,7 +130,6 @@ const Profile = () => {
     }
   };
 
-  // Format user data for UserProfileCard component
   const formattedUserData = userProfile
     ? {
         id: userProfile.id,
