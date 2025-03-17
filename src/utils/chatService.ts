@@ -23,28 +23,33 @@ export const chatService = {
 
   async createConversation(user1Id: string, user2Id: string) {
     try {
-      // First check if conversation exists using proper parameter substitution
-      // Check for existing conversation using proper parameter binding
+      // Check for existing conversation with direct equals comparison
       const { data: existingConv, error: checkError } = await supabase
         .from('conversations')
         .select('*')
-        .or(`user1_id.eq.${user1Id},user2_id.eq.${user2Id}`)
-        .or(`user1_id.eq.${user2Id},user2_id.eq.${user1Id}`)
+        .eq('user1_id', user1Id)
+        .eq('user2_id', user2Id)
         .maybeSingle();
 
-      if (checkError) {
-        console.error('Error checking existing conversation:', checkError);
-        throw checkError;
-      }
+      if (checkError) throw checkError;
 
-      if (existingConv) {
-        console.log('Found existing conversation:', existingConv);
+      // If no conversation found, check the reverse order
+      if (!existingConv) {
+        const { data: reverseConv, error: reverseError } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('user1_id', user2Id)
+          .eq('user2_id', user1Id)
+          .maybeSingle();
+
+        if (reverseError) throw reverseError;
+        if (reverseConv) return { data: reverseConv, error: null };
+      } else {
         return { data: existingConv, error: null };
       }
 
-      console.log('Creating new conversation between', user1Id, 'and', user2Id);
-      // Create new conversation with proper error handling
-      const { data, error } = await supabase
+      // If no existing conversation found, create a new one
+      const { data: newConv, error: createError } = await supabase
         .from('conversations')
         .insert({
           user1_id: user1Id,
@@ -52,51 +57,53 @@ export const chatService = {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .select('*')
+        .select()
         .single();
 
-      if (error) {
-        console.error('Detailed conversation creation error:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
+      if (createError) {
+        console.error('Detailed create error:', {
+          message: createError.message,
+          details: createError.details,
+          hint: createError.hint,
+          code: createError.code
         });
+        throw createError;
       }
 
-      if (error) {
-        console.error('Conversation creation error:', error);
-        if (error.code === 'PGRST204') {
-          console.error('Policy violation - check RLS policies');
-        }
-        throw error;
-      }
-
-      console.log('Successfully created conversation:', data);
-
-      return { data, error: null };
+      return { data: newConv, error: null };
     } catch (error: any) {
       console.error('Error in createConversation:', error);
       return { data: null, error };
     }
   },
 
-  async sendMessage(conversationId: string, content: string) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-    return await supabase
+  async sendMessage(conversationId: string, senderId: string, content: string) {
+    const { data, error } = await supabase
       .from('messages')
       .insert({
         conversation_id: conversationId,
-        sender_id: user.id,
-        content,
+        sender_id: senderId,
+        content: content,
+        is_read: false,
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
+
+    if (error) throw error;
+    return data;
   },
 
+  async getMessages(conversationId: string) {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
   async markAsRead(messageIds: string[]) {
     return await supabase
       .from('messages')
