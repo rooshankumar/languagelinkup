@@ -347,3 +347,21 @@ const Blog = () => {
 };
 
 export default Blog;
+import React from 'react';
+import Sidebar from '@/components/Sidebar';
+
+const Blog = () => {
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar className="hidden md:flex" />
+      <main className="flex-1 pb-16 md:pb-0 md:pl-64">
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-3xl font-bold mb-6">Blog</h1>
+          {/* Blog content will go here */}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Blog;

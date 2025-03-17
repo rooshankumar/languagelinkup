@@ -1,12 +1,14 @@
-
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Globe, Settings } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MessageCircle, Globe, Settings, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
 const MobileNavbar = () => {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+
   const navItems = [
     {
       label: 'Messages',
@@ -23,29 +25,53 @@ const MobileNavbar = () => {
       icon: Settings,
       href: '/settings',
     },
+    {
+      label: 'Logout',
+      icon: LogOut,
+      onClick: async () => {
+        try {
+          await supabase.auth.signOut();
+          toast({ title: 'Logged out successfully!' });
+          navigate('/login');
+        } catch (error) {
+          console.error('Error logging out:', error);
+          toast({ title: 'Error logging out', error });
+        }
+      },
+    },
   ];
-  
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">
       <nav className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.href || 
-                        (item.href !== '/' && location.pathname.startsWith(item.href));
-          
+          const isActive = location.pathname === item.href ||
+            (item.href !== '/' && location.pathname.startsWith(item.href));
+
           return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center w-full h-full transition-colors",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+            <div key={item.label} className="flex flex-col items-center justify-center w-full h-full transition-colors">
+              {item.href ? (
+                <Link
+                  to={item.href}
+                  className={cn(
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-xs mt-1">{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={item.onClick}
+                  className={cn(
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-xs mt-1">{item.label}</span>
+                </button>
               )}
-            >
-              <item.icon className="h-5 w-5" />
-              <span className="text-xs mt-1">{item.label}</span>
-            </Link>
+            </div>
           );
         })}
       </nav>
