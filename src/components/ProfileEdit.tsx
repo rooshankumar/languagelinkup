@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Button from '@/components/Button';
 import { User } from 'lucide-react';
@@ -35,16 +34,16 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(userProfile?.avatar_url || null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Languages list for dropdown options
   const languages = [
-    "English", "Spanish", "French", "German", "Italian", 
-    "Portuguese", "Russian", "Japanese", "Korean", "Chinese", 
+    "English", "Spanish", "French", "German", "Italian",
+    "Portuguese", "Russian", "Japanese", "Korean", "Chinese",
     "Arabic", "Hindi", "Turkish", "Dutch", "Polish", "Swedish"
   ];
-  
+
   // Proficiency levels for dropdown selection
   const proficiencyLevels = [
     { id: 'beginner', name: 'Beginner', description: 'I know basic phrases and vocabulary' },
@@ -56,7 +55,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
+
       if (!file.type.startsWith('image/')) {
         toast({
           title: "Invalid file type",
@@ -94,7 +93,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
       if (profilePicture) {
         const fileName = `${userProfile.id}/${uuidv4()}`;
         const { url, error } = await uploadProfilePicture(profilePicture, fileName);
-        
+
         if (error) throw error;
         if (url) avatarUrl = url;
       }
@@ -133,81 +132,6 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
     } catch (error: any) {
       toast({
         title: "Error updating profile",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!userProfile?.id) {
-      toast({
-        title: "Error",
-        description: "User profile not found. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      let avatarUrl = userProfile.avatar_url;
-
-      // Upload new profile picture if selected
-      if (profilePicture) {
-        const fileName = `${userProfile.id}/${uuidv4()}`;
-        const { url, error: uploadError } = await uploadProfilePicture(profilePicture, fileName);
-        
-        if (uploadError) {
-          throw new Error(`Error uploading profile picture: ${uploadError.message}`);
-        }
-        
-        if (url) {
-          avatarUrl = url;
-        }
-      }
-
-      // Update user profile in the database
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          username: name,
-          bio,
-          location,
-          native_language: nativeLanguage,
-          learning_language: learningLanguage,
-          proficiency,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userProfile.id);
-
-      if (updateError) {
-        throw new Error(`Error updating profile: ${updateError.message}`);
-      }
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
-
-      // Call onSave with updated profile
-      onSave({
-        ...userProfile,
-        username: name,
-        bio,
-        location,
-        native_language: nativeLanguage,
-        learning_language: learningLanguage,
-        proficiency,
-        avatar_url: avatarUrl,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error updating profile",
         description: error.message || "Could not update your profile. Please try again.",
         variant: "destructive",
       });
@@ -219,17 +143,17 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Edit Profile</h2>
-      
+
       {/* Profile Picture */}
       <div className="flex flex-col items-center mb-6">
-        <div 
+        <div
           className="w-24 h-24 rounded-full mb-4 cursor-pointer relative overflow-hidden bg-muted"
           onClick={() => fileInputRef.current?.click()}
         >
           {profilePicturePreview ? (
-            <img 
-              src={profilePicturePreview} 
-              alt="Profile preview" 
+            <img
+              src={profilePicturePreview}
+              alt="Profile preview"
               className="w-full h-full object-cover"
             />
           ) : (
@@ -248,14 +172,14 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
           ref={fileInputRef}
           onChange={handleFileChange}
         />
-        <button 
+        <button
           className="text-sm text-primary hover:underline"
           onClick={() => fileInputRef.current?.click()}
         >
           Update profile picture
         </button>
       </div>
-      
+
       {/* Form Fields */}
       <div className="space-y-4">
         <div>
@@ -269,7 +193,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
             placeholder="Your name"
           />
         </div>
-        
+
         <div>
           <label htmlFor="bio" className="block text-sm font-medium mb-1">Bio</label>
           <textarea
@@ -280,7 +204,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
             placeholder="Tell us about yourself..."
           />
         </div>
-        
+
         <div>
           <label htmlFor="location" className="block text-sm font-medium mb-1">Location</label>
           <input
@@ -292,7 +216,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
             placeholder="City, Country"
           />
         </div>
-        
+
         <div>
           <label htmlFor="nativeLanguage" className="block text-sm font-medium mb-1">Native Language</label>
           <select
@@ -307,7 +231,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
             ))}
           </select>
         </div>
-        
+
         <div>
           <label htmlFor="learningLanguage" className="block text-sm font-medium mb-1">Learning Language</label>
           <select
@@ -322,7 +246,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
             ))}
           </select>
         </div>
-        
+
         <div>
           <label htmlFor="proficiency" className="block text-sm font-medium mb-1">Proficiency Level</label>
           <select
@@ -340,15 +264,15 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
           </select>
         </div>
       </div>
-      
+
       <div className="flex justify-end space-x-3 pt-4">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={onCancel}
         >
           Cancel
         </Button>
-        <Button 
+        <Button
           onClick={handleSave}
           isLoading={isLoading}
           disabled={!name || !nativeLanguage || !learningLanguage || !proficiency}
