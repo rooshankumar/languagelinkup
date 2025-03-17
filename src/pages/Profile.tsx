@@ -71,7 +71,7 @@ const Profile = () => {
     if (!session) throw new Error("User not authenticated");
 
     const userId = session.user.id;
-    const filePath = `profile_pictures/${userId}-${Date.now()}.${file.name.split('.').pop()}`;
+    const filePath = `profile_pictures/${userId}-${uuidv4()}.${file.name.split('.').pop()}`;
 
     const { data, error } = await supabase.storage
       .from("user_uploads")

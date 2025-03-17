@@ -82,7 +82,7 @@ const Profile = () => {
       // Check if user uploaded a new image
       if (updatedProfile.avatar_url && updatedProfile.avatar_url instanceof File) {
         const file = updatedProfile.avatar_url;
-        const filePath = `profile_pictures/${userId}-${Date.now()}.${file.name.split('.').pop()}`;
+        const filePath = `profile_pictures/${userId}-${uuidv4()}.${file.name.split('.').pop()}`;
 
         console.log("Uploading profile picture to:", filePath);
 
