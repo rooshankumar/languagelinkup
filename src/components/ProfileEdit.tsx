@@ -65,13 +65,79 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         });
         return;
       }
-      
-      setProfilePicture(file);
+
+      // Create preview
       const objectUrl = URL.createObjectURL(file);
       setProfilePicturePreview(objectUrl);
-      
-      // Cleanup previous preview URL
+      setProfilePicture(file);
+
+      // Cleanup function
       return () => URL.revokeObjectURL(objectUrl);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!userProfile?.id) {
+      toast({
+        title: "Error",
+        description: "User profile not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      let avatarUrl = userProfile.avatar_url;
+
+      if (profilePicture) {
+        const fileName = `${userProfile.id}/${uuidv4()}`;
+        const { url, error } = await uploadProfilePicture(profilePicture, fileName);
+        
+        if (error) throw error;
+        if (url) avatarUrl = url;
+      }
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          username: name,
+          bio,
+          location,
+          native_language: nativeLanguage,
+          learning_language: learningLanguage,
+          proficiency,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userProfile.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+
+      onSave({
+        ...userProfile,
+        username: name,
+        bio,
+        location,
+        native_language: nativeLanguage,
+        learning_language: learningLanguage,
+        proficiency,
+        avatar_url: avatarUrl,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -1,78 +1,43 @@
-
 import { supabase } from '@/lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
-// Name of the bucket
-const BUCKET_NAME = 'user_uploads';
+const BUCKET_NAME = 'avatars';
 
-// Function to ensure bucket exists
 const ensureBucketExists = async () => {
-  try {
-    // Check if bucket exists
-    const { data: buckets, error: getBucketsError } = await supabase
-      .storage
-      .listBuckets();
-    
-    if (getBucketsError) {
-      console.error('Error checking buckets:', getBucketsError);
-      throw getBucketsError;
-    }
-    
-    // If bucket doesn't exist, create it
-    if (!buckets.some(bucket => bucket.name === BUCKET_NAME)) {
-      const { error: createBucketError } = await supabase
-        .storage
-        .createBucket(BUCKET_NAME, {
-          public: true,
-          fileSizeLimit: 1024 * 1024 * 2 // 2MB limit
-        });
-      
-      if (createBucketError) {
-        console.error('Error creating bucket:', createBucketError);
-        throw createBucketError;
-      }
-      
-      console.log(`Bucket "${BUCKET_NAME}" created successfully`);
-    }
-  } catch (error) {
-    console.error('ensureBucketExists error:', error);
-    throw error;
+  const { data: buckets } = await supabase.storage.listBuckets();
+  const bucketExists = buckets?.some(bucket => bucket.name === BUCKET_NAME);
+
+  if (!bucketExists) {
+    await supabase.storage.createBucket(BUCKET_NAME, {
+      public: true,
+      fileSizeLimit: 1024 * 1024 * 2 // 2MB
+    });
   }
 };
 
-// Upload a profile picture
-export const uploadProfilePicture = async (file: File, userId: string): Promise<string> => {
+export const uploadProfilePicture = async (file: File, fileName: string): Promise<{ url: string | null, error: Error | null }> => {
   try {
     await ensureBucketExists();
-    
-    // Create a unique file path for this user
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${userId}/${uuidv4()}.${fileExt}`;
-    
-    // Upload the file
-    const { error: uploadError } = await supabase
-      .storage
+
+    const { data, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
-      .upload(filePath, file, {
+      .upload(fileName, file, {
         cacheControl: '3600',
         upsert: true
       });
-    
+
     if (uploadError) {
-      console.error('Error uploading file:', uploadError);
       throw uploadError;
     }
-    
-    // Get the public URL
-    const { data } = supabase
-      .storage
+
+    const { data: { publicUrl } } = supabase.storage
       .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-    
-    return data.publicUrl;
+      .getPublicUrl(fileName);
+
+    return { url: publicUrl, error: null };
   } catch (error: any) {
-    console.error('uploadProfilePicture error:', error);
-    throw new Error(`Error uploading profile picture: ${error.message}`);
+    console.error('Upload error:', error);
+    return { url: null, error };
   }
 };
 
