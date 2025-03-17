@@ -23,36 +23,44 @@ export const chatService = {
 
   async createConversation(user1Id: string, user2Id: string) {
     try {
-      // First check if conversation exists
+      // First check if conversation exists using proper parameter substitution
       const { data: existingConv, error: checkError } = await supabase
         .from('conversations')
         .select('*')
         .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
-        .single();
+        .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
+        console.error('Error checking existing conversation:', checkError);
         throw checkError;
       }
 
       if (existingConv) {
+        console.log('Found existing conversation:', existingConv);
         return { data: existingConv, error: null };
       }
 
+      console.log('Creating new conversation between', user1Id, 'and', user2Id);
       const { data, error } = await supabase
         .from('conversations')
-        .insert({
+        .insert([{
           user1_id: user1Id,
           user2_id: user2Id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        })
-        .select('*')
+        }])
+        .select()
         .single();
 
       if (error) {
         console.error('Conversation creation error:', error);
+        if (error.code === 'PGRST204') {
+          console.error('Policy violation - check RLS policies');
+        }
         throw error;
       }
+
+      console.log('Successfully created conversation:', data);
 
       return { data, error: null };
     } catch (error: any) {

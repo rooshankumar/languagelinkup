@@ -119,17 +119,31 @@ const LanguageUsers = () => {
       console.log('New conversation creation result:', newConversation, createError);
 
       if (createError) {
-        throw createError;
+        console.error('Detailed create error:', createError);
+        throw new Error(`Failed to create conversation: ${createError.message}`);
+      }
+
+      if (!newConversation?.id) {
+        throw new Error('No conversation ID returned after creation');
       }
 
       navigate(`/chat/${newConversation.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating chat:', error);
       toast({
         title: 'Error creating chat',
-        description: error.message || 'There was an error starting this chat',
+        description: error.message || 'Unable to start chat. Please try again.',
         variant: 'destructive',
       });
+
+      // Log additional error details if available
+      if (error.details || error.hint || error.code) {
+        console.error('Additional error details:', {
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+      }
     }
   };
 
