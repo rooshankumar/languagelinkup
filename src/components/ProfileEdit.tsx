@@ -53,14 +53,25 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
     { id: 'native', name: 'Native/Fluent', description: 'I speak this language fluently' }
   ];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setProfilePicture(file);
       
-      // Create a preview URL for the selected image
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setProfilePicture(file);
       const objectUrl = URL.createObjectURL(file);
       setProfilePicturePreview(objectUrl);
+      
+      // Cleanup previous preview URL
+      return () => URL.revokeObjectURL(objectUrl);
     }
   };
 
