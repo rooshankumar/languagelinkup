@@ -65,23 +65,15 @@ const Profile = () => {
     fetchUserProfile();
   }, [navigate]);
 
+  // Import at the top of the file
+  import { uploadProfilePicture } from '@/utils/fileUpload';
+
   // Function to upload avatar to Supabase storage
   const uploadFile = async (file: File) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("User not authenticated");
-
-    const userId = session.user.id;
-    const filePath = `profile_pictures/${userId}-${uuidv4()}.${file.name.split('.').pop()}`;
-
-    const { data, error } = await supabase.storage
-      .from("user_uploads")
-      .upload(filePath, file, { upsert: true });
-
-    if (error) throw error;
-
-    // Retrieve the public URL of the uploaded file
-    const { publicUrl } = supabase.storage.from("user_uploads").getPublicUrl(filePath);
-    return publicUrl;
+    
+    return await uploadProfilePicture(file, session.user.id);
   };
 
   const handleEditProfile = () => {
