@@ -23,6 +23,21 @@ export const chatService = {
 
   async createConversation(user1Id: string, user2Id: string) {
     try {
+      // First check if conversation exists
+      const { data: existingConv, error: checkError } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingConv) {
+        return { data: existingConv, error: null };
+      }
+
       const { data, error } = await supabase
         .from('conversations')
         .insert({
@@ -31,13 +46,17 @@ export const chatService = {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .select()
+        .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Conversation creation error:', error);
+        throw error;
+      }
+
       return { data, error: null };
     } catch (error: any) {
-      console.error('Error creating conversation:', error);
+      console.error('Error in createConversation:', error);
       return { data: null, error };
     }
   },
