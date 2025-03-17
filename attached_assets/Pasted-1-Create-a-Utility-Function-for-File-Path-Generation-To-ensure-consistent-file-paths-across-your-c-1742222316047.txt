@@ -1,0 +1,105 @@
+1️⃣ Create a Utility Function for File Path Generation
+To ensure consistent file paths across your codebase, you can create a helper function:
+
+javascript
+Copy
+Edit
+const generateProfilePicturePath = (userId, file) => {
+  const timestamp = Date.now();
+  const extension = file.name.split('.').pop();
+  return `profile_pictures/${userId}-${timestamp}.${extension}`;
+};
+Then use it in your upload function:
+
+javascript
+Copy
+Edit
+const uploadProfilePicture = async (file) => {
+  const filePath = generateProfilePicturePath(user.id, file);
+
+  const { data, error } = await supabase.storage
+    .from('user_uploads')
+    .upload(filePath, file, { upsert: true });
+
+  if (error) {
+    console.error("Upload failed:", error);
+    return;
+  }
+
+  console.log("Upload successful:", data);
+};
+2️⃣ Improve Error Handling for Storage Uploads
+If an upload fails, handle errors properly:
+
+javascript
+Copy
+Edit
+const uploadProfilePicture = async (file) => {
+  if (!file) {
+    console.error("No file selected.");
+    return;
+  }
+
+  const filePath = generateProfilePicturePath(user.id, file);
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('user_uploads')
+      .upload(filePath, file, { upsert: true });
+
+    if (error) throw error;
+
+    console.log("Upload successful:", data);
+    return data.path;
+  } catch (err) {
+    console.error("Error uploading file:", err.message);
+  }
+};
+3️⃣ Implement File Type Validation Before Upload
+Ensure users only upload valid file types (e.g., .jpg, .png):
+
+javascript
+Copy
+Edit
+const isValidFileType = (file) => {
+  const allowedTypes = ["image/jpeg", "image/png"];
+  return allowedTypes.includes(file.type);
+};
+
+const uploadProfilePicture = async (file) => {
+  if (!isValidFileType(file)) {
+    console.error("Invalid file type. Only JPG and PNG are allowed.");
+    return;
+  }
+
+  const filePath = generateProfilePicturePath(user.id, file);
+
+  const { data, error } = await supabase.storage
+    .from('user_uploads')
+    .upload(filePath, file, { upsert: true });
+
+  if (error) {
+    console.error("Upload failed:", error);
+    return;
+  }
+
+  console.log("Upload successful:", data);
+};
+4️⃣ Verify File Access After Upload
+Once uploaded, test if the file is accessible:
+
+javascript
+Copy
+Edit
+const getProfilePictureUrl = async (filePath) => {
+  const { data, error } = await supabase.storage
+    .from('user_uploads')
+    .getPublicUrl(filePath);
+
+  if (error) {
+    console.error("File access error:", error);
+    return null;
+  }
+
+  return data.publicUrl;
+};
