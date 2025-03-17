@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import Button from "@/components/Button";
 import UserProfileCard from "@/components/UserProfileCard";
 import ProfileEdit from "@/components/ProfileEdit";
+import { uploadProfilePicture } from '@/utils/fileUpload';
 
 interface UserProfile {
   id: string;
@@ -64,9 +65,6 @@ const Profile = () => {
 
     fetchUserProfile();
   }, [navigate]);
-
-  // Import at the top of the file
-  import { uploadProfilePicture } from '@/utils/fileUpload';
 
   // Function to upload avatar to Supabase storage
   const uploadFile = async (file: File) => {
