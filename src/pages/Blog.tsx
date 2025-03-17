@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { BookOpen, Clock, ChevronLeft, Search } from 'lucide-react';
 import AdBanner from '@/components/AdBanner';
 import { trackPageView } from '@/utils/analytics';
+import Sidebar from '@/components/Sidebar';
 
-// Mock blog data - this would come from your backend in a real implementation
 const BLOG_POSTS = [
   {
     id: '1',
@@ -15,130 +14,43 @@ const BLOG_POSTS = [
     content: `
       <h2>1. Practice consistently</h2>
       <p>Regular practice, even for short periods, is more effective than occasional intensive study sessions. Aim for at least 20-30 minutes daily.</p>
-      
+
       <h2>2. Immerse yourself</h2>
       <p>Surround yourself with the language through movies, music, podcasts, and books. This passive exposure complements your active learning.</p>
-      
-      <h2>3. Speak from day one</h2>
-      <p>Don't wait until you feel "ready" to speak. Start practicing conversation as early as possible, even if you make mistakes.</p>
-      
-      <h2>4. Focus on common vocabulary</h2>
-      <p>Learn the most frequently used words first. In many languages, knowing just 1,000 words can help you understand about 80% of everyday conversations.</p>
-      
-      <h2>5. Use spaced repetition</h2>
-      <p>Review vocabulary and concepts at increasing intervals to improve long-term retention.</p>
-      
-      <h2>6. Set specific goals</h2>
-      <p>Rather than "learn Spanish," aim for something specific like "order food in Spanish" or "have a 5-minute conversation."</p>
-      
-      <h2>7. Find a language partner</h2>
-      <p>Practicing with native speakers provides authentic conversation experience and cultural insights.</p>
-      
-      <h2>8. Learn phrases, not just words</h2>
-      <p>Understanding how words fit together in common phrases is more valuable than memorizing isolated vocabulary.</p>
-      
-      <h2>9. Make mistakes</h2>
-      <p>Embrace errors as learning opportunities. Being afraid to make mistakes will slow your progress.</p>
-      
-      <h2>10. Track your progress</h2>
-      <p>Keep a record of your learning to stay motivated and see how far you've come.</p>
-    `,
-    author: 'Sarah Johnson',
-    authorTitle: 'Language Learning Coach',
-    authorAvatar: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=random',
-    publishDate: '2023-10-15',
-    readTime: '8 min read',
-    category: 'Learning Strategies',
-    tags: ['tips', 'learning methods', 'fluency'],
-    featuredImage: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'
-  },
-  {
-    id: '2',
-    title: 'The Science Behind Language Acquisition',
-    slug: 'science-behind-language-acquisition',
-    excerpt: 'Understanding how our brains learn languages can help us develop more effective learning strategies.',
-    content: `
-      <p>Language acquisition involves both conscious and unconscious processes. The brain forms neural pathways when we learn new words and grammar patterns, and these connections strengthen with repeated exposure and practice.</p>
-      
-      <h2>Critical Periods in Language Learning</h2>
-      <p>Research suggests that children have a "critical period" for language acquisition that makes it easier for them to become fluent in new languages. However, adults still have many cognitive advantages that can aid in language learning.</p>
-      
-      <h2>The Role of Memory</h2>
-      <p>Both short-term and long-term memory play crucial roles in language learning. Short-term memory helps us process immediate language input, while long-term memory stores vocabulary, grammar rules, and cultural knowledge.</p>
-      
-      <h2>Language Learning and Brain Plasticity</h2>
-      <p>Learning a new language increases brain plasticity, which is the brain's ability to form new neural connections. This can have cognitive benefits beyond just knowing another language.</p>
-      
-      <h2>The Importance of Input</h2>
-      <p>Comprehensible input—language that is just slightly above your current level—is crucial for progress. This idea, known as "i+1" in linguistics, suggests that you learn best when you're challenged but not overwhelmed.</p>
-    `,
-    author: 'Dr. Michael Chen',
-    authorTitle: 'Neurolinguist',
-    authorAvatar: 'https://ui-avatars.com/api/?name=Michael+Chen&background=random',
-    publishDate: '2023-09-22',
-    readTime: '12 min read',
-    category: 'Language Science',
-    tags: ['neuroscience', 'cognitive science', 'brain research'],
-    featuredImage: 'https://images.unsplash.com/photo-1580894742597-87bc8789db3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'
-  },
-  {
-    id: '3',
-    title: 'How to Maintain Your Language Skills',
-    slug: 'how-to-maintain-language-skills',
-    excerpt: 'Reached a good level in your target language? Here\'s how to maintain and continue improving your skills.',
-    content: `
-      <p>Many language learners reach an intermediate or advanced level only to find their skills deteriorating over time due to lack of practice. Here are strategies to maintain and improve your language abilities:</p>
-      
-      <h2>1. Create a routine</h2>
-      <p>Schedule regular practice sessions, even if they're short. Consistency is key to maintaining language skills.</p>
-      
-      <h2>2. Find authentic content you enjoy</h2>
-      <p>Follow YouTubers, podcasts, or authors in your target language that align with your interests. This makes practice feel less like work.</p>
-      
-      <h2>3. Join language communities</h2>
-      <p>Online forums, language exchange apps, and local meetups can provide opportunities for regular practice.</p>
-      
-      <h2>4. Set new challenges</h2>
-      <p>Try writing a journal, participating in a debate, or explaining complex topics in your target language to push your boundaries.</p>
-      
-      <h2>5. Teach others</h2>
-      <p>Explaining aspects of your target language to beginners reinforces your own knowledge and reveals gaps you might have missed.</p>
     `,
     author: 'Elena Rodriguez',
     authorTitle: 'Polyglot & Language Educator',
     authorAvatar: 'https://ui-avatars.com/api/?name=Elena+Rodriguez&background=random',
     publishDate: '2023-11-05',
     readTime: '6 min read',
-    category: 'Maintenance',
+    category: 'Learning',
     tags: ['practice', 'fluency', 'intermediate learners'],
     featuredImage: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'
-  }
+  },
 ];
 
 // Blog List Page Component
 const BlogList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const location = useLocation();
-  
+
   useEffect(() => {
-    // Track page view for analytics
     trackPageView('/blog');
   }, []);
-  
+
   const filteredPosts = BLOG_POSTS.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Language Learning Blog</h1>
         <p className="text-muted-foreground">Tips, strategies and insights to enhance your language learning journey</p>
       </div>
-      
-      {/* Search bar */}
+
       <div className="relative mb-8">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <input
@@ -149,13 +61,11 @@ const BlogList = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      
-      {/* AdBanner at the top of content */}
+
       <AdBanner adSlot="1234567890" className="mb-8" />
-      
-      {/* Featured post */}
+
       {!searchTerm && (
-        <div className="mb-10">
+        <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Featured Article</h2>
           <div className="bg-card rounded-xl overflow-hidden shadow-md border">
             <div className="h-64 overflow-hidden">
@@ -194,11 +104,9 @@ const BlogList = () => {
           </div>
         </div>
       )}
-      
-      {/* Blog posts grid */}
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPosts.map((post, index) => (
-          // Skip the first post if we're showing featured and not searching
           (!searchTerm && index === 0) ? null : (
             <div key={post.id} className="bg-card rounded-lg overflow-hidden shadow-sm border hover:shadow-md transition-shadow">
               <div className="h-48 overflow-hidden">
@@ -235,10 +143,9 @@ const BlogList = () => {
           )
         ))}
       </div>
-      
-      {/* AdBanner at the bottom of content */}
+
       <AdBanner adSlot="9876543210" className="mt-12" />
-      
+
       {filteredPosts.length === 0 && (
         <div className="text-center py-12">
           <h3 className="text-xl font-medium mb-2">No articles found</h3>
@@ -255,15 +162,13 @@ const BlogList = () => {
 const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = BLOG_POSTS.find(post => post.slug === slug);
-  const location = useLocation();
-  
+
   useEffect(() => {
-    // Track page view for analytics
     if (slug) {
       trackPageView(`/blog/${slug}`);
     }
   }, [slug]);
-  
+
   if (!post) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
@@ -275,18 +180,18 @@ const BlogDetail = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Link to="/blog" className="flex items-center text-muted-foreground hover:text-primary mb-6">
         <ChevronLeft className="h-4 w-4 mr-1" />
         Back to all articles
       </Link>
-      
+
       <div className="mb-6">
         <p className="text-sm text-primary font-medium mb-2">{post.category}</p>
         <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
-        
+
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <img 
@@ -305,7 +210,7 @@ const BlogDetail = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="mb-8 rounded-xl overflow-hidden">
         <img 
           src={post.featuredImage} 
@@ -313,18 +218,16 @@ const BlogDetail = () => {
           className="w-full h-auto"
         />
       </div>
-      
-      {/* AdBanner before content */}
+
       <AdBanner adSlot="3456789012" className="mb-8" />
-      
+
       <div 
         className="prose prose-slate max-w-none mb-8"
         dangerouslySetInnerHTML={{ __html: post.content }} 
       />
-      
-      {/* AdBanner after content */}
+
       <AdBanner adSlot="5678901234" className="mb-8" />
-      
+
       <div className="border-t pt-6">
         <h3 className="font-semibold mb-2">Tags:</h3>
         <div className="flex flex-wrap gap-2">
@@ -339,26 +242,15 @@ const BlogDetail = () => {
   );
 };
 
-// Main Blog component that handles routing between list and detail views
+// Main Blog component
 const Blog = () => {
   const { slug } = useParams<{ slug?: string }>();
-  
-  return slug ? <BlogDetail /> : <BlogList />;
-};
 
-export default Blog;
-import React from 'react';
-import Sidebar from '@/components/Sidebar';
-
-const Blog = () => {
   return (
     <div className="flex min-h-screen">
       <Sidebar className="hidden md:flex" />
       <main className="flex-1 pb-16 md:pb-0 md:pl-64">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-3xl font-bold mb-6">Blog</h1>
-          {/* Blog content will go here */}
-        </div>
+        {slug ? <BlogDetail /> : <BlogList />}
       </main>
     </div>
   );
