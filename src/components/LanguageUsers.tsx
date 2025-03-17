@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
@@ -38,7 +37,7 @@ const LanguageUsers = () => {
         description: error.message || 'Failed to load users',
         variant: 'destructive',
       });
-      
+
       // Use sample data as fallback
       setUsers([
         {
@@ -74,7 +73,7 @@ const LanguageUsers = () => {
   const handleChatClick = async (userId) => {
     try {
       const { data: currentUser } = await supabase.auth.getUser();
-      
+
       if (!currentUser?.user?.id) {
         toast({
           title: 'Authentication required',
@@ -84,9 +83,9 @@ const LanguageUsers = () => {
         navigate('/login');
         return;
       }
-      
+
       const currentUserId = currentUser.user.id;
-      
+
       // Check if conversation exists - using proper parameter format
       const { data: existingConv, error: convCheckError } = await supabase
         .from('conversations')
@@ -98,14 +97,14 @@ const LanguageUsers = () => {
       if (convCheckError) {
         console.error('Error checking existing conversation:', convCheckError);
       }
-        
+
       console.log('Existing conversation check:', existingConv);
-        
+
       if (existingConv) {
         navigate(`/chat/${existingConv.id}`);
         return;
       }
-      
+
       // Create new conversation - properly formatted
       const { data: newConversation, error: createError } = await supabase
         .from('conversations')
@@ -119,13 +118,13 @@ const LanguageUsers = () => {
         ])
         .select('id')
         .single();
-        
+
       console.log('New conversation creation result:', newConversation, createError);
-        
+
       if (createError) {
         throw createError;
       }
-      
+
       navigate(`/chat/${newConversation.id}`);
     } catch (error) {
       console.error('Error creating chat:', error);
@@ -140,7 +139,7 @@ const LanguageUsers = () => {
   return (
     <div className="py-8">
       <h2 className="text-2xl font-bold mb-6 text-center">Connect with Language Partners</h2>
-      
+
       {loading ? (
         <div className="text-center py-8">Loading users...</div>
       ) : (

@@ -11,9 +11,31 @@ export interface Message {
 }
 
 export const chatService = {
+  async createConversation(user1Id: string, user2Id: string) {
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user1_id: user1Id,
+          user2_id: user2Id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error creating conversation:', error);
+      return { data: null, error };
+    }
+  },
+
   async sendMessage(conversationId: string, content: string) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
     return await supabase
       .from('messages')
