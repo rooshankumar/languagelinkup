@@ -20,12 +20,13 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
 
   // ✅ Upload file to Supabase Storage
   const { data, error } = await supabase.storage
-    .from("user_uploads")
+    .from("avatars")
     .upload(filePath, file, {
       upsert: true,
       cacheControl: "3600",
       metadata: {
-        owner: userId
+        user_id: userId,
+        mime_type: file.type
       }
     });
 
