@@ -10,7 +10,8 @@ const ensureBucketExists = async () => {
   if (!bucketExists) {
     await supabase.storage.createBucket(BUCKET_NAME, {
       public: true,
-      fileSizeLimit: 1024 * 1024 * 2 // 2MB
+      allowedMimeTypes: ['image/*'],
+      fileSizeLimit: 1024 * 1024 * 5 // 5MB
     });
   }
 };
@@ -48,16 +49,16 @@ export const deleteProfilePicture = async (url: string): Promise<void> => {
     const urlObj = new URL(url);
     const pathParts = urlObj.pathname.split('/');
     const filePath = pathParts.slice(pathParts.indexOf(BUCKET_NAME) + 1).join('/');
-    
+
     if (!filePath) {
       throw new Error('Invalid file path');
     }
-    
+
     const { error } = await supabase
       .storage
       .from(BUCKET_NAME)
       .remove([filePath]);
-    
+
     if (error) {
       throw error;
     }

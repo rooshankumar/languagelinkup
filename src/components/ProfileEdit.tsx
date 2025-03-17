@@ -92,10 +92,20 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
 
       if (profilePicture) {
         const fileName = `${userProfile.id}/${uuidv4()}`;
-        const { url, error } = await uploadProfilePicture(profilePicture, fileName);
+        const { data, error } = await supabase.storage
+          .from('user_uploads')
+          .upload(fileName, profilePicture, {
+            cacheControl: '3600',
+            upsert: true
+          });
 
         if (error) throw error;
-        if (url) avatarUrl = url;
+
+        const { data: { publicURL } } = await supabase.storage
+          .from('user_uploads')
+          .getPublicURL(fileName);
+
+        avatarUrl = publicURL;
       }
 
       const { error: updateError } = await supabase

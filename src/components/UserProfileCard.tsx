@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User, MapPin, Languages, Target } from 'lucide-react';
 
@@ -35,6 +34,9 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
                 src={user.avatar} 
                 alt={user.name}
                 className="w-12 h-12 rounded-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
             ) : (
               <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-full">
@@ -55,7 +57,7 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
             )}
           </div>
         </div>
-        
+
         <div className="mt-3 text-sm">
           <div className="flex items-center gap-1 text-primary">
             <Languages className="h-4 w-4" />
@@ -67,7 +69,7 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
       </div>
     );
   }
-  
+
   return (
     <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className="p-5">
@@ -78,6 +80,9 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
                 src={user.avatar} 
                 alt={user.name}
                 className="w-20 h-20 rounded-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
             ) : (
               <div className="w-20 h-20 bg-muted flex items-center justify-center rounded-full">
@@ -98,14 +103,14 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
             )}
           </div>
         </div>
-        
+
         {user.bio && (
           <div className="mb-4">
             <h4 className="text-sm font-medium text-muted-foreground mb-1">About Me</h4>
             <p className="text-sm">{user.bio}</p>
           </div>
         )}
-        
+
         <div className="space-y-3">
           <div className="flex items-start gap-2">
             <Languages className="h-5 w-5 text-primary mt-0.5" />
@@ -126,7 +131,7 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
               )}
             </div>
           </div>
-          
+
           {user.learningGoals && (
             <div className="flex items-start gap-2">
               <Target className="h-5 w-5 text-primary mt-0.5" />
