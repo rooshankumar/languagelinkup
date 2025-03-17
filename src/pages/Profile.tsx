@@ -103,6 +103,11 @@ const Profile = () => {
       }
 
       // Update the user profile in Supabase
+      // First verify we have the current user's ID
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error("Not authenticated");
+
+      // Ensure we're updating our own profile
       const { error } = await supabase
         .from("users")
         .update({
@@ -115,7 +120,7 @@ const Profile = () => {
           avatar_url: avatarUrl,
           last_active: new Date().toISOString(),
         })
-        .eq("id", userProfile?.id);
+        .eq("id", session.user.id);
 
       if (error) throw error;
 
