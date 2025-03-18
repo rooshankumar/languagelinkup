@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Smile, PaperClip, Mic } from 'lucide-react';
+import { ArrowLeft, Send, Smile, Paperclip, Mic } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { chatService } from '@/services/chatService';
 import { useToast } from '@/hooks/use-toast';
@@ -347,7 +347,7 @@ export default function Chat() {
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
-            <PaperClip className="h-4 w-4" />
+            <Paperclip className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
