@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,15 +12,12 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get user session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (!session?.user) throw new Error('No session found');
 
-        // Refresh session globally
         await refreshSession();
 
-        // Check if user exists in database
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -64,4 +62,3 @@ export default function AuthCallback() {
     </div>
   );
 }
-export default AuthCallback;

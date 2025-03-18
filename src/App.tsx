@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import AuthCallback from "@/pages/AuthCallback";
+const AuthCallback = React.lazy(() => import("@/pages/AuthCallback"));
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
