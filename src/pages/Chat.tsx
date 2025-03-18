@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
