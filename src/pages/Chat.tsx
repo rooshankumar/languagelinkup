@@ -52,6 +52,23 @@ export default function Chat() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const fetchChatDetails = async (chatId: string) => {
+    try {
+      const { data: chatData, error: chatError } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('id', chatId)
+        .single();
+
+      if (chatError) throw chatError;
+      return chatData;
+    } catch (error) {
+      console.error('Error fetching chat details:', error);
+      throw error;
+    }
+  };
+
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -86,6 +103,10 @@ export default function Chat() {
           fetchChatDetails(chatId),
           fetchMessages(chatId),
         ]);
+
+        setPartner(chatDetails);
+        setMessages(messages);
+        setIsLoading(false);
 
         return () => {
           subscription.unsubscribe();
@@ -286,7 +307,23 @@ export default function Chat() {
     }, 3000);
   };
 
-  if (!partner) return null;
+  const fetchMessages = async (chatId: string) => {
+    try {
+      const { data: messageData, error: messageError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', chatId)
+        .order('created_at', { ascending: true });
+
+      if (messageError) throw messageError;
+      return messageData;
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      throw error;
+    }
+  };
+
+  if (isLoading || !partner) return null;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto relative">
