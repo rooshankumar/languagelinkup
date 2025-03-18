@@ -52,6 +52,25 @@ export default function Chat() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const fetchChatDetails = async (chatId: string) => {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select(`
+        *,
+        user1:user1_id(id, username, profile_picture, native_language, is_online, last_seen),
+        user2:user2_id(id, username, profile_picture, native_language, is_online, last_seen)
+      `)
+      .eq('id', chatId)
+      .single();
+
+    if (error) throw error;
+
+    const otherUser = data.user1_id === currentUserId ? data.user2 : data.user1;
+    setPartner(otherUser);
+    return data;
+  };
+
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -112,7 +131,7 @@ export default function Chat() {
 
   const handleMessageUpdate = (payload: any) => {
     const updatedMessage = payload.new;
-    setMessages(prev => 
+    setMessages(prev =>
       prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
     );
   };
@@ -286,26 +305,37 @@ export default function Chat() {
     }, 3000);
   };
 
+  const fetchMessages = async (chatId: string) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', chatId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data;
+  };
+
+
   if (!partner) return null;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto">
-      <div className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/chats')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Avatar src={partner.profile_picture} fallback={partner.username[0]} />
-          <div>
-            <h2 className="font-semibold">{partner.username}</h2>
-            <p className="text-xs text-muted-foreground">
-              {partner.is_online ? 'Online' : `Last seen ${partner.last_seen}`}
-            </p>
+    <div className="max-w-3xl mx-auto h-full flex flex-col relative">
+      <div className="sticky top-0 z-10 bg-background border-b p-2 flex items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        {partner && (
+          <div className="flex items-center gap-2">
+            <Avatar src={partner.profile_picture || ''} fallback={partner.username?.[0]} />
+            <div>
+              <p className="font-medium">{partner.username}</p>
+              <p className="text-xs text-muted-foreground">{partner.is_online ? 'Online' : 'Offline'}</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      <div 
+      <div
         ref={chatContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4"
         onScroll={handleScroll}
@@ -317,8 +347,8 @@ export default function Chat() {
           >
             <div className={`flex flex-col max-w-[70%] ${message.sender_id === currentUserId ? 'items-end' : 'items-start'}`}>
               <div className={`rounded-lg p-3 ${
-                message.sender_id === currentUserId 
-                  ? 'bg-primary text-primary-foreground' 
+                message.sender_id === currentUserId
+                  ? 'bg-primary text-primary-foreground'
                   : 'bg-muted'
               }`}>
                 {message.type === 'voice' ? (
@@ -326,7 +356,7 @@ export default function Chat() {
                 ) : message.type === 'image' ? (
                   <img src={message.file_url} alt="Image" className="max-w-full rounded" />
                 ) : message.type === 'file' ? (
-                  <a href={message.file_url} target="_blank" rel="noopener noreferrer" 
+                  <a href={message.file_url} target="_blank" rel="noopener noreferrer"
                      className="flex items-center gap-2 text-blue-500 hover:underline">
                     <Paperclip className="h-4 w-4" />
                     {message.content}
@@ -337,9 +367,9 @@ export default function Chat() {
               </div>
               <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                 <span>
-                  {new Date(message.created_at).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date(message.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </span>
                 {message.sender_id === currentUserId && (
@@ -433,8 +463,6 @@ export default function Chat() {
           )}
         </div>
       </div>
-
-
     </div>
   );
 }
