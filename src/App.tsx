@@ -3,8 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import MobileNavbar from "./components/MobileNavbar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
@@ -43,13 +44,11 @@ const PageTracker = () => {
 const queryClient = new QueryClient();
 
 const HideMobileNavInChat = () => {
-  const location = useLocation();
-  const isChatPage = location.pathname.startsWith('/chat/');
-  
   return (
-    <div className={isChatPage ? 'hidden md:block' : 'block'}>
-      <MobileNavbar />
-    </div>
+    <Routes>
+      <Route path="/chat/*" element={<div className="hidden md:block"><MobileNavbar /></div>} />
+      <Route path="*" element={<div className="block"><MobileNavbar /></div>} />
+    </Routes>
   );
 };
 
