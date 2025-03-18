@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,18 +37,23 @@ export default function Chat() {
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const userId = user?.id; //Added to access user id
 
   const fetchChatDetails = async (chatId: string) => {
     try {
-      const { data: chatData, error: chatError } = await supabase
+      const { data, error } = await supabase
         .from('chats')
-        .select('*, users!users_chats_partner_id_fkey(*)')
+        .select(`
+          *,
+          user1:user1_id(id, username, profile_picture),
+          user2:user2_id(id, username, profile_picture)
+        `)
         .eq('id', chatId)
         .single();
 
-      if (chatError) throw chatError;
-      const partnerInfo = chatData.users;
-      return partnerInfo;
+      if (error) throw error;
+      const partner = data.user1.id === userId ? data.user2 : data.user1;
+      return { ...data, partner };
     } catch (error) {
       console.error('Error fetching chat details:', error);
       throw error;
@@ -81,7 +85,7 @@ export default function Chat() {
           fetchMessages(chatId),
         ]);
 
-        setPartner(chatDetails);
+        setPartner(chatDetails.partner); // Use the partner object from the updated fetchChatDetails
         setMessages(messages);
         setIsLoading(false);
       } catch (error: any) {
@@ -113,7 +117,7 @@ export default function Chat() {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [chatId, navigate]);
+  }, [chatId, navigate, userId]); // Added userId to the dependency array
 
   const handleNewMessage = (payload: any) => {
     const newMessage = payload.new;
@@ -187,7 +191,7 @@ export default function Chat() {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setAudioBlob(audioBlob);
-        
+
         try {
           const fileName = `voice_${Date.now()}.webm`;
           const { error: uploadError, data } = await supabase.storage
@@ -318,7 +322,7 @@ export default function Chat() {
             className="hidden"
             onChange={handleFileUpload}
           />
-          
+
           <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}

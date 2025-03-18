@@ -1,51 +1,61 @@
 
 -- Enable RLS
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
--- Create storage bucket if it doesn't exist
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('avatars', 'avatars', true)
-ON CONFLICT (id) DO NOTHING;
+-- Create chat tables if they don't exist
+CREATE TABLE IF NOT EXISTS public.chats (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  user1_id UUID REFERENCES public.users(id) NOT NULL,
+  user2_id UUID REFERENCES public.users(id) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
--- Allow public access to avatars
-CREATE POLICY "Give public access to avatars"
-ON storage.objects FOR SELECT
-TO public
-USING ( bucket_id = 'avatars' );
+CREATE TABLE IF NOT EXISTS public.chat_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  chat_id UUID REFERENCES public.chats(id) ON DELETE CASCADE NOT NULL,
+  sender_id UUID REFERENCES public.users(id) NOT NULL,
+  content TEXT NOT NULL,
+  content_type TEXT DEFAULT 'text' NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  attachment_url TEXT
+);
 
--- Allow authenticated users to upload avatars
-CREATE POLICY "Allow authenticated users to upload avatars"
-ON storage.objects FOR INSERT
+-- Create indexes
+CREATE INDEX IF NOT EXISTS chats_user1_id_idx ON public.chats(user1_id);
+CREATE INDEX IF NOT EXISTS chats_user2_id_idx ON public.chats(user2_id);
+CREATE INDEX IF NOT EXISTS chat_messages_chat_id_idx ON public.chat_messages(chat_id);
+
+-- RLS Policies
+CREATE POLICY "Users can see their own chats"
+ON public.chats
+FOR SELECT
 TO authenticated
-WITH CHECK ( bucket_id = 'avatars' );
+USING (
+  auth.uid() = user1_id OR 
+  auth.uid() = user2_id
+);
 
--- Allow users to update their own avatars
-CREATE POLICY "Allow users to update their avatars"
-ON storage.objects FOR UPDATE
+CREATE POLICY "Users can see messages in their chats"
+ON public.chat_messages
+FOR SELECT
 TO authenticated
-USING ( bucket_id = 'avatars' );
+USING (
+  chat_id IN (
+    SELECT id FROM public.chats 
+    WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+  )
+);
 
--- Allow users to delete their own avatars
-CREATE POLICY "Allow users to delete their avatars"
-ON storage.objects FOR DELETE
+CREATE POLICY "Users can insert messages in their chats"
+ON public.chat_messages
+FOR INSERT
 TO authenticated
-USING ( bucket_id = 'avatars' );
--- Enable RLS
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-
--- Allow users to create conversations
-CREATE POLICY "Users can create conversations" ON conversations FOR INSERT
-  WITH CHECK (auth.uid() IN (user1_id, user2_id));
-
--- Allow users to view their own conversations
-CREATE POLICY "Users can view their own conversations" ON conversations FOR SELECT
-  USING (auth.uid() IN (user1_id, user2_id));
-
--- Allow users to read conversations they're part of
-CREATE POLICY "Users can read their own conversations" ON conversations FOR SELECT
-  USING (auth.uid() IN (user1_id, user2_id));
-
--- Allow users to update their own conversations
-CREATE POLICY "Users can update their own conversations" ON conversations FOR UPDATE
-  USING (auth.uid() IN (user1_id, user2_id))
-  WITH CHECK (auth.uid() IN (user1_id, user2_id));
+WITH CHECK (
+  chat_id IN (
+    SELECT id FROM public.chats 
+    WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+  )
+);
