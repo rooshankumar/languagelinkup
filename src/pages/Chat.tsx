@@ -87,27 +87,19 @@ const Chat = () => {
             .single();
 
           if (userCheck) {
+            const otherUserId = chatId;
             console.log('Found user, checking for existing conversation');
             // Check if conversation already exists
-            // Fixed query using proper supabase filter syntax
+            console.log('Checking for existing conversation between', userId, 'and', otherUserId);
             const { data: existingConv, error: checkError } = await supabase
               .from('conversations')
-              .select('id')
-              .or(`user1_id.eq.${userId},user2_id.eq.${chatId}`)
-              .or(`user1_id.eq.${chatId},user2_id.eq.${userId}`)
-              .maybeSingle();
-
-            console.log('Conversation check results:', existingConv, checkError);
+              .select('id, created_at')
+              .or(`and(user1_id.eq.${userId},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${userId})`)
+              .single();
 
             if (checkError) {
               console.error('Error checking for existing conversation:', checkError);
-              toast({
-                title: "Couldn't load conversation",
-                description: "There was an error loading this conversation.",
-                variant: "destructive",
-              });
-              navigate('/chats');
-              return;
+              throw new Error(`Failed to check existing conversation: ${checkError.message}`);
             }
 
             if (existingConv) {
@@ -121,12 +113,12 @@ const Chat = () => {
             // This is a user ID, create a conversation
             const { data: newConversation, error: createError } = await supabase
               .from('conversations')
-              .insert({
+              .insert([{
                 user1_id: userId,
                 user2_id: chatId,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
-              })
+              }])
               .select('id, user1_id, user2_id')
               .single();
 

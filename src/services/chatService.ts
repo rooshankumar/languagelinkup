@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabaseClient';
 
 export interface ChatMessage {
@@ -15,6 +14,7 @@ export interface Conversation {
   id: string;
   user1_id: string;
   user2_id: string;
+  created_at: string;
   last_message?: string;
   last_message_time?: string;
 }
@@ -22,15 +22,15 @@ export interface Conversation {
 export const chatService = {
   async createConversation(user1Id: string, user2Id: string): Promise<Conversation> {
     try {
-      // Check if conversation exists with proper parameter interpolation
+      // Check if conversation exists
       const { data: existingConv, error: checkError } = await supabase
         .from('conversations')
         .select('*')
-        .or(`user1_id.eq.${user1Id},user2_id.eq.${user2Id}`)
-        .or(`user1_id.eq.${user2Id},user2_id.eq.${user1Id}`)
-        .maybeSingle();
+        .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
+        .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing conversation:', checkError);
         throw checkError;
       }
 
@@ -38,26 +38,31 @@ export const chatService = {
         return existingConv;
       }
 
-      const timestamp = new Date().toISOString();
-      
-      // Create new conversation with minimal required fields
+      // Create new conversation with timestamp
       const { data: newConversation, error: createError } = await supabase
         .from('conversations')
-        .insert({
+        .insert([{
           user1_id: user1Id,
-          user2_id: user2Id
-        })
+          user2_id: user2Id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
         .select()
         .single();
 
       if (createError) {
+        console.error('Error creating conversation:', createError);
         throw createError;
       }
 
+      if (!newConversation) {
+        throw new Error('Failed to create conversation - no data returned');
+      }
+
       return newConversation;
-    } catch (error: any) {
-      console.error('Error in createConversation:', error);
-      throw new Error(error.message || 'Failed to create conversation');
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+      throw error;
     }
   },
 
@@ -110,13 +115,21 @@ export const chatService = {
   },
 
   async markMessagesAsRead(conversationId: string, userId: string) {
-    const { error } = await supabase
-      .from('messages')
-      .update({ is_read: true })
-      .eq('conversation_id', conversationId)
-      .eq('receiver_id', userId)
-      .eq('is_read', false);
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('conversation_id', conversationId)
+        .eq('receiver_id', userId)
+        .eq('is_read', false);
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error marking messages as read:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error);
+      throw error;
+    }
   }
 };

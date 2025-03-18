@@ -30,3 +30,18 @@ CREATE POLICY "Allow users to delete their avatars"
 ON storage.objects FOR DELETE
 TO authenticated
 USING ( bucket_id = 'avatars' );
+-- Enable RLS
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+
+-- Allow users to create conversations
+CREATE POLICY "Users can create conversations" ON conversations FOR INSERT
+  WITH CHECK (auth.uid() IN (user1_id, user2_id));
+
+-- Allow users to view their own conversations
+CREATE POLICY "Users can view their own conversations" ON conversations FOR SELECT
+  USING (auth.uid() IN (user1_id, user2_id));
+
+-- Allow users to update their own conversations
+CREATE POLICY "Users can update their own conversations" ON conversations FOR UPDATE
+  USING (auth.uid() IN (user1_id, user2_id))
+  WITH CHECK (auth.uid() IN (user1_id, user2_id));
