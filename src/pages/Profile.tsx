@@ -25,6 +25,7 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch user profile
   const fetchUserProfile = async () => {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -34,89 +35,60 @@ const Profile = () => {
           title: "Authentication required",
           description: "Please log in to view your profile.",
         });
-        navigate('/auth');
+        navigate("/auth");
         return;
       }
 
       const userId = session.user.id;
 
+      // Fetch user profile from the database
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
+        .from("users")
+        .select("*")
+        .eq("id", userId)
         .single();
 
       if (error) throw error;
 
       setUserProfile(data);
-      setIsLoading(false);
     } catch (error: any) {
-      console.error('Error fetching user profile:', error.message);
+      console.error("Error fetching user profile:", error.message);
       toast({
         title: "Error loading profile",
         description: "Could not load your profile. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, [navigate]);
-
-  // Refresh profile when avatar is updated
+  // Subscribe to profile changes
   useEffect(() => {
     const profileChanges = supabase
-      .channel('profile-changes')
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'users' 
-      }, fetchUserProfile)
+      .channel("profile-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "users",
+        },
+        fetchUserProfile
+      )
       .subscribe();
 
     return () => {
       profileChanges.unsubscribe();
     };
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  }, []);
 
-        if (sessionError || !session) {
-          toast({
-            title: "Authentication required",
-            description: "Please log in to view your profile.",
-          });
-          navigate("/auth");
-          return;
-        }
-
-        const userId = session.user.id;
-
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", userId)
-          .single();
-
-        if (error) throw error;
-
-        setUserProfile(data);
-      } catch (error: any) {
-        console.error("Error fetching user profile:", error.message);
-        toast({
-          title: "Error loading profile",
-          description: "Could not load your profile. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+  // Fetch profile on component mount
+  useEffect(() => {
     fetchUserProfile();
   }, [navigate]);
 
+  // Upload file to Supabase Storage
   const uploadFile = async (file: File) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("User not authenticated");
@@ -124,20 +96,23 @@ const Profile = () => {
     return await uploadProfilePicture(file, session.user.id);
   };
 
+  // Handle edit profile
   const handleEditProfile = () => {
     setIsEditing(true);
   };
 
+  // Handle cancel edit
   const handleCancelEdit = () => {
     setIsEditing(false);
   };
 
+  // Handle save profile
   const handleSaveProfile = async (updatedProfile: UserProfile) => {
     setIsLoading(true);
     try {
       let avatarUrl = userProfile?.avatar_url;
 
-      // ✅ Upload new profile picture if provided
+      // Upload new profile picture if provided
       if (updatedProfile.avatar_url instanceof File) {
         avatarUrl = await uploadFile(updatedProfile.avatar_url);
       }
@@ -145,7 +120,7 @@ const Profile = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) throw new Error("Not authenticated");
 
-      // ✅ Update user profile in the database
+      // Update user profile in the database
       const { error } = await supabase
         .from("users")
         .update({
@@ -162,7 +137,7 @@ const Profile = () => {
 
       if (error) throw error;
 
-      // ✅ Update local state with the new profile data
+      // Update local state with the new profile data
       setUserProfile({ ...updatedProfile, avatar_url: avatarUrl });
       setIsEditing(false);
 
@@ -182,6 +157,7 @@ const Profile = () => {
     }
   };
 
+  // Format user data for UserProfileCard component
   const formattedUserData = userProfile
     ? {
         id: userProfile.id,
@@ -203,6 +179,7 @@ const Profile = () => {
       }
     : null;
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[70vh]">
