@@ -3,13 +3,24 @@
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- Storage policy
+-- Storage policies
 CREATE POLICY "Allow authenticated users to upload files"
 ON storage.objects
-FOR ALL
+FOR INSERT
 TO authenticated
-USING (bucket_id = 'user_uploads' AND auth.uid() = owner)
-WITH CHECK (bucket_id = 'user_uploads' AND auth.uid() = owner);
+WITH CHECK (bucket_id = 'user_uploads');
+
+CREATE POLICY "Allow authenticated users to update their files"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (bucket_id = 'user_uploads' AND auth.uid() = owner);
+
+CREATE POLICY "Allow public read access"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (bucket_id = 'user_uploads');
 
 -- Users policy
 CREATE POLICY "Users can update their own profile"

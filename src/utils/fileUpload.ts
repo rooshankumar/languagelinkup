@@ -1,4 +1,7 @@
+
 import { supabase } from "@/lib/supabaseClient";
+
+const BUCKET_NAME = 'user_uploads';
 
 export const generateProfilePicturePath = (userId: string, file: File): string => {
   const extension = file.name.split(".").pop();
@@ -12,30 +15,35 @@ export const isValidFileType = (file: File): boolean => {
 };
 
 export const uploadProfilePicture = async (file: File, userId: string) => {
-  if (!isValidFileType(file)) {
-    throw new Error("Invalid file type. Only JPG, PNG, and GIF are allowed.");
+  try {
+    if (!isValidFileType(file)) {
+      throw new Error("Invalid file type. Only JPG, PNG, and GIF are allowed.");
+    }
+
+    const filePath = generateProfilePicturePath(userId, file);
+
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(filePath, file, {
+        upsert: true,
+        cacheControl: "3600",
+        contentType: file.type,
+      });
+
+    if (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+
+    // Get Public URL
+    const { data: urlData } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw error;
   }
-
-  const filePath = generateProfilePicturePath(userId, file);
-
-  // ✅ Upload file to Supabase Storage
-  const { data, error } = await supabase.storage
-    .from("avatars") // Ensure this matches your bucket name
-    .upload(filePath, file, {
-      upsert: true,
-      cacheControl: "3600",
-      contentType: file.type, // Explicitly set the content type
-    });
-
-  if (error) {
-    console.error("Error uploading file:", error);
-    throw new Error(`Error uploading file: ${error.message}`);
-  }
-
-  // ✅ Get Public URL
-  const { data: urlData } = supabase.storage
-    .from("avatars") // Ensure this matches your bucket name
-    .getPublicUrl(filePath);
-
-  return urlData.publicUrl;
 };
