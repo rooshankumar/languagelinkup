@@ -25,7 +25,6 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch user profile
   const fetchUserProfile = async () => {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -41,7 +40,6 @@ const Profile = () => {
 
       const userId = session.user.id;
 
-      // Fetch user profile from the database
       const { data, error } = await supabase
         .from("users")
         .select("*")
@@ -63,7 +61,6 @@ const Profile = () => {
     }
   };
 
-  // Subscribe to profile changes
   useEffect(() => {
     const profileChanges = supabase
       .channel("profile-changes")
@@ -83,12 +80,10 @@ const Profile = () => {
     };
   }, []);
 
-  // Fetch profile on component mount
   useEffect(() => {
     fetchUserProfile();
   }, [navigate]);
 
-  // Upload file to Supabase Storage
   const uploadFile = async (file: File) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("User not authenticated");
@@ -96,23 +91,19 @@ const Profile = () => {
     return await uploadProfilePicture(file, session.user.id);
   };
 
-  // Handle edit profile
   const handleEditProfile = () => {
     setIsEditing(true);
   };
 
-  // Handle cancel edit
   const handleCancelEdit = () => {
     setIsEditing(false);
   };
 
-  // Handle save profile
   const handleSaveProfile = async (updatedProfile: UserProfile) => {
     setIsLoading(true);
     try {
       let avatarUrl = userProfile?.avatar_url;
 
-      // Upload new profile picture if provided
       if (updatedProfile.avatar_url instanceof File) {
         avatarUrl = await uploadFile(updatedProfile.avatar_url);
       }
@@ -120,9 +111,8 @@ const Profile = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) throw new Error("Not authenticated");
 
-      // Update user profile in the database
       const { error } = await supabase
-        .from("users")
+        .from('users')
         .update({
           username: updatedProfile.username,
           bio: updatedProfile.bio,
@@ -131,13 +121,12 @@ const Profile = () => {
           proficiency: updatedProfile.proficiency,
           location: updatedProfile.location,
           avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(), // Ensure updated_at is set
+          updated_at: new Date().toISOString(),
         })
         .eq("id", session.user.id);
 
       if (error) throw error;
 
-      // Update local state with the new profile data
       setUserProfile({ ...updatedProfile, avatar_url: avatarUrl });
       setIsEditing(false);
 
@@ -157,7 +146,6 @@ const Profile = () => {
     }
   };
 
-  // Format user data for UserProfileCard component
   const formattedUserData = userProfile
     ? {
         id: userProfile.id,
@@ -179,7 +167,6 @@ const Profile = () => {
       }
     : null;
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[70vh]">

@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Button from '@/components/Button';
 import { User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
-import { uploadProfilePicture } from '@/utils/fileUpload';
+import { uploadProfilePicture } from '@/utils/fileUpload'; // Ensure this import matches your file structure
+import { v4 as uuidv4 } from 'uuid';
 
 interface UserProfile {
   id: string;
@@ -14,7 +15,7 @@ interface UserProfile {
   proficiency?: string;
   bio?: string;
   location?: string;
-  avatar_url?: string | File;
+  avatar_url?: string | File; // Updated to handle File type
 }
 
 interface ProfileEditProps {
@@ -38,12 +39,14 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Languages list for dropdown options
   const languages = [
     "English", "Spanish", "French", "German", "Italian",
     "Portuguese", "Russian", "Japanese", "Korean", "Chinese",
     "Arabic", "Hindi", "Turkish", "Dutch", "Polish", "Swedish"
   ];
 
+  // Proficiency levels for dropdown selection
   const proficiencyLevels = [
     { id: 'beginner', name: 'Beginner', description: 'I know basic phrases and vocabulary' },
     { id: 'intermediate', name: 'Intermediate', description: 'I can have simple conversations' },
@@ -64,10 +67,12 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         return;
       }
 
+      // Create preview
       const objectUrl = URL.createObjectURL(file);
       setProfilePicturePreview(objectUrl);
       setProfilePicture(file);
 
+      // Cleanup function
       return () => URL.revokeObjectURL(objectUrl);
     }
   };
@@ -87,14 +92,12 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
     try {
       let avatarUrl = userProfile.avatar_url;
 
+      // Upload new profile picture if one is selected
       if (profilePicture) {
         avatarUrl = await uploadProfilePicture(profilePicture, userProfile.id);
-        const { data: { publicUrl } } = supabase.storage
-          .from('user_uploads')
-          .getPublicUrl(`profile_pictures/${profilePicture.name}`);
-        setProfilePicturePreview(publicUrl);
       }
 
+      // Update user profile in the database
       const { error: updateError } = await supabase
         .from('users')
         .update({
@@ -116,6 +119,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         description: "Profile updated successfully",
       });
 
+      // Call the onSave callback with the updated profile
       onSave({
         ...userProfile,
         username: name,
@@ -141,6 +145,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Edit Profile</h2>
 
+      {/* Profile Picture */}
       <div className="flex flex-col items-center mb-6">
         <div
           className="w-24 h-24 rounded-full mb-4 cursor-pointer relative overflow-hidden bg-muted"
@@ -176,6 +181,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         </button>
       </div>
 
+      {/* Form Fields */}
       <div className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-1">Display Name</label>
