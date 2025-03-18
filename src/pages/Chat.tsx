@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Smile, PaperClip, Mic } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { chatService } from '@/services/chatService';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,6 @@ interface Partner {
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>();
-  // Authentication and Context (This section is added based on the intention, but needs actual implementation)
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -36,10 +35,14 @@ export default function Chat() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [isTyping, setIsTyping] = useState(false); // Added based on intention
+  const [isTyping, setIsTyping] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
 
   const scrollToBottom = () => {
@@ -174,22 +177,31 @@ export default function Chat() {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !chatId) return;
 
     try {
-      setUploadingFile(true);
-      //This section needs proper implementation to handle file upload
-      //const path = `${conversationId}/${Date.now()}_${file.name}`;
-      //await chatService.uploadFile(file, path);
-      //const fileUrl = await chatService.getFileUrl(path);
-      //await chatService.sendMessage(
-      //  conversationId,
-      //  currentUserId,
-      //  file.name,
-      //  file.type.startsWith('image/') ? 'file' : 'file',
-      //  fileUrl,
-      //  file.type
-      //);
+      setIsUploadingFile(true);
+      const path = `chat-attachments/${chatId}/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('chat-attachments')
+        .upload(path, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl }, error: urlError } = supabase.storage
+        .from('chat-attachments')
+        .getPublicUrl(path);
+
+      if (urlError) throw urlError;
+
+      await supabase.from('messages').insert({
+        conversation_id: chatId,
+        sender_id: currentUserId,
+        content: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        file_url: publicUrl,
+        file_type: file.type
+      });
     } catch (error) {
       console.error('Error uploading file:', error);
       toast({
@@ -198,8 +210,86 @@ export default function Chat() {
         variant: 'destructive',
       });
     } finally {
-      setUploadingFile(false);
+      setIsUploadingFile(false);
+      event.target.value = '';
     }
+  };
+
+  const handleVoiceRecord = async () => {
+    if (isRecording) {
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+      }
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks: BlobPart[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        setAudioBlob(audioBlob);
+        
+        // Upload voice message
+        if (chatId) {
+          try {
+            const path = `chat-attachments/${chatId}/${Date.now()}_voice.webm`;
+            const { data, error } = await supabase.storage
+              .from('chat-attachments')
+              .upload(path, audioBlob);
+
+            if (error) throw error;
+
+            const { data: { publicUrl }, error: urlError } = supabase.storage
+              .from('chat-attachments')
+              .getPublicUrl(path);
+
+            if (urlError) throw urlError;
+
+            await supabase.from('messages').insert({
+              conversation_id: chatId,
+              sender_id: currentUserId,
+              content: 'Voice message',
+              type: 'voice',
+              file_url: publicUrl,
+              file_type: 'audio/webm'
+            });
+          } catch (error) {
+            console.error('Error uploading voice message:', error);
+            toast({
+              title: 'Error',
+              description: 'Failed to send voice message',
+              variant: 'destructive',
+            });
+          }
+        }
+
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not access microphone',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEmojiSelect = (emoji: any) => {
+    setNewMessage(prev => prev + emoji.native);
+    setShowEmojiPicker(false);
   };
 
   return (
@@ -241,7 +331,19 @@ export default function Chat() {
       </div>
 
       <div className="p-4 border-t bg-card">
-        <div className="flex gap-2">
+        <div className="flex gap-2 relative">
+          {showEmojiPicker && (
+            <div className="absolute bottom-full mb-2">
+              <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+            </div>
+          )}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          >
+            <Smile className="h-4 w-4" />
+          </Button>
           <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -250,11 +352,31 @@ export default function Chat() {
             className="resize-none"
             rows={1}
           />
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <PaperClip className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleVoiceRecord}
+            className={isRecording ? 'text-red-500' : ''}
+          >
+            <Mic className="h-4 w-4" />
+          </Button>
           <Button onClick={sendMessage} size="icon">
             <Send className="h-4 w-4" />
           </Button>
-          <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
-          <Button onClick={() => fileInputRef.current?.click()}>Upload</Button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            style={{ display: 'none' }} 
+            accept="image/*,video/*,audio/*,application/pdf"
+          />
         </div>
       </div>
     </div>
