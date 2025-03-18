@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Button from '@/components/Button';
 import { Send, ArrowLeft, Paperclip, Smile, MoreVertical, Phone, Video } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { chatService, type ChatMessage } from '@/services/chatService';
 
 interface Message {
   id: string;
@@ -22,63 +24,18 @@ interface Partner {
   lastActive: Date;
 }
 
-const chatService = {
-  sendMessage: async (conversationId: string, message: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: supabase.auth.user()?.id, // Get user ID directly from supabase
-          message,
-          is_read: false
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-      return { data, error };
-    } catch (error) {
-      throw error;
-    }
-  },
-  subscribeToConversation: (conversationId: string, callback: (newMsg: any) => void) => {
-    return supabase
-      .channel(`chat:${conversationId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`
-      }, (payload) => {
-        callback(payload.new);
-      })
-      .subscribe();
-  },
-  markAsRead: async (messageIds: string[]) => {
-    if (messageIds.length === 0) return;
-    await supabase
-      .from('messages')
-      .update({ is_read: true })
-      .in('id', messageIds);
-  }
-};
-
-
 const Chat = () => {
   const { chatId } = useParams<{ chatId: string }>();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   const [partner, setPartner] = useState<Partner | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
-  // Fetch messages and conversation data
+
   useEffect(() => {
     const fetchChatData = async () => {
       try {
@@ -228,44 +185,7 @@ const Chat = () => {
           lastActive: new Date(partnerData.last_active || Date.now())
         });
 
-        // Get messages
-        const { data: messagesData, error: messagesError } = await supabase
-          .from('messages')
-          .select('id, sender_id, content, message, created_at, is_read, conversation_id')
-          .eq('conversation_id', chatId)
-          .order('created_at', { ascending: true });
 
-        if (messagesError) {
-          console.error('Error fetching messages:', messagesError);
-          toast({
-            title: "Couldn't load messages",
-            description: "There was an error loading your conversation.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('Messages data:', messagesData);
-
-        // Mark unread messages as read
-        const unreadMessages = messagesData.filter(
-          msg => msg.sender_id !== userId && !msg.is_read
-        );
-
-        if (unreadMessages.length > 0) {
-          await chatService.markAsRead(unreadMessages.map(msg => msg.id));
-        }
-
-        // Format messages for display
-        const formattedMessages = messagesData.map(msg => ({
-          id: msg.id,
-          senderId: msg.sender_id,
-          text: msg.content || msg.message || '', // Handle both content and message fields
-          timestamp: new Date(msg.created_at),
-          isRead: msg.is_read
-        }));
-
-        setMessages(formattedMessages);
       } catch (error: any) {
         console.error('Error in chat setup:', error);
         toast({
@@ -280,61 +200,34 @@ const Chat = () => {
 
     fetchChatData();
 
-    // Set up real-time message subscription
+    // Subscribe to new messages using the new chatService
     if (chatId) {
-      const subscription = chatService.subscribeToConversation(chatId, async (newMsg) => {
-        // Only add message if it's not from current user
-        if (newMsg.sender_id !== currentUserId) {
-          // Mark message as read immediately
-          await chatService.markAsRead([newMsg.id]);
-        }
-        // Add to messages
-        setMessages(prev => [...prev, {
-          id: newMsg.id,
-          senderId: newMsg.sender_id,
-          text: newMsg.message || '',
-          timestamp: new Date(newMsg.created_at),
-          isRead: newMsg.sender_id === currentUserId ? false : true
-        }]);
+      const subscription = chatService.subscribeToMessages(chatId, (message) => {
+          setMessages(prev => [...prev, message]);
       });
 
       return () => {
         subscription.unsubscribe();
       };
     }
-  }, [chatId, navigate, currentUserId]);
+  }, [chatId, navigate]);
 
-  // Auto-scroll to the bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !chatId || !currentUserId) return;
 
     try {
-      const { data, error } = await chatService.sendMessage(chatId, newMessage.trim());
-      if (error) throw error;
-
+      await chatService.sendMessage(chatId, currentUserId!, newMessage); //Fixed the receiver ID and sender ID
       setNewMessage('');
-
-      // Add message to UI immediately
-      const newMsg = {
-        id: data.id,
-        senderId: currentUserId,
-        text: newMessage.trim(),
-        timestamp: new Date(),
-        isRead: false
-      };
-
-      setMessages(prev => [...prev, newMsg]);
-    } catch (error: any) {
-      console.error('Error sending message:', error);
+    } catch (error) {
       toast({
-        title: "Couldn't send message",
-        description: error.message || "Please try again",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive',
       });
     }
   };
@@ -377,7 +270,7 @@ const Chat = () => {
       {/* Chat header */}
       <div className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
         <div className="flex items-center">
-          <button 
+          <button
             onClick={() => navigate('/chats')}
             className="mr-3 text-muted-foreground hover:text-foreground rounded-full p-2 hover:bg-muted transition-colors"
             aria-label="Back to chats"
@@ -401,8 +294,8 @@ const Chat = () => {
             <div className="ml-3">
               <h2 className="font-semibold">{partner.name}</h2>
               <p className="text-xs text-muted-foreground">
-                {partner.online 
-                  ? 'Online now' 
+                {partner.online
+                  ? 'Online now'
                   : `Last active ${
                       partner.lastActive.toDateString() === new Date().toDateString()
                         ? 'today at ' + formatTime(partner.lastActive)
@@ -429,94 +322,41 @@ const Chat = () => {
 
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20">
-        {messages.length > 0 ? (
-          <>
-            {/* Date separator for first message */}
-            <div className="flex justify-center">
-              <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
-                {formatDate(messages[0]?.timestamp || new Date())}
-              </span>
-            </div>
-
-            {messages.map((message, index) => {
-              const isCurrentUser = message.senderId === currentUserId;
-              const showDateSeparator = index > 0 && 
-                formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
-
-              return (
-                <React.Fragment key={message.id}>
-                  {showDateSeparator && (
-                    <div className="flex justify-center my-4">
-                      <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
-                        {formatDate(message.timestamp)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                    {!isCurrentUser && (
-                      <img 
-                        src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`}
-                        alt={partner.name}
-                        className="h-8 w-8 rounded-full mr-2 self-end object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`;
-                        }}
-                      />
-                    )}
-
-                    <div
-                      className={`max-w-[75%] rounded-lg p-3 ${
-                        isCurrentUser
-                          ? 'bg-primary text-primary-foreground rounded-br-none'
-                          : 'bg-card rounded-bl-none'
-                      }`}
-                    >
-                      <p className="break-words">{message.text}</p>
-                      <p className={`text-xs mt-1 text-right ${isCurrentUser ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                        {formatTime(message.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                </React.Fragment>
-              );
-            })}
-          </>
-        ) : (
-          <div className="flex justify-center items-center h-full">
-            <div className="text-center">
-              <p className="text-muted-foreground mb-2">No messages yet</p>
-              <p className="text-sm">Start a conversation with {partner.name}</p>
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
+          >
+            {!message.senderId === currentUserId && (
+              <img
+                src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`}
+                alt={partner.name}
+                className="h-8 w-8 rounded-full mr-2 self-end object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`;
+                }}
+              />
+            )}
+            <div
+              className={`max-w-[70%] rounded-lg p-3 ${
+                message.senderId === currentUserId
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted'
+              }`}
+            >
+              <p className="break-words">{message.text}</p>
+              <p className={`text-xs mt-1 text-right ${message.senderId === currentUserId ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                {formatTime(message.timestamp)}
+              </p>
             </div>
           </div>
-        )}
-
-        {isTyping && (
-          <div className="flex justify-start">
-            <img 
-              src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`}
-              alt={partner.name}
-              className="h-8 w-8 rounded-full mr-2 self-end object-cover"
-              onError={(e) => {
-                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name)}&background=random`;
-              }}
-            />
-            <div className="bg-card rounded-lg rounded-bl-none p-3 max-w-[75%]">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '600ms' }}></div>
-              </div>
-            </div>
-          </div>
-        )}
-
+        ))}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Message input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t flex items-end bg-card">
-        <button 
+      <form onSubmit={handleSend} className="p-4 border-t flex items-end bg-card">
+        <button
           type="button"
           className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors"
         >
@@ -524,7 +364,7 @@ const Chat = () => {
         </button>
 
         <div className="flex-1 mx-2">
-          <textarea
+          <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
@@ -532,7 +372,7 @@ const Chat = () => {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage(e);
+                handleSend(e);
               }
             }}
             rows={1}
@@ -540,20 +380,14 @@ const Chat = () => {
         </div>
 
         <div className="flex items-center">
-          <button 
+          <button
             type="button"
             className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors mr-2"
           >
             <Smile className="h-5 w-5" />
           </button>
 
-          <Button 
-            type="submit" 
-            className="rounded-full px-3 h-10 w-10"
-            disabled={!newMessage.trim()}
-            icon={<Send className="h-4 w-4" />}
-            aria-label="Send message"
-          />
+          <Button type="submit" className="rounded-full px-3 h-10 w-10" disabled={!newMessage.trim()} icon={<Send className="h-4 w-4" />} aria-label="Send message" />
         </div>
       </form>
     </div>
