@@ -1,0 +1,49 @@
+age view tracked: /chats
+analytics.ts:24 Page view tracked: /chat/0b769b24-b077-4422-bab4-e9b0b6d32c97
+@supabase_supabase-js.js?v=3b56c590:3900 
+            
+            
+           GET https://czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=*%2Cusers%21users_chats_partner_id_fkey%28*%29&id=eq.0b769b24-b077-4422-bab4-e9b0b6d32c97 400 (Bad Request)
+(anonymous) @ @supabase_supabase-js.js?v=3b56c590:3900
+(anonymous) @ @supabase_supabase-js.js?v=3b56c590:3921
+fulfilled @ @supabase_supabase-js.js?v=3b56c590:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=3b56c590:3886
+(anonymous) @ @supabase_supabase-js.js?v=3b56c590:3888
+__awaiter6 @ @supabase_supabase-js.js?v=3b56c590:3870
+(anonymous) @ @supabase_supabase-js.js?v=3b56c590:3911
+then @ @supabase_supabase-js.js?v=3b56c590:89Understand this errorAI
+Chat.tsx:54 Error fetching chat details: {code: 'PGRST200', details: "Searched for a foreign key relationship between 'c…n the schema 'public', but no matches were found.", hint: null, message: "Could not find a relationship between 'chats' and 'users' in the schema cache"}code: "PGRST200"details: "Searched for a foreign key relationship between 'chats' and 'users' using the hint 'users_chats_partner_id_fkey' in the schema 'public', but no matches were found."hint: nullmessage: "Could not find a relationship between 'chats' and 'users' in the schema cache"[[Prototype]]: Object
+fetchChatDetails @ Chat.tsx:54
+await in fetchChatDetails
+fetchInitialData @ Chat.tsx:80
+(anonymous) @ Chat.tsx:98
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=3b56c590:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=3b56c590:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=3b56c590:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=3b56c590:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=3b56c590:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=3b56c590:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=3b56c590:19447
+commitRootImpl @ chunk-W6L2VRDA.js?v=3b56c590:19416
+commitRoot @ chunk-W6L2VRDA.js?v=3b56c590:19277
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=3b56c590:18895
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=3b56c590:9119
+(anonymous) @ chunk-W6L2VRDA.js?v=3b56c590:18627Understand this errorAI
+Chat.tsx:88 Error fetching data: {code: 'PGRST200', details: "Searched for a foreign key relationship between 'c…n the schema 'public', but no matches were found.", hint: null, message: "Could not find a relationship between 'chats' and 'users' in the schema cache"}
+fetchInitialData @ Chat.tsx:88
+await in fetchInitialData
+(anonymous) @ Chat.tsx:98
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=3b56c590:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=3b56c590:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=3b56c590:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=3b56c590:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=3b56c590:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=3b56c590:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=3b56c590:19447
+commitRootImpl @ chunk-W6L2VRDA.js?v=3b56c590:19416
+commitRoot @ chunk-W6L2VRDA.js?v=3b56c590:19277
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=3b56c590:18895
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=3b56c590:9119
+(anonymous) @ chunk-W6L2VRDA.js?v=3b56c590:18627Understand this errorAI
+analytics.ts:24 Page view tracked: /chats
