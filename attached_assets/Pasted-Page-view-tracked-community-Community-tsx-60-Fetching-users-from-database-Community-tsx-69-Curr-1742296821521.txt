@@ -1,0 +1,77 @@
+Page view tracked: /community
+Community.tsx:60 Fetching users from database...
+Community.tsx:69 Current User ID: 686bf35c-ef4c-4ce3-9352-a31621ce3eb0
+Community.tsx:92 Fetched Users: [
+  {
+    "id": "c87bc7f4-b9d6-49f8-9c0d-2a3266588743",
+    "username": "Johnny",
+    "profile_picture": "https://czubndssgwedqqzlsazn.supabase.co/storage/v1/object/public/user_uploads/profile_pictures/c87bc7f4-b9d6-49f8-9c0d-2a3266588743-1gory5ycqlq.jpg",
+    "dob": "2000-01-01",
+    "is_online": true,
+    "last_active": "2025-03-18T08:04:32.407Z",
+    "native_language": "Turkish",
+    "learning_language": "Polish",
+    "proficiency": "Intermediate",
+    "bio": "hii"
+  },
+  {
+    "id": "c105840e-643a-4378-a1e1-8975cbd9cd8d",
+    "username": "Roshni",
+    "profile_picture": "https://czubndssgwedqqzlsazn.supabase.co/storage/v1/object/public/user_uploads/profile_pictures/c105840e-643a-4378-a1e1-8975cbd9cd8d-mhpp24cs9ed.jpg",
+    "dob": "2000-01-01",
+    "is_online": true,
+    "last_active": "2025-03-11T06:54:45.034Z",
+    "native_language": "en",
+    "learning_language": "de",
+    "proficiency": "intermediate",
+    "bio": null
+  }
+]
+analytics.ts:24 Page view tracked: /chat/c87bc7f4-b9d6-49f8-9c0d-2a3266588743
+@supabase_supabase-js.js?v=92c85421:3900 
+            
+            
+           GET https://czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=*&id=eq.c87bc7f4-b9d6-49f8-9c0d-2a3266588743 406 (Not Acceptable)
+(anonymous) @ @supabase_supabase-js.js?v=92c85421:3900
+(anonymous) @ @supabase_supabase-js.js?v=92c85421:3921
+fulfilled @ @supabase_supabase-js.js?v=92c85421:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=92c85421:3886
+(anonymous) @ @supabase_supabase-js.js?v=92c85421:3888
+__awaiter6 @ @supabase_supabase-js.js?v=92c85421:3870
+(anonymous) @ @supabase_supabase-js.js?v=92c85421:3911
+then @ @supabase_supabase-js.js?v=92c85421:89Understand this errorAI
+Chat.tsx:66 Error fetching chat details: {code: 'PGRST116', details: 'The result contains 0 rows', hint: null, message: 'JSON object requested, multiple (or no) rows returned'}code: "PGRST116"details: "The result contains 0 rows"hint: nullmessage: "JSON object requested, multiple (or no) rows returned"[[Prototype]]: Object
+fetchChatDetails @ Chat.tsx:66
+await in fetchChatDetails
+fetchInitialData @ Chat.tsx:103
+await in fetchInitialData
+(anonymous) @ Chat.tsx:124
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=2c650e43:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=2c650e43:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=2c650e43:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=2c650e43:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=2c650e43:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=2c650e43:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=2c650e43:19447
+commitRootImpl @ chunk-FJ2A54M7.js?v=2c650e43:19416
+commitRoot @ chunk-FJ2A54M7.js?v=2c650e43:19277
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=2c650e43:18895
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=2c650e43:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=2c650e43:18627Understand this errorAI
+Chat.tsx:115 Error setting up chat: {code: 'PGRST116', details: 'The result contains 0 rows', hint: null, message: 'JSON object requested, multiple (or no) rows returned'}code: "PGRST116"details: "The result contains 0 rows"hint: nullmessage: "JSON object requested, multiple (or no) rows returned"[[Prototype]]: Object
+fetchInitialData @ Chat.tsx:115
+await in fetchInitialData
+(anonymous) @ Chat.tsx:124
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=2c650e43:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=2c650e43:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=2c650e43:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=2c650e43:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=2c650e43:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=2c650e43:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=2c650e43:19447
+commitRootImpl @ chunk-FJ2A54M7.js?v=2c650e43:19416
+commitRoot @ chunk-FJ2A54M7.js?v=2c650e43:19277
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=2c650e43:18895
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=2c650e43:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=2c650e43:18627Understand this errorAI
