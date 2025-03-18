@@ -2,62 +2,62 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { refreshSession } = useAuth();
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error) {
-        console.error('Auth callback error:', error);
-        toast({
-          title: "Authentication Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        navigate('/auth');
-        return;
-      }
+    const handleCallback = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+        if (!session?.user) throw new Error('No session found');
 
-      if (user) {
-        // Check if user exists in our database
+        await refreshSession();
+
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', session.user.id)
           .single();
 
-        setUser(user);
-
-        if (userError || !userData || !userData.native_language || !userData.learning_language) {
-          // New user or incomplete profile
+        if (userError || !userData || !userData.native_language) {
+          navigate('/onboarding');
           toast({
-            title: "Welcome to MyLanguage!",
+            title: "Welcome!",
             description: "Let's set up your profile.",
           });
-          navigate('/onboarding');
         } else {
-          // Existing user with complete profile
+          navigate('/community');
           toast({
             title: "Welcome back!",
             description: "Successfully logged in.",
           });
-          navigate('/community');
         }
+      } catch (error) {
+        console.error('Auth callback error:', error);
+        toast({
+          title: "Authentication Error",
+          description: "Failed to complete authentication",
+          variant: "destructive",
+        });
+        navigate('/auth');
       }
     };
 
-    handleAuthCallback();
-  }, [navigate, setUser]);
+    handleCallback();
+  }, [navigate, refreshSession]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="animate-pulse text-center">
+        <h2 className="text-2xl font-semibold">Completing authentication...</h2>
+        <p className="text-muted-foreground">Please wait while we verify your account.</p>
+      </div>
     </div>
   );
 }
