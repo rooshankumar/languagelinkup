@@ -1,4 +1,6 @@
+
 import { supabase } from '@/lib/supabaseClient';
+import { Message, MessageType, TypingStatus } from '@/types/chat';
 
 export const chatService = {
   subscribeToMessages: (conversationId: string, callback: (payload: any) => void) => {
@@ -12,8 +14,15 @@ export const chatService = {
       }, callback)
       .subscribe();
   },
+
+  subscribeToTyping: (conversationId: string, callback: (payload: any) => void) => {
+    return supabase
+      .channel(`typing:${conversationId}`)
+      .on('presence', { event: 'sync' }, callback)
+      .subscribe();
+  },
+
   async createConversation(user1_id: string, user2_id: string) {
-    // Check for existing conversation first
     const { data: existingConv, error: checkError } = await supabase
       .from('conversations')
       .select('*')
@@ -23,7 +32,6 @@ export const chatService = {
     if (checkError && checkError.code !== 'PGRST116') throw checkError;
     if (existingConv) return existingConv;
 
-    // Create new conversation if none exists
     const { data, error } = await supabase
       .from('conversations')
       .insert([{ 
@@ -39,59 +47,76 @@ export const chatService = {
     return data;
   },
 
-  async getConversation(user1_id: string, user2_id: string) {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .or(`and(user1_id.eq.${user1_id},user2_id.eq.${user2_id}),and(user1_id.eq.${user2_id},user2_id.eq.${user1_id})`)
-      .maybeSingle();
-
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
-  },
-
-  async getUserConversations(userId: string) {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*, user1:user1_id(*), user2:user2_id(*)')
-      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  },
-
-  async getConversationMessages(conversationId: string) {
+  async sendMessage(conversationId: string, senderId: string, content: string, type: MessageType = 'text', fileUrl?: string, fileType?: string) {
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
+      .insert([{
+        conversation_id: conversationId,
+        sender_id: senderId,
+        content,
+        type,
+        file_url: fileUrl,
+        file_type: fileType,
+        is_read: false,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
 
     if (error) throw error;
     return data;
   },
 
-  subscribeToConversation(conversationId: string, callback: (payload: any) => void) {
-    return supabase
-      .channel(`chat:${conversationId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`
-      }, callback)
-      .subscribe();
+  async uploadFile(file: File, path: string) {
+    const { data, error } = await supabase.storage
+      .from('chat-attachments')
+      .upload(path, file);
+
+    if (error) throw error;
+    return data;
   },
 
-  async markMessagesAsRead(conversationId: string, userId: string) {
+  async getFileUrl(path: string) {
+    const { data } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(path);
+    
+    return data.publicUrl;
+  },
+
+  async addReaction(messageId: string, userId: string, emoji: string) {
+    const { data, error } = await supabase
+      .from('message_reactions')
+      .insert([{
+        message_id: messageId,
+        user_id: userId,
+        emoji,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async markAsRead(messageIds: string[]) {
+    if (!messageIds.length) return;
+
     const { error } = await supabase
       .from('messages')
       .update({ is_read: true })
-      .eq('conversation_id', conversationId)
-      .eq('receiver_id', userId)
-      .eq('is_read', false);
+      .in('id', messageIds);
 
     if (error) throw error;
+  },
+
+  async updateTypingStatus(conversationId: string, userId: string, isTyping: boolean) {
+    await supabase.channel(`typing:${conversationId}`).track({
+      user_id: userId,
+      conversation_id: conversationId,
+      is_typing: isTyping,
+      last_typed: new Date().toISOString()
+    });
   }
 };

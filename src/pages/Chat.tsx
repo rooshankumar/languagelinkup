@@ -159,7 +159,46 @@ export default function Chat() {
 
   if (!partner) return null;
 
-  return (
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+const [isRecording, setIsRecording] = useState(false);
+const [uploadingFile, setUploadingFile] = useState(false);
+const fileInputRef = useRef<HTMLInputElement>(null);
+
+const handleEmojiSelect = (emoji: any) => {
+  setNewMessage(prev => prev + emoji.native);
+  setShowEmojiPicker(false);
+};
+
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    setUploadingFile(true);
+    const path = `${conversationId}/${Date.now()}_${file.name}`;
+    await chatService.uploadFile(file, path);
+    const fileUrl = await chatService.getFileUrl(path);
+    await chatService.sendMessage(
+      conversationId,
+      currentUserId,
+      file.name,
+      file.type.startsWith('image/') ? 'file' : 'file',
+      fileUrl,
+      file.type
+    );
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    toast({
+      title: 'Error',
+      description: 'Failed to upload file',
+      variant: 'destructive',
+    });
+  } finally {
+    setUploadingFile(false);
+  }
+};
+
+return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto">
       <div className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
         <div className="flex items-center">
