@@ -63,14 +63,15 @@ export default function Chat() {
 
   const fetchMessages = async (chatId: string) => {
     try {
-      const { data: messageData, error: messageError } = await supabase
+      const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
-      if (messageError) throw messageError;
-      return messageData || [];
+      if (error) throw error;
+      if (data) setMessages(data);
+      return data || [];
     } catch (error) {
       console.error('Error fetching messages:', error);
       throw error;

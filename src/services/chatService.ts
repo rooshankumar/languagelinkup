@@ -24,17 +24,16 @@ export const chatService = {
 
   async createConversation(user1_id: string, user2_id: string) {
     const { data: existingConv, error: checkError } = await supabase
-      .from('conversations')
+      .from('chats')
       .select('*')
-      .or(`user1_id.eq.${user1_id},user2_id.eq.${user2_id}`)
-      .or(`user1_id.eq.${user2_id},user2_id.eq.${user1_id}`)
+      .or(`and(user1_id.eq.${user1_id},user2_id.eq.${user2_id}),and(user1_id.eq.${user2_id},user2_id.eq.${user1_id})`)
       .maybeSingle();
 
     if (checkError) throw checkError;
     if (existingConv) return existingConv;
 
     const { data, error } = await supabase
-      .from('conversations')
+      .from('chats')
       .insert({
         user1_id, 
         user2_id,
