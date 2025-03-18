@@ -5,6 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import UserProfileCard from './UserProfileCard';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from './ui/use-toast';
+import chatService from '../services/chatService'; // Assuming this service exists
 
 const LanguageUsers = () => {
   const navigate = useNavigate();
@@ -95,6 +96,12 @@ const LanguageUsers = () => {
 
       if (convCheckError) {
         console.error('Error checking existing conversation:', convCheckError);
+        toast({
+          title: 'Error checking conversation',
+          description: convCheckError.message || 'Failed to check for existing conversation',
+          variant: 'destructive',
+        });
+        return; // Stop execution if there's an error checking for existing conversations.
       }
 
       console.log('Existing conversation check:', existingConv);
@@ -107,12 +114,8 @@ const LanguageUsers = () => {
       // Use chatService to create conversation
       const newConversation = await chatService.createConversation(currentUserId, userId);
 
-      console.log('New conversation creation result:', newConversation, createError);
 
-      if (createError) {
-        console.error('Detailed create error:', createError);
-        throw new Error(`Failed to create conversation: ${createError.message}`);
-      }
+      console.log('New conversation creation result:', newConversation);
 
       if (!newConversation?.id) {
         throw new Error('No conversation ID returned after creation');

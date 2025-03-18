@@ -22,12 +22,13 @@ export interface Conversation {
 export const chatService = {
   async createConversation(user1Id: string, user2Id: string): Promise<Conversation> {
     try {
-      // Check if conversation exists
+      // Check if conversation exists with proper parameter interpolation
       const { data: existingConv, error: checkError } = await supabase
         .from('conversations')
         .select('*')
-        .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
-        .single();
+        .or(`user1_id.eq.${user1Id},user2_id.eq.${user2Id}`)
+        .or(`user1_id.eq.${user2Id},user2_id.eq.${user1Id}`)
+        .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
         throw checkError;
@@ -37,17 +38,15 @@ export const chatService = {
         return existingConv;
       }
 
-      // Create new conversation
+      const timestamp = new Date().toISOString();
+      
+      // Create new conversation with minimal required fields
       const { data: newConversation, error: createError } = await supabase
         .from('conversations')
-        .insert([
-          {
-            user1_id: user1Id,
-            user2_id: user2Id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ])
+        .insert({
+          user1_id: user1Id,
+          user2_id: user2Id
+        })
         .select()
         .single();
 
