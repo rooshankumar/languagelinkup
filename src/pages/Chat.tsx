@@ -95,7 +95,7 @@ const Chat = () => {
               .from('conversations')
               .select('id, created_at')
               .or(`and(user1_id.eq.${userId},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${userId})`)
-              .single();
+              .maybeSingle();
 
             if (checkError) {
               console.error('Error checking for existing conversation:', checkError);

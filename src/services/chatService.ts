@@ -2,15 +2,27 @@ import { supabase } from '@/lib/supabaseClient';
 
 export const chatService = {
   async createConversation(user1_id: string, user2_id: string) {
+    // Check for existing conversation first
+    const { data: existingConv, error: checkError } = await supabase
+      .from('conversations')
+      .select('*')
+      .or(`and(user1_id.eq.${user1_id},user2_id.eq.${user2_id}),and(user1_id.eq.${user2_id},user2_id.eq.${user1_id})`)
+      .maybeSingle();
+
+    if (checkError && checkError.code !== 'PGRST116') throw checkError;
+    if (existingConv) return existingConv;
+
+    // Create new conversation if none exists
     const { data, error } = await supabase
       .from('conversations')
       .insert([{ 
         user1_id, 
         user2_id, 
-        created_at: new Date().toISOString() 
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }])
       .select()
-      .maybeSingle();
+      .single();
 
     if (error) throw error;
     return data;
@@ -20,11 +32,10 @@ export const chatService = {
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
-      .or(`user1_id.eq.${user1_id},user2_id.eq.${user1_id}`)
-      .or(`user1_id.eq.${user2_id},user2_id.eq.${user2_id}`)
+      .or(`and(user1_id.eq.${user1_id},user2_id.eq.${user2_id}),and(user1_id.eq.${user2_id},user2_id.eq.${user1_id})`)
       .maybeSingle();
 
-    if (error) throw error;
+    if (error && error.code !== 'PGRST116') throw error;
     return data;
   },
 
