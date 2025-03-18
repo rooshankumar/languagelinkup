@@ -64,9 +64,9 @@ export default function Chat() {
   const fetchMessages = async (chatId: string) => {
     try {
       const { data: messageData, error: messageError } = await supabase
-        .from('messages')
+        .from('chat_messages')
         .select('*')
-        .eq('conversation_id', chatId)
+        .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
       if (messageError) throw messageError;
@@ -270,19 +270,22 @@ export default function Chat() {
                   : 'bg-muted'
               }`}
             >
-              {message.type === 'text' && <p>{message.content}</p>}
-              {message.type === 'voice' && (
-                <audio controls src={message.attachment_url} className="w-full" />
-              )}
-              {message.type === 'attachment' && (
-                <a
-                  href={message.attachment_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 underline"
-                >
-                  {message.content}
-                </a>
+              <p className="break-words">{message.content}</p>
+              {message.attachment_url && (
+                <div className="mt-2">
+                  {message.type === 'voice' ? (
+                    <audio controls src={message.attachment_url} className="w-full" />
+                  ) : (
+                    <a
+                      href={message.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      View Attachment
+                    </a>
+                  )}
+                </div>
               )}
               <span className="text-xs opacity-70 mt-1 block">
                 {format(new Date(message.created_at || Date.now()), 'p')}
