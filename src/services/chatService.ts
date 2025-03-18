@@ -1,41 +1,37 @@
-
 import { supabase } from '@/lib/supabaseClient';
-import { Message, MessageType, TypingStatus } from '@/types/chat';
+import { Message, MessageType } from '@/types/chat';
 
 export const chatService = {
-  subscribeToMessages: (conversationId: string, callback: (payload: any) => void) => {
-    return supabase
-      .channel(`messages:${conversationId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`
-      }, callback)
-      .subscribe();
-  },
+  async sendMessage(chatId: string, senderId: string, content: string) {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert({
+        chat_id: chatId,
+        sender_id: senderId,
+        content,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
-  subscribeToTyping: (conversationId: string, callback: (payload: any) => void) => {
-    return supabase
-      .channel(`typing:${conversationId}`)
-      .on('presence', { event: 'sync' }, callback)
-      .subscribe();
+    if (error) throw error;
+    return data;
   },
 
   async createConversation(user1_id: string, user2_id: string) {
-    const { data: existingConv, error: checkError } = await supabase
+    const { data: existingChat, error: checkError } = await supabase
       .from('chats')
       .select('*')
       .or(`and(user1_id.eq.${user1_id},user2_id.eq.${user2_id}),and(user1_id.eq.${user2_id},user2_id.eq.${user1_id})`)
       .maybeSingle();
 
     if (checkError) throw checkError;
-    if (existingConv) return existingConv;
+    if (existingChat) return existingChat;
 
     const { data, error } = await supabase
       .from('chats')
       .insert({
-        user1_id, 
+        user1_id,
         user2_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -47,26 +43,23 @@ export const chatService = {
     return data;
   },
 
-  async sendMessage(conversationId: string, senderId: string, content: string, type: MessageType = 'text', fileUrl?: string, fileType?: string) {
-    const { data, error } = await supabase
-      .from('messages')
-      .insert([{
-        conversation_id: conversationId,
-        sender_id: senderId,
-        content,
-        type,
-        file_url: fileUrl,
-        file_type: fileType,
-        is_read: false,
-        created_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  subscribeToMessages(chatId: string, callback: (payload: any) => void) {
+    return supabase
+      .channel(`chat:${chatId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `chat_id=eq.${chatId}`
+      }, callback)
+      .subscribe();
   },
-
+  subscribeToTyping: (conversationId: string, callback: (payload: any) => void) => {
+    return supabase
+      .channel(`typing:${conversationId}`)
+      .on('presence', { event: 'sync' }, callback)
+      .subscribe();
+  },
   async uploadFile(file: File, path: string) {
     const { data, error } = await supabase.storage
       .from('chat-attachments')

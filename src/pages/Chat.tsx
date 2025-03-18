@@ -78,6 +78,29 @@ export default function Chat() {
     }
   };
 
+  const sendMessage = async (content: string) => {
+    if (!chatId || !user) return;
+    
+    try {
+      await chatService.sendMessage(chatId, user.id, content);
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMessage.trim()) {
+      sendMessage(newMessage.trim());
+    }
+  };
+
   useEffect(() => {
     const fetchInitialData = async () => {
       if (!chatId) return;
