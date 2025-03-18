@@ -15,22 +15,72 @@ export interface Conversation {
   id: string;
   user1_id: string;
   user2_id: string;
-  last_message: string;
-  last_message_time: string;
+  last_message?: string;
+  last_message_time?: string;
 }
 
 export const chatService = {
+  async createConversation(user1Id: string, user2Id: string): Promise<Conversation> {
+    try {
+      // Check if conversation exists
+      const { data: existingConv, error: checkError } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingConv) {
+        return existingConv;
+      }
+
+      // Create new conversation
+      const { data: newConversation, error: createError } = await supabase
+        .from('conversations')
+        .insert([
+          {
+            user1_id: user1Id,
+            user2_id: user2Id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single();
+
+      if (createError) {
+        throw createError;
+      }
+
+      return newConversation;
+    } catch (error: any) {
+      console.error('Error in createConversation:', error);
+      throw new Error(error.message || 'Failed to create conversation');
+    }
+  },
+
   async sendMessage(conversationId: string, receiverId: string, content: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    return await supabase.from('messages').insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      receiver_id: receiverId,
-      content,
-      is_read: false
-    }).select().single();
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        receiver_id: receiverId,
+        content,
+        is_read: false,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
   subscribeToMessages(conversationId: string, onMessage: (message: ChatMessage) => void) {
@@ -50,25 +100,24 @@ export const chatService = {
   },
 
   async getConversationMessages(conversationId: string) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
+
+    if (error) throw error;
     return data;
   },
 
-  async createConversation(otherUserId: string) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+  async markMessagesAsRead(conversationId: string, userId: string) {
+    const { error } = await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .eq('receiver_id', userId)
+      .eq('is_read', false);
 
-    return await supabase
-      .from('conversations')
-      .insert({
-        user1_id: user.id,
-        user2_id: otherUserId
-      })
-      .select()
-      .single();
+    if (error) throw error;
   }
 };

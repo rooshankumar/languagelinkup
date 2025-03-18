@@ -104,17 +104,8 @@ const LanguageUsers = () => {
         return;
       }
 
-      // Create new conversation - properly formatted
-      const { data: newConversation, error: createError } = await supabase
-        .from('conversations')
-        .insert({
-          user1_id: currentUserId,
-          user2_id: userId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      // Use chatService to create conversation
+      const newConversation = await chatService.createConversation(currentUserId, userId);
 
       console.log('New conversation creation result:', newConversation, createError);
 
