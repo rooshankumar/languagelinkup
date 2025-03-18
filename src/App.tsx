@@ -1,6 +1,4 @@
 import React, { useEffect } from "react";
-const AuthCallback = React.lazy(() => import("@/pages/AuthCallback"));
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,12 +43,12 @@ const PageTracker = () => {
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
         <PageTracker />
         <Routes>
           {/* Public routes */}
@@ -79,14 +77,13 @@ const App = () => (
           {/* Redirect /chats to ensure it's the main message page */}
           <Route path="/messages" element={<Navigate to="/chats" replace />} />
 
-          <Route path="/auth/callback" element={<AuthCallback />} />
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+      </BrowserRouter>
+    </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
 // No additional setup needed
