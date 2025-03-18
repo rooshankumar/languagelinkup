@@ -1,0 +1,65 @@
+Title: Improve Chat System with Real-time Notifications, Emoji Support, and Voicemail
+
+Prompt:
+
+🚀 Enhance the existing chat system to be more like Telegram, with the following improvements:
+
+🔹 Core Features to Fix & Add:
+✅ Real-time Notifications & Alerts:
+
+Implement in-app alerts and browser push notifications when a new message arrives.
+Add sound notifications (like Telegram) for new messages.
+Show a red badge icon on the chat tab when there’s an unread message.
+✅ Smooth Messaging Experience:
+
+Ensure instant message delivery using Supabase Realtime for WebSockets.
+Add message read receipts (double ticks when seen).
+Add typing indicators (e.g., "User is typing...").
+Show last active status (e.g., "Last seen at...").
+✅ Emoji Picker & Reactions:
+
+Integrate an emoji picker with support for GIFs (use @emoji-mart/react and @giphy/react-components).
+Allow users to react to messages with emojis (like WhatsApp).
+✅ Voicemail & Audio Messages:
+
+Implement voice message recording using WebRTC or the browser’s MediaRecorder API.
+Show a play button & waveform for voice messages.
+Allow users to download voice messages.
+✅ File Attachments & Storage Fixes:
+
+Allow users to send images, videos, and PDFs (store them in Supabase Storage).
+Fix missing file upload/download support in chat.
+Ensure files are compressed for faster uploads & downloads.
+✅ Smooth UI & Animations:
+
+Improve the chat bubble design for a clean, modern look.
+Add scroll-to-bottom button when new messages arrive.
+Implement message delivery status indicators (e.g., sending, delivered, seen).
+✅ Error Handling & Debugging:
+
+Fix Supabase policies to ensure proper permissions for file uploads.
+Prevent app crashes when a message fails to send.
+Add retry option for failed messages.
+Tech Stack & Dependencies to Use:
+📌 Libraries:
+
+@emoji-mart/react → Emoji picker
+@giphy/react-components → GIF support
+react-toastify → Notifications
+supabase/realtime → Real-time chat
+react-soundwave → Audio visualization
+MediaRecorder API → Voice messages
+📌 Backend Fixes:
+
+Ensure Supabase Realtime is enabled for conversations and messages.
+Create a Supabase Storage bucket (chat-attachments) for files & voice messages.
+📌 UI & UX Enhancements:
+
+Telegram-style clean chat bubbles
+Dark mode & light mode support
+Swiping gestures for replying to messages
+🔧 Expected Outcome:
+A fully functional chat system like Telegram
+Real-time notifications for new messages
+Smooth text, emoji, and voicemail support
+No crashes, no missing features
