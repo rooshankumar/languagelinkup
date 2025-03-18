@@ -4,12 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { chatService } from '@/services/chatService';
 
 interface Message {
   id: string;
@@ -30,31 +30,20 @@ export default function Chat() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const userId = user?.id; //Added to access user id
+  const userId = user?.id;
 
   const fetchChatDetails = async (chatId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`
-          *,
-          user1:user1_id(id,username,profile_picture),
-          user2:user2_id(id,username,profile_picture)
-        `)
-        .eq('id', chatId)
-        .single();
-
-      if (error) throw error;
-      if (!data) throw new Error('Chat not found');
-      const partner = data.user1.id === userId ? data.user2 : data.user1;
-      return { ...data, partner };
+      const chatDetails = await chatService.getChatDetails(chatId);
+      if (!chatDetails) throw new Error('Chat not found');
+      const partner = chatDetails.user1.id === userId ? chatDetails.user2 : chatDetails.user1;
+      return { ...chatDetails, partner };
     } catch (error) {
       console.error('Error fetching chat details:', error);
       throw error;
@@ -63,41 +52,12 @@ export default function Chat() {
 
   const fetchMessages = async (chatId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      if (data) setMessages(data);
-      return data || [];
+      const messages = await chatService.getMessages(chatId);
+      if (messages) setMessages(messages);
+      return messages || [];
     } catch (error) {
       console.error('Error fetching messages:', error);
       throw error;
-    }
-  };
-
-  const sendMessage = async (content: string) => {
-    if (!chatId || !user) return;
-    
-    try {
-      await chatService.sendMessage(chatId, user.id, content);
-      setNewMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to send message',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      sendMessage(newMessage.trim());
     }
   };
 
@@ -110,7 +70,7 @@ export default function Chat() {
           fetchMessages(chatId),
         ]);
 
-        setPartner(chatDetails.partner); // Use the partner object from the updated fetchChatDetails
+        setPartner(chatDetails.partner);
         setMessages(messages);
         setIsLoading(false);
       } catch (error: any) {
@@ -126,15 +86,11 @@ export default function Chat() {
 
     fetchInitialData();
 
-    const subscription = supabase
-      .channel(`chat:${chatId}`)
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'messages',
-        filter: `conversation_id=eq.${chatId}` 
-      }, handleNewMessage)
-      .subscribe();
+    const subscription = chatService.subscribeToMessages(chatId, handleNewMessage);
+
+    if (chatId && userId) {
+      chatService.markAsRead(chatId, userId);
+    }
 
     return () => {
       subscription.unsubscribe();
@@ -142,10 +98,9 @@ export default function Chat() {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [chatId, navigate, userId]); // Added userId to the dependency array
+  }, [chatId, navigate, userId]);
 
-  const handleNewMessage = (payload: any) => {
-    const newMessage = payload.new;
+  const handleNewMessage = (newMessage: Message) => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
   };
 
@@ -153,15 +108,7 @@ export default function Chat() {
     if (!user || !chatId) return;
 
     try {
-      const { error } = await supabase.from('messages').insert({
-        conversation_id: chatId,
-        sender_id: user.id,
-        content,
-        type,
-        attachment_url: attachmentUrl,
-      });
-
-      if (error) throw error;
+      await chatService.sendMessage(chatId, user.id, content, type, attachmentUrl);
       setNewMessage('');
       setShowEmojiPicker(false);
     } catch (error) {
@@ -182,16 +129,7 @@ export default function Chat() {
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('chat_attachments')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat_attachments')
-        .getPublicUrl(filePath);
-
+      const { publicUrl } = await chatService.uploadFile(file, filePath);
       await sendMessage('attachment', file.name, publicUrl);
     } catch (error) {
       toast({
@@ -199,71 +137,6 @@ export default function Chat() {
         description: 'Failed to upload file',
         variant: 'destructive',
       });
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        chunksRef.current.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(audioBlob);
-
-        try {
-          const fileName = `voice_${Date.now()}.webm`;
-          const { error: uploadError, data } = await supabase.storage
-            .from('voice_messages')
-            .upload(`${user?.id}/${fileName}`, audioBlob);
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('voice_messages')
-            .getPublicUrl(`${user?.id}/${fileName}`);
-
-          await sendMessage('voice', 'Voice message', publicUrl);
-        } catch (error) {
-          toast({
-            title: 'Error',
-            description: 'Failed to upload voice message',
-            variant: 'destructive',
-          });
-        }
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-
-      const recordingInterval = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(recordingInterval);
-        stopRecording();
-      }, 60000); // Max 1 minute recording
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to start recording',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setRecordingTime(0);
     }
   };
 
@@ -331,75 +204,15 @@ export default function Chat() {
         </div>
       )}
 
-      <div className="p-4 border-t">
-        {isRecording && (
-          <div className="mb-2 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span>Recording: {recordingTime}s</span>
-            <Progress value={(recordingTime / 60) * 100} className="flex-1" />
-            <Button variant="destructive" size="sm" onClick={stopRecording}>
-              Stop
-            </Button>
-          </div>
-        )}
+      <div className="p-4 border-t flex gap-2">
+        <Textarea
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message..."
+          className="flex-1"
+        />
 
-        <div className="flex items-end gap-2">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileUpload}
-          />
-
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (newMessage.trim()) {
-                  sendMessage('text', newMessage);
-                }
-              }
-            }}
-          />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          >
-            😊
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            📎
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={isRecording ? stopRecording : startRecording}
-          >
-            🎤
-          </Button>
-
-          <Button
-            onClick={() => {
-              if (newMessage.trim()) {
-                sendMessage('text', newMessage);
-              }
-            }}
-          >
-            Send
-          </Button>
-        </div>
+        <Button onClick={() => sendMessage('text', newMessage)}>Send</Button>
       </div>
     </div>
   );

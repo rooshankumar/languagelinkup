@@ -36,7 +36,9 @@ const ChatList = () => {
         setIsLoading(true);
 
         // Get current user
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) {
           navigate('/auth');
           return;
@@ -45,14 +47,23 @@ const ChatList = () => {
         const userId = session.user.id;
         setCurrentUserId(userId);
 
-        // Fetch conversations for this user
+        // Fetch all conversations, partners, and messages in one query
         const { data: conversations, error: conversationsError } = await supabase
           .from('conversations')
-          .select(`
-            id,
-            user1_id,
-            user2_id
-          `)
+          .select(
+            `
+              id,
+              user1_id,
+              user2_id,
+              updated_at,
+              messages(
+                id, sender_id, content, created_at, is_read
+              ),
+              partner:users!conversations_user1_id_fkey(
+                id, username, profile_picture, native_language, is_online
+              )
+            `
+          )
           .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
           .order('updated_at', { ascending: false });
 
@@ -60,84 +71,59 @@ const ChatList = () => {
           throw conversationsError;
         }
 
-        // Process each conversation to get the partner user info
-        const chatPromises = conversations.map(async (conv) => {
-          // Determine the partner's ID
-          const partnerId = conv.user1_id === userId ? conv.user2_id : conv.user1_id;
-
-          // Get partner user data
-          const { data: partnerData, error: partnerError } = await supabase
-            .from('users')
-            .select('id, username, profile_picture, native_language, is_online')
-            .eq('id', partnerId)
-            .maybeSingle();
-
-          if (partnerError || !partnerData) {
-            console.error('Error fetching partner data for conversation', conv.id, ':', partnerError);
-            return null;
-          }
-
-          // Get messages for this conversation separately
-          const { data: messageData, error: messageError } = await supabase
-            .from('messages')
-            .select('id, sender_id, content, created_at, is_read')
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(10);
-
-          if (messageError) {
-            console.error('Error fetching messages:', messageError);
-          }
+        const formattedChats = conversations.map((conv) => {
+          const partner = conv.partner;
+          if (!partner) return null;
 
           // Get latest message
+          const latestMessage =
+            conv.messages.length > 0
+              ? conv.messages.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+              : null;
+
           let lastMessage = {
             text: 'Start a conversation',
             timestamp: new Date(),
             isRead: true,
-            senderId: ''
+            senderId: '',
           };
 
           let unreadCount = 0;
 
-          if (messageData && messageData.length > 0) {
-            const latestMessage = messageData[0];
+          if (latestMessage) {
             lastMessage = {
               text: latestMessage.content || '',
               timestamp: new Date(latestMessage.created_at),
               isRead: latestMessage.is_read,
-              senderId: latestMessage.sender_id
+              senderId: latestMessage.sender_id,
             };
 
-            // Count unread messages
-            unreadCount = messageData.filter(m => 
-              m.sender_id !== userId && !m.is_read
+            unreadCount = conv.messages.filter(
+              (m) => m.sender_id !== userId && !m.is_read
             ).length;
           }
 
           return {
             id: conv.id,
             partner: {
-              id: partnerData.id,
-              name: partnerData.username,
-              avatar: partnerData.profile_picture,
-              language: partnerData.native_language,
-              online: partnerData.is_online
+              id: partner.id,
+              name: partner.username,
+              avatar: partner.profile_picture,
+              language: partner.native_language,
+              online: partner.is_online,
             },
             lastMessage,
-            unreadCount
+            unreadCount,
           };
         });
 
-        // Resolve all promises
-        const chatResults = await Promise.all(chatPromises);
-        const validChats = chatResults.filter(chat => chat !== null) as ChatPreview[];
-        setChats(validChats);
+        setChats(formattedChats.filter((chat) => chat !== null) as ChatPreview[]);
       } catch (error: any) {
         console.error('Error fetching chats:', error);
         toast({
           title: 'Failed to load chats',
           description: error.message || 'Please try again later',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
@@ -146,17 +132,16 @@ const ChatList = () => {
 
     fetchUserAndChats();
 
-    // Subscribe to realtime updates for new messages
+    // Subscribe to real-time updates for new messages
     const subscription = supabase
-      .channel('schema-db-changes')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages'
-      }, (payload) => {
-        // Refresh the chat list when a new message is received
-        fetchUserAndChats();
-      })
+      .channel('chat-updates')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        () => {
+          fetchUserAndChats(); // Refresh chat list when a new message arrives
+        }
+      )
       .subscribe();
 
     return () => {
@@ -179,7 +164,7 @@ const ChatList = () => {
     }
   };
 
-  const filteredChats = chats.filter(chat => 
+  const filteredChats = chats.filter((chat) =>
     chat.partner.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -197,7 +182,7 @@ const ChatList = () => {
       <div className="p-4 border-b">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Messages</h1>
-          <Button 
+          <Button
             onClick={() => navigate('/community')}
             icon={<Plus className="h-4 w-4" />}
             size="sm"
@@ -221,70 +206,32 @@ const ChatList = () => {
       <div className="overflow-y-auto h-[calc(100vh-10rem)]">
         {filteredChats.length > 0 ? (
           filteredChats.map((chat) => (
-            <div 
+            <div
               key={chat.id}
               onClick={() => navigate(`/chat/${chat.id}`)}
               className="p-4 border-b hover:bg-muted/30 cursor-pointer transition-colors"
             >
               <div className="flex items-start">
-                <div className="relative">
-                  <img 
-                    src={chat.partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.partner.name)}&background=random`}
-                    alt={chat.partner.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.partner.name)}&background=random`;
-                    }}
-                  />
-                  {chat.partner.online && (
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
-                  )}
-                </div>
-
+                <img
+                  src={chat.partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.partner.name)}`}
+                  alt={chat.partner.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
                 <div className="ml-3 flex-1">
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-medium">{chat.partner.name}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      {formatTime(chat.lastMessage.timestamp)}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{formatTime(chat.lastMessage.timestamp)}</span>
                   </div>
-
-                  <div className="flex items-center justify-between mt-1">
-                    <p className={`text-sm truncate ${!chat.lastMessage.isRead && chat.lastMessage.senderId !== currentUserId ? 'font-medium' : 'text-muted-foreground'}`}>
-                      {chat.lastMessage.senderId === currentUserId ? 'You: ' : ''}
-                      {chat.lastMessage.text}
-                    </p>
-
-                    {chat.unreadCount > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {chat.unreadCount}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Speaking {chat.partner.language}
+                  <p className={`text-sm truncate ${chat.unreadCount > 0 ? 'font-medium' : 'text-muted-foreground'}`}>
+                    {chat.lastMessage.senderId === currentUserId ? 'You: ' : ''}
+                    {chat.lastMessage.text}
                   </p>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-64 p-4">
-            <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-medium mb-2">No messages found</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              {searchTerm 
-                ? `No chats matching "${searchTerm}"`
-                : "You haven't started any conversations yet"}
-            </p>
-            <Button 
-              onClick={() => navigate('/community')}
-              icon={<Plus className="h-4 w-4" />}
-            >
-              Find Language Partners
-            </Button>
-          </div>
+          <p className="text-center p-4 text-muted-foreground">No conversations found.</p>
         )}
       </div>
     </div>
