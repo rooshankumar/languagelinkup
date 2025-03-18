@@ -42,16 +42,17 @@ export default function Chat() {
   const fetchChatDetails = async (chatId: string) => {
     try {
       const { data, error } = await supabase
-        .from('chats')
+        .from('conversations')
         .select(`
           *,
-          user1:user1_id(id, username, profile_picture),
-          user2:user2_id(id, username, profile_picture)
+          user1:user1_id(id,username,profile_picture),
+          user2:user2_id(id,username,profile_picture)
         `)
         .eq('id', chatId)
         .single();
 
       if (error) throw error;
+      if (!data) throw new Error('Chat not found');
       const partner = data.user1.id === userId ? data.user2 : data.user1;
       return { ...data, partner };
     } catch (error) {
