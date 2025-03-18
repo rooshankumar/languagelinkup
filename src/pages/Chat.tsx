@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, Smile, Paperclip, Mic, ChevronDown, Check, CheckCheck } from 'lucide-react';
@@ -62,7 +61,7 @@ export default function Chat() {
           return;
         }
         setCurrentUserId(session.user.id);
-        
+
         if (!chatId) return;
 
         // Subscribe to new messages
@@ -168,7 +167,7 @@ export default function Chat() {
     try {
       setUploadProgress(0);
       const path = `chat-attachments/${chatId}/${Date.now()}_${file.name}`;
-      
+
       // Upload file with progress tracking
       const { data, error } = await supabase.storage
         .from('chat-attachments')
@@ -225,7 +224,7 @@ export default function Chat() {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        
+
         try {
           const path = `chat-attachments/${chatId}/${Date.now()}_voice.webm`;
           const { data, error } = await supabase.storage
@@ -376,7 +375,7 @@ export default function Chat() {
             <Picker data={data} onEmojiSelect={handleEmojiSelect} />
           </div>
         )}
-        
+
         <div className="flex items-end gap-2">
           <Button
             variant="ghost"
@@ -385,7 +384,7 @@ export default function Chat() {
           >
             <Smile className="h-4 w-4" />
           </Button>
-          
+
           <Button
             variant="ghost"
             size="icon"
@@ -393,7 +392,7 @@ export default function Chat() {
           >
             <Paperclip className="h-4 w-4" />
           </Button>
-          
+
           <input
             type="file"
             ref={fileInputRef}
@@ -401,7 +400,7 @@ export default function Chat() {
             onChange={handleFileUpload}
             accept="image/*,video/*,application/pdf"
           />
-          
+
           <Textarea
             value={newMessage}
             onChange={(e) => {
@@ -418,7 +417,7 @@ export default function Chat() {
             className="min-h-[40px] max-h-[120px]"
             rows={1}
           />
-          
+
           {newMessage.trim() ? (
             <Button size="icon" onClick={handleSendMessage}>
               <Send className="h-4 w-4" />
@@ -434,8 +433,8 @@ export default function Chat() {
           )}
         </div>
       </div>
-      
-      
+
+
     </div>
   );
 }
