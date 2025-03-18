@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabaseClient";
 
 const BUCKET_NAME = 'user_uploads';
