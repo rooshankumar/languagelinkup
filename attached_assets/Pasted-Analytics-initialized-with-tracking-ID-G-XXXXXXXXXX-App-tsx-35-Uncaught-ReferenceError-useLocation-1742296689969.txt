@@ -1,0 +1,106 @@
+Analytics initialized with tracking ID: G-XXXXXXXXXX
+App.tsx:35 Uncaught ReferenceError: useLocation is not defined
+    at PageTracker (App.tsx:35:20)
+    at renderWithHooks (chunk-FJ2A54M7.js?v=2c650e43:11548:26)
+    at mountIndeterminateComponent (chunk-FJ2A54M7.js?v=2c650e43:14926:21)
+    at beginWork (chunk-FJ2A54M7.js?v=2c650e43:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=2c650e43:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=2c650e43:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=2c650e43:3733:39)
+    at beginWork$1 (chunk-FJ2A54M7.js?v=2c650e43:19765:15)
+    at performUnitOfWork (chunk-FJ2A54M7.js?v=2c650e43:19198:20)
+    at workLoopSync (chunk-FJ2A54M7.js?v=2c650e43:19137:13)
+PageTracker @ App.tsx:35
+renderWithHooks @ chunk-FJ2A54M7.js?v=2c650e43:11548
+mountIndeterminateComponent @ chunk-FJ2A54M7.js?v=2c650e43:14926
+beginWork @ chunk-FJ2A54M7.js?v=2c650e43:15914
+callCallback2 @ chunk-FJ2A54M7.js?v=2c650e43:3674
+invokeGuardedCallbackDev @ chunk-FJ2A54M7.js?v=2c650e43:3699
+invokeGuardedCallback @ chunk-FJ2A54M7.js?v=2c650e43:3733
+beginWork$1 @ chunk-FJ2A54M7.js?v=2c650e43:19765
+performUnitOfWork @ chunk-FJ2A54M7.js?v=2c650e43:19198
+workLoopSync @ chunk-FJ2A54M7.js?v=2c650e43:19137
+renderRootSync @ chunk-FJ2A54M7.js?v=2c650e43:19116
+performConcurrentWorkOnRoot @ chunk-FJ2A54M7.js?v=2c650e43:18678
+workLoop @ chunk-FJ2A54M7.js?v=2c650e43:197
+flushWork @ chunk-FJ2A54M7.js?v=2c650e43:176
+performWorkUntilDeadline @ chunk-FJ2A54M7.js?v=2c650e43:384Understand this errorAI
+App.tsx:35 Uncaught ReferenceError: useLocation is not defined
+    at PageTracker (App.tsx:35:20)
+    at renderWithHooks (chunk-FJ2A54M7.js?v=2c650e43:11548:26)
+    at mountIndeterminateComponent (chunk-FJ2A54M7.js?v=2c650e43:14926:21)
+    at beginWork (chunk-FJ2A54M7.js?v=2c650e43:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=2c650e43:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=2c650e43:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=2c650e43:3733:39)
+    at beginWork$1 (chunk-FJ2A54M7.js?v=2c650e43:19765:15)
+    at performUnitOfWork (chunk-FJ2A54M7.js?v=2c650e43:19198:20)
+    at workLoopSync (chunk-FJ2A54M7.js?v=2c650e43:19137:13)
+PageTracker @ App.tsx:35
+renderWithHooks @ chunk-FJ2A54M7.js?v=2c650e43:11548
+mountIndeterminateComponent @ chunk-FJ2A54M7.js?v=2c650e43:14926
+beginWork @ chunk-FJ2A54M7.js?v=2c650e43:15914
+callCallback2 @ chunk-FJ2A54M7.js?v=2c650e43:3674
+invokeGuardedCallbackDev @ chunk-FJ2A54M7.js?v=2c650e43:3699
+invokeGuardedCallback @ chunk-FJ2A54M7.js?v=2c650e43:3733
+beginWork$1 @ chunk-FJ2A54M7.js?v=2c650e43:19765
+performUnitOfWork @ chunk-FJ2A54M7.js?v=2c650e43:19198
+workLoopSync @ chunk-FJ2A54M7.js?v=2c650e43:19137
+renderRootSync @ chunk-FJ2A54M7.js?v=2c650e43:19116
+recoverFromConcurrentError @ chunk-FJ2A54M7.js?v=2c650e43:18736
+performConcurrentWorkOnRoot @ chunk-FJ2A54M7.js?v=2c650e43:18684
+workLoop @ chunk-FJ2A54M7.js?v=2c650e43:197
+flushWork @ chunk-FJ2A54M7.js?v=2c650e43:176
+performWorkUntilDeadline @ chunk-FJ2A54M7.js?v=2c650e43:384Understand this errorAI
+chunk-FJ2A54M7.js?v=2c650e43:14032 The above error occurred in the <PageTracker> component:
+
+    at PageTracker (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/src/App.tsx?t=1742296669551:40:22)
+    at Router (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=ca658e68:4451:15)
+    at BrowserRouter (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=ca658e68:5196:5)
+    at Provider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/chunk-YSPUH5BE.js?v=2c650e43:22:15)
+    at TooltipProvider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=e7fed628:2297:5)
+    at AuthProvider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/src/contexts/AuthContext.tsx:23:32)
+    at QueryClientProvider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/@tanstack_react-query.js?v=eeb20868:2794:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-FJ2A54M7.js?v=2c650e43:14032
+update.callback @ chunk-FJ2A54M7.js?v=2c650e43:14052
+callCallback @ chunk-FJ2A54M7.js?v=2c650e43:11248
+commitUpdateQueue @ chunk-FJ2A54M7.js?v=2c650e43:11265
+commitLayoutEffectOnFiber @ chunk-FJ2A54M7.js?v=2c650e43:17093
+commitLayoutMountEffects_complete @ chunk-FJ2A54M7.js?v=2c650e43:17980
+commitLayoutEffects_begin @ chunk-FJ2A54M7.js?v=2c650e43:17969
+commitLayoutEffects @ chunk-FJ2A54M7.js?v=2c650e43:17920
+commitRootImpl @ chunk-FJ2A54M7.js?v=2c650e43:19353
+commitRoot @ chunk-FJ2A54M7.js?v=2c650e43:19277
+finishConcurrentRender @ chunk-FJ2A54M7.js?v=2c650e43:18760
+performConcurrentWorkOnRoot @ chunk-FJ2A54M7.js?v=2c650e43:18718
+workLoop @ chunk-FJ2A54M7.js?v=2c650e43:197
+flushWork @ chunk-FJ2A54M7.js?v=2c650e43:176
+performWorkUntilDeadline @ chunk-FJ2A54M7.js?v=2c650e43:384Understand this errorAI
+chunk-FJ2A54M7.js?v=2c650e43:19413 Uncaught ReferenceError: useLocation is not defined
+    at PageTracker (App.tsx:35:20)
+    at renderWithHooks (chunk-FJ2A54M7.js?v=2c650e43:11548:26)
+    at mountIndeterminateComponent (chunk-FJ2A54M7.js?v=2c650e43:14926:21)
+    at beginWork (chunk-FJ2A54M7.js?v=2c650e43:15914:22)
+    at beginWork$1 (chunk-FJ2A54M7.js?v=2c650e43:19753:22)
+    at performUnitOfWork (chunk-FJ2A54M7.js?v=2c650e43:19198:20)
+    at workLoopSync (chunk-FJ2A54M7.js?v=2c650e43:19137:13)
+    at renderRootSync (chunk-FJ2A54M7.js?v=2c650e43:19116:15)
+    at recoverFromConcurrentError (chunk-FJ2A54M7.js?v=2c650e43:18736:28)
+    at performConcurrentWorkOnRoot (chunk-FJ2A54M7.js?v=2c650e43:18684:30)
+PageTracker @ App.tsx:35
+renderWithHooks @ chunk-FJ2A54M7.js?v=2c650e43:11548
+mountIndeterminateComponent @ chunk-FJ2A54M7.js?v=2c650e43:14926
+beginWork @ chunk-FJ2A54M7.js?v=2c650e43:15914
+beginWork$1 @ chunk-FJ2A54M7.js?v=2c650e43:19753
+performUnitOfWork @ chunk-FJ2A54M7.js?v=2c650e43:19198
+workLoopSync @ chunk-FJ2A54M7.js?v=2c650e43:19137
+renderRootSync @ chunk-FJ2A54M7.js?v=2c650e43:19116
+recoverFromConcurrentError @ chunk-FJ2A54M7.js?v=2c650e43:18736
+performConcurrentWorkOnRoot @ chunk-FJ2A54M7.js?v=2c650e43:18684
+workLoop @ chunk-FJ2A54M7.js?v=2c650e43:197
+flushWork @ chunk-FJ2A54M7.js?v=2c650e43:176
+performWorkUntilDeadline @ chunk-FJ2A54M7.js?v=2c650e43:384Understand this errorAI
