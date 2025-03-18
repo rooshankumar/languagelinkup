@@ -10,8 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -437,7 +436,7 @@ export default function Chat() {
         </div>
       </div>
       
-      <ToastContainer position="bottom-center" />
+      
     </div>
   );
 }
