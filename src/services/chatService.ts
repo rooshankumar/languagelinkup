@@ -26,20 +26,21 @@ export const chatService = {
     const { data: existingConv, error: checkError } = await supabase
       .from('conversations')
       .select('*')
-      .or(`and(user1_id.eq.${user1_id},user2_id.eq.${user2_id}),and(user1_id.eq.${user2_id},user2_id.eq.${user1_id})`)
+      .or(`user1_id.eq.${user1_id},user2_id.eq.${user2_id}`)
+      .or(`user1_id.eq.${user2_id},user2_id.eq.${user1_id}`)
       .maybeSingle();
 
-    if (checkError && checkError.code !== 'PGRST116') throw checkError;
+    if (checkError) throw checkError;
     if (existingConv) return existingConv;
 
     const { data, error } = await supabase
       .from('conversations')
-      .insert([{ 
+      .insert({
         user1_id, 
-        user2_id, 
+        user2_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }])
+      })
       .select()
       .single();
 

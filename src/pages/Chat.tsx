@@ -252,7 +252,7 @@ export default function Chat() {
         <div className="ml-4">
           <h2 className="font-semibold">{partner.username}</h2>
           <p className="text-sm text-gray-500">
-            {partner.is_online ? 'Online' : `Last seen ${format(new Date(partner.last_active), 'PP')}`}
+            {partner.is_online ? 'Online' : `Last seen ${format(new Date(partner.last_active || Date.now()), 'PP')}`}
           </p>
         </div>
       </div>
@@ -285,7 +285,7 @@ export default function Chat() {
                 </a>
               )}
               <span className="text-xs opacity-70 mt-1 block">
-                {format(new Date(message.created_at), 'p')}
+                {format(new Date(message.created_at || Date.now()), 'p')}
               </span>
             </div>
           </div>
