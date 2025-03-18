@@ -1,0 +1,46 @@
+ge view tracked: /chats
+analytics.ts:24 Page view tracked: /chat/0b769b24-b077-4422-bab4-e9b0b6d32c97
+2date-fns.js?v=2609674b:2295 Uncaught RangeError: Invalid time value
+    at format (date-fns.js?v=2609674b:2295:11)
+    at Chat (Chat.tsx:255:58)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=2609674b:11548:26)
+    at updateFunctionComponent (chunk-W6L2VRDA.js?v=2609674b:14582:28)
+    at beginWork (chunk-W6L2VRDA.js?v=2609674b:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-W6L2VRDA.js?v=2609674b:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-W6L2VRDA.js?v=2609674b:3699:24)
+    at invokeGuardedCallback (chunk-W6L2VRDA.js?v=2609674b:3733:39)
+    at beginWork$1 (chunk-W6L2VRDA.js?v=2609674b:19765:15)
+    at performUnitOfWork (chunk-W6L2VRDA.js?v=2609674b:19198:20)Understand this errorAI
+chunk-W6L2VRDA.js?v=2609674b:14032 The above error occurred in the <Chat> component:
+
+    at Chat (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/src/pages/Chat.tsx?t=1742317281323:25:24)
+    at RenderedRoute (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=2609674b:4069:5)
+    at Outlet (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=2609674b:4444:26)
+    at div
+    at main
+    at div
+    at AppLayout
+    at RenderedRoute (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=2609674b:4069:5)
+    at Routes (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=2609674b:4508:5)
+    at Router (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=2609674b:4451:15)
+    at BrowserRouter (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/react-router-dom.js?v=2609674b:5196:5)
+    at Provider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/chunk-OFAXGNVV.js?v=2609674b:22:15)
+    at TooltipProvider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=2609674b:2297:5)
+    at AuthProvider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/src/contexts/AuthContext.tsx:23:32)
+    at QueryClientProvider (https://90c1ea73-d866-4aaf-9ee1-01dee1723389-00-32fonttlmrouo.pike.replit.dev:3001/node_modules/.vite/deps/@tanstack_react-query.js?v=2609674b:2794:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-W6L2VRDA.js?v=2609674b:14032Understand this errorAI
+chunk-W6L2VRDA.js?v=2609674b:19413 Uncaught RangeError: Invalid time value
+    at format (date-fns.js?v=2609674b:2295:11)
+    at Chat (Chat.tsx:255:58)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=2609674b:11548:26)
+    at updateFunctionComponent (chunk-W6L2VRDA.js?v=2609674b:14582:28)
+    at beginWork (chunk-W6L2VRDA.js?v=2609674b:15924:22)
+    at beginWork$1 (chunk-W6L2VRDA.js?v=2609674b:19753:22)
+    at performUnitOfWork (chunk-W6L2VRDA.js?v=2609674b:19198:20)
+    at workLoopSync (chunk-W6L2VRDA.js?v=2609674b:19137:13)
+    at renderRootSync (chunk-W6L2VRDA.js?v=2609674b:19116:15)
+    at recoverFromConcurrentError (chunk-W6L2VRDA.js?v=2609674b:18736:28)Understand this errorAI
