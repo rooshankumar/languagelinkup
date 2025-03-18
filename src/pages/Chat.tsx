@@ -170,51 +170,6 @@ export default function Chat() {
   if (!partner) return null;
 
 
-  const handleEmojiSelect = (emoji: any) => {
-    setNewMessage(prev => prev + emoji.native);
-    setShowEmojiPicker(false);
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !chatId) return;
-
-    try {
-      setIsUploadingFile(true);
-      const path = `chat-attachments/${chatId}/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('chat-attachments')
-        .upload(path, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl }, error: urlError } = supabase.storage
-        .from('chat-attachments')
-        .getPublicUrl(path);
-
-      if (urlError) throw urlError;
-
-      await supabase.from('messages').insert({
-        conversation_id: chatId,
-        sender_id: currentUserId,
-        content: file.name,
-        type: file.type.startsWith('image/') ? 'image' : 'file',
-        file_url: publicUrl,
-        file_type: file.type
-      });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload file',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploadingFile(false);
-      event.target.value = '';
-    }
-  };
-
   const handleVoiceRecord = async () => {
     if (isRecording) {
       if (mediaRecorderRef.current) {
@@ -236,7 +191,7 @@ export default function Chat() {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         setAudioBlob(audioBlob);
-        
+
         // Upload voice message
         if (chatId) {
           try {
@@ -287,9 +242,44 @@ export default function Chat() {
     }
   };
 
-  const handleEmojiSelect = (emoji: any) => {
-    setNewMessage(prev => prev + emoji.native);
-    setShowEmojiPicker(false);
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !chatId) return;
+
+    try {
+      setIsUploadingFile(true);
+      const path = `chat-attachments/${chatId}/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('chat-attachments')
+        .upload(path, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl }, error: urlError } = supabase.storage
+        .from('chat-attachments')
+        .getPublicUrl(path);
+
+      if (urlError) throw urlError;
+
+      await supabase.from('messages').insert({
+        conversation_id: chatId,
+        sender_id: currentUserId,
+        content: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        file_url: publicUrl,
+        file_type: file.type
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload file',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingFile(false);
+      event.target.value = '';
+    }
   };
 
   return (
