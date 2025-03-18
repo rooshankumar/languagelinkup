@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -12,13 +11,15 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // Get user session
         const { data: { session }, error } = await supabase.auth.getSession();
-        
         if (error) throw error;
         if (!session?.user) throw new Error('No session found');
 
+        // Refresh session globally
         await refreshSession();
 
+        // Check if user exists in database
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -26,23 +27,25 @@ export default function AuthCallback() {
           .single();
 
         if (userError || !userData || !userData.native_language) {
+          console.log("Redirecting new user to onboarding...");
           navigate('/onboarding');
           toast({
             title: "Welcome!",
             description: "Let's set up your profile.",
           });
         } else {
+          console.log("Redirecting existing user to community...");
           navigate('/community');
           toast({
             title: "Welcome back!",
             description: "Successfully logged in.",
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auth callback error:', error);
         toast({
           title: "Authentication Error",
-          description: "Failed to complete authentication",
+          description: error.message || "Failed to complete authentication",
           variant: "destructive",
         });
         navigate('/auth');
@@ -61,3 +64,4 @@ export default function AuthCallback() {
     </div>
   );
 }
+export default AuthCallback;
