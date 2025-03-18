@@ -42,6 +42,17 @@ const PageTracker = () => {
 
 const queryClient = new QueryClient();
 
+const HideMobileNavInChat = () => {
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith('/chat/');
+  
+  return (
+    <div className={isChatPage ? 'hidden md:block' : 'block'}>
+      <MobileNavbar />
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -80,6 +91,7 @@ const App = () => (
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <HideMobileNavInChat />
       </BrowserRouter>
     </TooltipProvider>
     </AuthProvider>

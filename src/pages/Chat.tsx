@@ -289,10 +289,10 @@ export default function Chat() {
   if (!partner) return null;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto relative">
       <div className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/chats')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="md:hidden">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <Avatar src={partner.profile_picture} fallback={partner.username[0]} />
@@ -433,8 +433,6 @@ export default function Chat() {
           )}
         </div>
       </div>
-
-
     </div>
   );
 }
