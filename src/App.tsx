@@ -77,6 +77,7 @@ const App = () => (
           {/* Redirect /chats to ensure it's the main message page */}
           <Route path="/messages" element={<Navigate to="/chats" replace />} />
 
+          <Route path="/auth/callback" element={<AuthCallback />} />
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

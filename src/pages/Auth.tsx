@@ -171,6 +171,41 @@ const Auth = () => {
             >
               {isLogin ? 'Sign In' : 'Create Account'}
             </Button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                try {
+                  setIsLoading(true);
+                  await signInWithGoogle();
+                } catch (error) {
+                  console.error('Google sign-in error:', error);
+                  toast({
+                    title: "Error",
+                    description: "Failed to sign in with Google",
+                    variant: "destructive",
+                  });
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+            >
+              <img src="/google.svg" alt="Google" className="mr-2 h-4 w-4" />
+              Continue with Google
+            </Button>
           </form>
 
           <div className="mt-4 text-center">
