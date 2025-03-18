@@ -1,6 +1,17 @@
 import { supabase } from '@/lib/supabaseClient';
 
 export const chatService = {
+  subscribeToMessages: (conversationId: string, callback: (payload: any) => void) => {
+    return supabase
+      .channel(`messages:${conversationId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, callback)
+      .subscribe();
+  },
   async createConversation(user1_id: string, user2_id: string) {
     // Check for existing conversation first
     const { data: existingConv, error: checkError } = await supabase

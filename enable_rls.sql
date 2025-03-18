@@ -41,6 +41,10 @@ CREATE POLICY "Users can create conversations" ON conversations FOR INSERT
 CREATE POLICY "Users can view their own conversations" ON conversations FOR SELECT
   USING (auth.uid() IN (user1_id, user2_id));
 
+-- Allow users to read conversations they're part of
+CREATE POLICY "Users can read their own conversations" ON conversations FOR SELECT
+  USING (auth.uid() IN (user1_id, user2_id));
+
 -- Allow users to update their own conversations
 CREATE POLICY "Users can update their own conversations" ON conversations FOR UPDATE
   USING (auth.uid() IN (user1_id, user2_id))
