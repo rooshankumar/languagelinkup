@@ -1,12 +1,17 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Smile, Paperclip, Mic } from 'lucide-react';
+import { ArrowLeft, Send, Smile, Paperclip, Mic, ChevronDown, Check, CheckCheck } from 'lucide-react';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 import { supabase } from '@/lib/supabaseClient';
-import { chatService } from '@/services/chatService';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Message {
   id: string;
@@ -14,6 +19,10 @@ interface Message {
   sender_id: string;
   created_at: string;
   is_read: boolean;
+  type?: 'text' | 'voice' | 'image' | 'file';
+  file_url?: string;
+  file_type?: string;
+  reactions?: { [key: string]: string[] };
 }
 
 interface Partner {
@@ -22,6 +31,7 @@ interface Partner {
   profile_picture?: string;
   native_language: string;
   is_online: boolean;
+  last_seen?: string;
 }
 
 export default function Chat() {
@@ -31,144 +41,171 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(true);
   const [partner, setPartner] = useState<Partner | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchChatData = async () => {
+    const fetchInitialData = async () => {
       try {
-        if (!chatId) {
-          navigate('/chats');
-          return;
-        }
-
-        setIsLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           navigate('/auth');
           return;
         }
-
-        const userId = session.user.id;
-        setCurrentUserId(userId);
-
-        // Fetch conversation and partner details
-        const { data: conversation, error: convError } = await supabase
-          .from('conversations')
-          .select('*, user1:user1_id(*), user2:user2_id(*)')
-          .eq('id', chatId)
-          .maybeSingle();
-
-        if (convError) throw convError;
-        if (!conversation) {
-          toast({ title: "Chat not found", variant: "destructive" });
-          navigate('/chats');
-          return;
-        }
-
-        // Set partner data
-        const partner = conversation.user1.id === userId ? conversation.user2 : conversation.user1;
-        setPartner({
-          id: partner.id,
-          username: partner.username,
-          profile_picture: partner.profile_picture,
-          native_language: partner.native_language,
-          is_online: partner.is_online
-        });
-
-        // Fetch messages
-        const { data: messages, error: msgError } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('conversation_id', chatId)
-          .order('created_at');
-
-        if (msgError) throw msgError;
-        setMessages(messages || []);
+        setCurrentUserId(session.user.id);
+        
+        if (!chatId) return;
 
         // Subscribe to new messages
-        const subscription = chatService.subscribeToMessages(chatId, (payload) => {
-          const newMessage = payload.new;
-          setMessages(prev => [...prev, newMessage]);
-          scrollToBottom();
-        });
+        const subscription = supabase
+          .channel(`chat:${chatId}`)
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${chatId}`,
+          }, handleNewMessage)
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${chatId}`,
+          }, handleMessageUpdate)
+          .subscribe();
+
+        // Fetch chat details and messages
+        const [chatDetails, messages] = await Promise.all([
+          fetchChatDetails(chatId),
+          fetchMessages(chatId),
+        ]);
 
         return () => {
           subscription.unsubscribe();
         };
-      } catch (error: any) {
-        console.error('Error loading chat:', error);
+      } catch (error) {
+        console.error('Error setting up chat:', error);
         toast({
-          title: "Error loading chat",
-          description: error.message,
-          variant: "destructive"
+          title: 'Error',
+          description: 'Failed to load chat',
+          variant: 'destructive',
         });
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    fetchChatData();
+    fetchInitialData();
   }, [chatId, navigate]);
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !currentUserId || !chatId) return;
+  const handleNewMessage = (payload: any) => {
+    const newMessage = payload.new;
+    setMessages(prev => [...prev, newMessage]);
+    playNotificationSound();
+    scrollToBottom();
+  };
+
+  const handleMessageUpdate = (payload: any) => {
+    const updatedMessage = payload.new;
+    setMessages(prev => 
+      prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+    );
+  };
+
+  const playNotificationSound = () => {
+    const audio = new Audio('/notification.mp3');
+    audio.play().catch(console.error);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    setShowScrollButton(scrollHeight - scrollTop - clientHeight > 100);
+  };
+
+  const handleEmojiSelect = (emoji: any) => {
+    setNewMessage(prev => prev + emoji.native);
+    setShowEmojiPicker(false);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !chatId || !currentUserId) return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: chatId,
-          sender_id: currentUserId,
-          content: newMessage.trim(),
-          created_at: new Date().toISOString(),
-          is_read: false
-        });
+      const { error } = await supabase.from('messages').insert({
+        conversation_id: chatId,
+        sender_id: currentUserId,
+        content: newMessage,
+        type: 'text',
+      });
 
       if (error) throw error;
       setNewMessage('');
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error sending message:', error);
       toast({
-        title: "Error sending message",
-        description: error.message,
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive',
       });
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !chatId) return;
+
+    try {
+      setUploadProgress(0);
+      const path = `chat-attachments/${chatId}/${Date.now()}_${file.name}`;
+      
+      // Upload file with progress tracking
+      const { data, error } = await supabase.storage
+        .from('chat-attachments')
+        .upload(path, file, {
+          onUploadProgress: (progress) => {
+            setUploadProgress((progress.loaded / progress.total) * 100);
+          },
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-attachments')
+        .getPublicUrl(path);
+
+      await supabase.from('messages').insert({
+        conversation_id: chatId,
+        sender_id: currentUserId,
+        content: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        file_url: publicUrl,
+        file_type: file.type
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload file',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadProgress(0);
+      if (event.target) event.target.value = '';
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-muted-foreground">Loading conversation...</p>
-      </div>
-    );
-  }
-
-  if (!partner) return null;
-
 
   const handleVoiceRecord = async () => {
     if (isRecording) {
@@ -190,40 +227,34 @@ export default function Chat() {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        setAudioBlob(audioBlob);
+        
+        try {
+          const path = `chat-attachments/${chatId}/${Date.now()}_voice.webm`;
+          const { data, error } = await supabase.storage
+            .from('chat-attachments')
+            .upload(path, audioBlob);
 
-        // Upload voice message
-        if (chatId) {
-          try {
-            const path = `chat-attachments/${chatId}/${Date.now()}_voice.webm`;
-            const { data, error } = await supabase.storage
-              .from('chat-attachments')
-              .upload(path, audioBlob);
+          if (error) throw error;
 
-            if (error) throw error;
+          const { data: { publicUrl } } = supabase.storage
+            .from('chat-attachments')
+            .getPublicUrl(path);
 
-            const { data: { publicUrl }, error: urlError } = supabase.storage
-              .from('chat-attachments')
-              .getPublicUrl(path);
-
-            if (urlError) throw urlError;
-
-            await supabase.from('messages').insert({
-              conversation_id: chatId,
-              sender_id: currentUserId,
-              content: 'Voice message',
-              type: 'voice',
-              file_url: publicUrl,
-              file_type: 'audio/webm'
-            });
-          } catch (error) {
-            console.error('Error uploading voice message:', error);
-            toast({
-              title: 'Error',
-              description: 'Failed to send voice message',
-              variant: 'destructive',
-            });
-          }
+          await supabase.from('messages').insert({
+            conversation_id: chatId,
+            sender_id: currentUserId,
+            content: 'Voice message',
+            type: 'voice',
+            file_url: publicUrl,
+            file_type: 'audio/webm'
+          });
+        } catch (error) {
+          console.error('Error uploading voice message:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to send voice message',
+            variant: 'destructive',
+          });
         }
 
         stream.getTracks().forEach(track => track.stop());
@@ -242,133 +273,171 @@ export default function Chat() {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !chatId) return;
-
-    try {
-      setIsUploadingFile(true);
-      const path = `chat-attachments/${chatId}/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('chat-attachments')
-        .upload(path, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl }, error: urlError } = supabase.storage
-        .from('chat-attachments')
-        .getPublicUrl(path);
-
-      if (urlError) throw urlError;
-
-      await supabase.from('messages').insert({
-        conversation_id: chatId,
-        sender_id: currentUserId,
-        content: file.name,
-        type: file.type.startsWith('image/') ? 'image' : 'file',
-        file_url: publicUrl,
-        file_type: file.type
-      });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload file',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploadingFile(false);
-      event.target.value = '';
+  const handleTyping = () => {
+    if (!isTyping) {
+      setIsTyping(true);
+      // Emit typing status to other users
     }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      // Emit stopped typing status
+    }, 3000);
   };
+
+  if (!partner) return null;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto">
       <div className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
-        <div className="flex items-center">
-          <button
-            onClick={() => navigate('/chats')}
-            className="mr-3 text-muted-foreground hover:text-foreground rounded-full p-2 hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/chats')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <Avatar src={partner.profile_picture} fallback={partner.username[0]} />
-          <div className="ml-3">
-            <h3 className="font-medium">{partner.username}</h3>
-            <p className="text-sm text-muted-foreground">{partner.native_language}</p>
+          <div>
+            <h2 className="font-semibold">{partner.username}</h2>
+            <p className="text-xs text-muted-foreground">
+              {partner.is_online ? 'Online' : `Last seen ${partner.last_seen}`}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        onScroll={handleScroll}
+      >
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
           >
-            <div
-              className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                message.sender_id === currentUserId
-                  ? 'bg-primary text-primary-foreground'
+            <div className={`flex flex-col max-w-[70%] ${message.sender_id === currentUserId ? 'items-end' : 'items-start'}`}>
+              <div className={`rounded-lg p-3 ${
+                message.sender_id === currentUserId 
+                  ? 'bg-primary text-primary-foreground' 
                   : 'bg-muted'
-              }`}
-            >
-              <p className="break-words">{message.content}</p>
+              }`}>
+                {message.type === 'voice' ? (
+                  <audio src={message.file_url} controls className="w-full" />
+                ) : message.type === 'image' ? (
+                  <img src={message.file_url} alt="Image" className="max-w-full rounded" />
+                ) : message.type === 'file' ? (
+                  <a href={message.file_url} target="_blank" rel="noopener noreferrer" 
+                     className="flex items-center gap-2 text-blue-500 hover:underline">
+                    <Paperclip className="h-4 w-4" />
+                    {message.content}
+                  </a>
+                ) : (
+                  <p>{message.content}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                <span>
+                  {new Date(message.created_at).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </span>
+                {message.sender_id === currentUserId && (
+                  message.is_read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
+                )}
+              </div>
             </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t bg-card">
-        <div className="flex gap-2 relative">
-          {showEmojiPicker && (
-            <div className="absolute bottom-full mb-2">
-              <EmojiPicker onEmojiSelect={handleEmojiSelect} />
-            </div>
-          )}
-          <Button 
-            variant="ghost" 
+      {showScrollButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute bottom-20 right-4 rounded-full shadow-lg"
+          onClick={scrollToBottom}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      )}
+
+      {uploadProgress > 0 && (
+        <div className="px-4 py-2">
+          <Progress value={uploadProgress} className="w-full" />
+        </div>
+      )}
+
+      <div className="p-4 border-t bg-background">
+        {showEmojiPicker && (
+          <div className="absolute bottom-20 right-4">
+            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+          </div>
+        )}
+        
+        <div className="flex items-end gap-2">
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           >
             <Smile className="h-4 w-4" />
           </Button>
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Type a message..."
-            className="resize-none"
-            rows={1}
-          />
-          <Button 
-            variant="ghost" 
+          
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleVoiceRecord}
-            className={isRecording ? 'text-red-500' : ''}
-          >
-            <Mic className="h-4 w-4" />
-          </Button>
-          <Button onClick={sendMessage} size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileUpload} 
-            style={{ display: 'none' }} 
-            accept="image/*,video/*,audio/*,application/pdf"
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileUpload}
+            accept="image/*,video/*,application/pdf"
           />
+          
+          <Textarea
+            value={newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            placeholder="Type a message..."
+            className="min-h-[40px] max-h-[120px]"
+            rows={1}
+          />
+          
+          {newMessage.trim() ? (
+            <Button size="icon" onClick={handleSendMessage}>
+              <Send className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant={isRecording ? 'destructive' : 'default'}
+              size="icon"
+              onClick={handleVoiceRecord}
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
+      
+      <ToastContainer position="bottom-center" />
     </div>
   );
 }
