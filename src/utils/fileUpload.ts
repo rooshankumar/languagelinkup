@@ -1,6 +1,7 @@
+
 import { supabase } from "@/lib/supabaseClient";
 
-const BUCKET_NAME = 'user_uploads';
+const BUCKET_NAME = 'avatars';
 
 export const generateProfilePicturePath = (userId: string, file: File): string => {
   const extension = file.name.split(".").pop();
@@ -35,12 +36,11 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
       throw error;
     }
 
-    // Get Public URL
-    const { data: urlData } = supabase.storage
+    const { data: { publicUrl } } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 
-    return urlData.publicUrl;
+    return publicUrl;
   } catch (error) {
     console.error("Upload error:", error);
     throw error;

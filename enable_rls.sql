@@ -1,37 +1,32 @@
 
 -- Enable RLS
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- Storage policies
-CREATE POLICY "Allow authenticated users to upload files"
-ON storage.objects
-FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'user_uploads');
+-- Create storage bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY "Allow authenticated users to update their files"
-ON storage.objects
-FOR UPDATE
-TO authenticated
-USING (bucket_id = 'user_uploads' AND auth.uid() = owner);
+-- Allow public access to avatars
+CREATE POLICY "Give public access to avatars"
+ON storage.objects FOR SELECT
+TO public
+USING ( bucket_id = 'avatars' );
 
-CREATE POLICY "Allow public read access"
-ON storage.objects
-FOR SELECT
+-- Allow authenticated users to upload avatars
+CREATE POLICY "Allow authenticated users to upload avatars"
+ON storage.objects FOR INSERT
 TO authenticated
-USING (bucket_id = 'user_uploads');
+WITH CHECK ( bucket_id = 'avatars' );
 
--- Users policy
-CREATE POLICY "Users can update their own profile"
-ON public.users
-FOR UPDATE
+-- Allow users to update their own avatars
+CREATE POLICY "Allow users to update their avatars"
+ON storage.objects FOR UPDATE
 TO authenticated
-USING (auth.uid() = id)
-WITH CHECK (auth.uid() = id);
+USING ( bucket_id = 'avatars' );
 
-CREATE POLICY "Users can read all profiles"
-ON public.users
-FOR SELECT
+-- Allow users to delete their own avatars
+CREATE POLICY "Allow users to delete their avatars"
+ON storage.objects FOR DELETE
 TO authenticated
-USING (true);
+USING ( bucket_id = 'avatars' );

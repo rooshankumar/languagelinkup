@@ -82,13 +82,13 @@ const Profile = () => {
       // Check if user uploaded a new image
       if (updatedProfile.avatar_url && updatedProfile.avatar_url instanceof File) {
         const file = updatedProfile.avatar_url;
-        const filePath = `profile_pictures/${userId}-${uuidv4()}.${file.name.split('.').pop()}`;
-
-        console.log("Uploading profile picture to:", filePath);
-
-        const { error: uploadError, data } = await supabase.storage
-          .from('user_uploads')
-          .upload(filePath, file, { upsert: true });
+        try {
+          const uploadedUrl = await uploadProfilePicture(file, userId);
+          avatarUrl = uploadedUrl;
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          throw uploadError;
+        }
 
         if (uploadError) {
           console.error("Error uploading image:", uploadError.message);
