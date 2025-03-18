@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import UserProfileCard from './UserProfileCard';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from './ui/use-toast';
-import chatService from '../services/chatService'; // Assuming this service exists
+import { chatService } from '../services/chatService';
 
 const LanguageUsers = () => {
   const navigate = useNavigate();
