@@ -1,5 +1,5 @@
 
-# LinguaLink App Workflow Documentation
+# roshLingua App Workflow Documentation
 
 ## 1. User Journey & Flow
 
