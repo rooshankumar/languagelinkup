@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import Button from '@/components/Button';
 import UserProfileCard from '@/components/UserProfileCard';
 import ProfileEdit from '@/components/ProfileEdit';
+import { uploadProfilePicture } from '@/utils/fileUpload'; // Import the upload function
 
 interface UserProfile {
   id: string;
@@ -77,26 +78,16 @@ const Profile = () => {
       const userId = userProfile?.id;
       if (!userId) throw new Error("User ID not found.");
 
-      let avatarUrl = userProfile.avatar_url;
+      let avatarUrl = userProfile?.avatar_url;
 
       // Check if user uploaded a new image
       if (updatedProfile.avatar_url && updatedProfile.avatar_url instanceof File) {
         const file = updatedProfile.avatar_url;
         try {
-          const uploadedUrl = await uploadProfilePicture(file, userId);
-          avatarUrl = uploadedUrl;
+          avatarUrl = await uploadProfilePicture(file, userId);
         } catch (uploadError) {
           console.error("Error uploading image:", uploadError);
           throw uploadError;
-        }
-
-        if (uploadError) {
-          console.error("Error uploading image:", uploadError.message);
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('user_uploads')
-            .getPublicUrl(filePath);
-          avatarUrl = publicUrl;
         }
       }
 

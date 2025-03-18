@@ -3,7 +3,7 @@ import Button from '@/components/Button';
 import { User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
-import { uploadProfilePicture } from '@/utils/supabaseStorage';
+import { uploadProfilePicture } from '@/utils/fileUpload'; // Ensure this import matches your file structure
 import { v4 as uuidv4 } from 'uuid';
 
 interface UserProfile {
@@ -15,7 +15,7 @@ interface UserProfile {
   proficiency?: string;
   bio?: string;
   location?: string;
-  avatar_url?: string;
+  avatar_url?: string | File; // Updated to handle File type
 }
 
 interface ProfileEditProps {
@@ -33,7 +33,9 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
   const [proficiency, setProficiency] = useState(userProfile?.proficiency || 'Beginner');
   const [isLoading, setIsLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
-  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(userProfile?.avatar_url || null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(
+    typeof userProfile?.avatar_url === 'string' ? userProfile.avatar_url : null
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,24 +92,12 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
     try {
       let avatarUrl = userProfile.avatar_url;
 
+      // Upload new profile picture if one is selected
       if (profilePicture) {
-        const fileName = `${userProfile.id}/${uuidv4()}`;
-        const { data, error } = await supabase.storage
-          .from('user_uploads')
-          .upload(fileName, profilePicture, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (error) throw error;
-
-        const { data: { publicURL } } = await supabase.storage
-          .from('user_uploads')
-          .getPublicURL(fileName);
-
-        avatarUrl = publicURL;
+        avatarUrl = await uploadProfilePicture(profilePicture, userProfile.id);
       }
 
+      // Update user profile in the database
       const { error: updateError } = await supabase
         .from('users')
         .update({
@@ -129,6 +119,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         description: "Profile updated successfully",
       });
 
+      // Call the onSave callback with the updated profile
       onSave({
         ...userProfile,
         username: name,

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabaseClient";
 
 const BUCKET_NAME = 'avatars';
@@ -36,6 +35,7 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
       throw error;
     }
 
+    // Get public URL of the uploaded file
     const { data: { publicUrl } } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
