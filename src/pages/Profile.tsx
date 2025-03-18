@@ -25,8 +25,60 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to view your profile.",
+        });
+        navigate('/auth');
+        return;
+      }
+
+      const userId = session.user.id;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      setUserProfile(data);
+      setIsLoading(false);
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error.message);
+      toast({
+        title: "Error loading profile",
+        description: "Could not load your profile. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    fetchUserProfile();
+  }, [navigate]);
+
+  // Refresh profile when avatar is updated
+  useEffect(() => {
+    const profileChanges = supabase
+      .channel('profile-changes')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'users' 
+      }, fetchUserProfile)
+      .subscribe();
+
+    return () => {
+      profileChanges.unsubscribe();
+    };
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 

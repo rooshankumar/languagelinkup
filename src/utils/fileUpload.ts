@@ -9,7 +9,11 @@ export const generateProfilePicturePath = (userId: string, file: File): string =
 };
 
 export const isValidFileType = (file: File): boolean => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+  const allowedTypes = [
+    "image/jpeg", "image/png", "image/gif", 
+    "image/webp", "image/bmp", "image/tiff",
+    "image/svg+xml"
+  ];
   return allowedTypes.includes(file.type);
 };
 

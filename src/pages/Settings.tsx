@@ -109,7 +109,20 @@ const Profile = () => {
 
       if (error) throw error;
 
-      setUserProfile({ ...updatedProfile, avatar_url: avatarUrl });
+      const updatedProfileData = { ...updatedProfile, avatar_url: avatarUrl };
+      setUserProfile(updatedProfileData);
+      
+      // Force a refresh of the profile data
+      const { data: refreshedData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (refreshedData) {
+        setUserProfile(refreshedData);
+      }
+      
       setIsEditing(false);
 
       toast({
