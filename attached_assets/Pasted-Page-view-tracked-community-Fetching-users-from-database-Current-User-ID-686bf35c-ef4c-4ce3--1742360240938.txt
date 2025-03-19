@@ -1,0 +1,36 @@
+Page view tracked: /community
+ Fetching users from database...
+ Current User ID: 686bf35c-ef4c-4ce3-9352-a31621ce3eb0
+ Fetched Users: [
+  {
+    "id": "c105840e-643a-4378-a1e1-8975cbd9cd8d",
+    "username": "Roshni",
+    "profile_picture": "https://czubndssgwedqqzlsazn.supabase.co/storage/v1/object/public/user_uploads/profile_pictures/c105840e-643a-4378-a1e1-8975cbd9cd8d-mhpp24cs9ed.jpg",
+    "dob": "2000-01-01",
+    "is_online": true,
+    "last_active": "2025-03-18T18:29:06.879Z",
+    "native_language": "Italian",
+    "learning_language": "Russian",
+    "proficiency": "Native/Fluent",
+    "bio": "Hi its me"
+  },
+  {
+    "id": "c87bc7f4-b9d6-49f8-9c0d-2a3266588743",
+    "username": "Johnny",
+    "profile_picture": "https://czubndssgwedqqzlsazn.supabase.co/storage/v1/object/public/user_uploads/profile_pictures/c87bc7f4-b9d6-49f8-9c0d-2a3266588743-1gory5ycqlq.jpg",
+    "dob": "2000-01-01",
+    "is_online": true,
+    "last_active": "2025-03-18T08:04:32.407Z",
+    "native_language": "Turkish",
+    "learning_language": "Polish",
+    "proficiency": "Intermediate",
+    "bio": "hii"
+  }
+]
+ Page view tracked: /chat/c87bc7f4-b9d6-49f8-9c0d-2a3266588743
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id%2Ccreated_at%2Cupdated_at%2Cuser1_id%2Cuser2_id%2Cusers%21chats_user1_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%2Clast_active%29%2Cusers%21chats_user2_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%2Clast_active%29&id=eq.c87bc7f4-b9d6-49f8-9c0d-2a3266588743:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 ()Understand this errorAI
+ Error fetching chat: Objectcode: "PGRST200"details: "Searched for a foreign key relationship between 'chats' and 'users' using the hint 'chats_user1_id_fkey' in the schema 'public', but no matches were found."hint: nullmessage: "Could not find a relationship between 'chats' and 'users' in the schema cache"[[Prototype]]: Object
+getChatDetails @ :3001/src/services/c…?t=1742360184025:27Understand this errorAI
