@@ -1,0 +1,68 @@
+🔧 Prompt to Fix Supabase Foreign Key Relationship Error
+💡 Issue:
+
+Supabase cannot find a relationship between chats and users.
+The query expects a foreign key chats_user1_id_fkey, but it does not exist.
+The error is preventing fetching chat data.
+🛠️ Fix the Issue in Replit
+🚀 Replit AI, Fix the Following:
+
+Ensure the foreign key relationships exist between chats and users.
+Modify Supabase schema to properly define foreign keys.
+Make sure all queries match the correct column names.
+Do NOT modify imports or existing UI.
+1️⃣ Fix Database Schema (Supabase SQL)
+📌 Run the following query to check and create missing foreign keys:
+
+sql
+Copy
+Edit
+-- Drop incorrect constraints if they exist
+ALTER TABLE chats DROP CONSTRAINT IF EXISTS chats_user1_id_fkey;
+ALTER TABLE chats DROP CONSTRAINT IF EXISTS chats_user2_id_fkey;
+
+-- Add correct foreign keys
+ALTER TABLE chats 
+ADD CONSTRAINT fk_chats_user1 FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE chats 
+ADD CONSTRAINT fk_chats_user2 FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE;
+2️⃣ Fix Chat Fetch Query in chatService.ts
+📌 Modify Supabase query to correctly reference foreign keys:
+
+typescript
+Copy
+Edit
+export const fetchChats = async (userId) => {
+  const { data, error } = await supabase
+    .from('chats')
+    .select(`
+      id, user1_id, user2_id, updated_at,
+      chat_messages (id, sender_id, content, created_at),
+      user1:users (id, username, profile_picture, is_online),
+      user2:users (id, username, profile_picture, is_online)
+    `)
+    .or(`user1_id.eq.${userId}, user2_id.eq.${userId}`)
+    .order('updated_at', { ascending: false });
+
+  if (error) console.error('Fetch Chats Error:', error);
+  return data;
+};
+3️⃣ Restart Supabase Cache (Fix Schema Cache)
+📌 Run this command to refresh the Supabase schema cache:
+
+sql
+Copy
+Edit
+SELECT pg_notify('supabase_realtime', 'reload schema');
+4️⃣ Test the Fix
+✅ Run the application again in Replit and confirm:
+
+Chats load properly without errors.
+Foreign key constraints are correctly applied.
+Users and messages are fetched correctly.
+🔹 Replit AI, Ensure:
+
+No syntax mistakes in SQL or TypeScript.
+UI is already available—just integrate backend correctly.
+Maintain proper imports.
