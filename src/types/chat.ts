@@ -1,35 +1,33 @@
 
+export interface Chat {
+  id: string;
+  user1_id: string;
+  user2_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Message {
   id: string;
   chat_id: string;
   sender_id: string;
   content: string;
-  content_type: 'text' | 'image' | 'file' | 'emoji';
-  created_at: string;
+  type: 'text' | 'voice' | 'attachment';
   attachment_url?: string;
+  created_at: string;
 }
 
-export interface ChatUser {
+export interface ChatPreview {
   id: string;
-  username: string;
-  profile_picture: string;
-  is_online: boolean;
-  last_active: string;
-}
-
-export interface Chat {
-  id: string;
-  user1_id: string;
-  user2_id: string;
-  updated_at: string;
-  chat_messages: Message[];
-  user1: ChatUser;
-  user2: ChatUser;
-}
-
-export interface MessageReceipt {
-  id: string;
-  message_id: string;
-  user_id: string;
-  seen_at: string;
+  partner: {
+    id: string;
+    username: string;
+    profilePicture: string | null;
+    isOnline: boolean;
+  };
+  lastMessage: {
+    content: string | null;
+    timestamp: string;
+  } | null;
+  updatedAt: string;
 }

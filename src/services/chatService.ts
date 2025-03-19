@@ -1,47 +1,62 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
+import { Chat, Message } from '@/types/chat';
 
 export const chatService = {
-  async getChats(userId: string) {
-    const { data, error } = await supabase
+  async getChatDetails(chatId: string) {
+    const { data: chatData, error: chatError } = await supabase
       .from('chats')
       .select(`
-        id, user1_id, user2_id, updated_at,
-        chat_messages (id, sender_id, content, created_at, content_type, attachment_url),
+        *,
         user1:users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
         user2:users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active)
       `)
-      .or(`user1_id.eq.${userId}, user2_id.eq.${userId}`)
-      .order('updated_at', { ascending: false });
+      .eq('id', chatId)
+      .single();
 
-    if (error) throw error;
-    return data;
+    if (chatError) throw chatError;
+
+    const currentUserId = (await supabase.auth.getUser()).data.user?.id;
+    const partner = chatData.user1.id === currentUserId ? chatData.user2 : chatData.user1;
+
+    return {
+      id: chatData.id,
+      partner
+    };
   },
 
-  async sendMessage(chatId: string, senderId: string, content: string, contentType = 'text', attachmentUrl = null) {
+  async getMessages(chatId: string) {
     const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async sendMessage(chatId: string, senderId: string, content: string, type = 'text', attachmentUrl?: string) {
+    const { error: messageError } = await supabase
       .from('chat_messages')
       .insert({
         chat_id: chatId,
         sender_id: senderId,
         content,
-        content_type: contentType,
+        type,
         attachment_url: attachmentUrl
-      })
-      .select('*')
-      .single();
+      });
 
-    if (error) throw error;
+    if (messageError) throw messageError;
 
-    // Update chat's updated_at timestamp
-    await supabase
+    const { error: updateError } = await supabase
       .from('chats')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', chatId);
 
-    return data;
+    if (updateError) throw updateError;
   },
 
-  listenToChat(chatId: string, callback: (payload: any) => void) {
+  subscribeToMessages(chatId: string, callback: (payload: any) => void) {
     return supabase
       .channel(`chat:${chatId}`)
       .on('postgres_changes', {
@@ -49,54 +64,6 @@ export const chatService = {
         schema: 'public',
         table: 'chat_messages',
         filter: `chat_id=eq.${chatId}`
-      }, callback)
-      .subscribe();
-  },
-
-  async markMessageAsSeen(messageId: string, userId: string) {
-    const { error } = await supabase
-      .from('message_receipts')
-      .upsert({
-        message_id: messageId,
-        user_id: userId,
-        seen_at: new Date().toISOString()
-      });
-
-    if (error) throw error;
-  },
-
-  async setUserOnline(userId: string) {
-    const { error } = await supabase
-      .from('users')
-      .update({
-        is_online: true,
-        last_active: new Date().toISOString()
-      })
-      .eq('id', userId);
-
-    if (error) throw error;
-  },
-
-  async setUserOffline(userId: string) {
-    const { error } = await supabase
-      .from('users')
-      .update({
-        is_online: false,
-        last_active: new Date().toISOString()
-      })
-      .eq('id', userId);
-
-    if (error) throw error;
-  },
-
-  listenToUserStatus(callback: (payload: any) => void) {
-    return supabase
-      .channel('user_status')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'users',
-        filter: 'is_online=eq.true'
       }, callback)
       .subscribe();
   }
