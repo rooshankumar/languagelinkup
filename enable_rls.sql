@@ -28,10 +28,15 @@ CREATE INDEX IF NOT EXISTS chats_user1_id_idx ON public.chats(user1_id);
 CREATE INDEX IF NOT EXISTS chats_user2_id_idx ON public.chats(user2_id);
 CREATE INDEX IF NOT EXISTS chat_messages_chat_id_idx ON public.chat_messages(chat_id);
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can see their own chats" ON public.chats;
+DROP POLICY IF EXISTS "Users can see messages in their chats" ON public.chat_messages;
+DROP POLICY IF EXISTS "Users can insert messages in their chats" ON public.chat_messages;
+
 -- RLS Policies
 CREATE POLICY "Users can see their own chats"
 ON public.chats
-FOR SELECT
+FOR ALL
 TO authenticated
 USING (
   auth.uid() = user1_id OR 
@@ -43,9 +48,10 @@ ON public.chat_messages
 FOR SELECT
 TO authenticated
 USING (
-  chat_id IN (
-    SELECT id FROM public.chats 
-    WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+  EXISTS (
+    SELECT 1 FROM public.chats 
+    WHERE id = chat_messages.chat_id 
+    AND (user1_id = auth.uid() OR user2_id = auth.uid())
   )
 );
 
@@ -54,8 +60,10 @@ ON public.chat_messages
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  chat_id IN (
-    SELECT id FROM public.chats 
-    WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+  EXISTS (
+    SELECT 1 FROM public.chats 
+    WHERE id = chat_messages.chat_id 
+    AND (user1_id = auth.uid() OR user2_id = auth.uid())
+    AND sender_id = auth.uid()
   )
 );
