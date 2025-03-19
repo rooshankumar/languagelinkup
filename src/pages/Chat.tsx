@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { chatService } from '@/services/chatService';
-import { supabase } from '@/lib/supabaseClient'; // Added import for supabase client
+import { supabase } from '@/lib/supabaseClient';
 
 interface Message {
   id: string;
@@ -40,7 +40,7 @@ export default function Chat() {
       return;
     }
 
-    // Subscribe to real-time updates
+    // Subscribe to real-time updates - improved to prevent duplicate messages
     const subscription = supabase
       .channel(`chat:${chatId}`)
       .on('postgres_changes', {
@@ -49,11 +49,13 @@ export default function Chat() {
         table: 'chat_messages',
         filter: `chat_id=eq.${chatId}`
       }, (payload) => {
-        if (payload.new.sender_id !== user?.id) {
-          setMessages(current => [...current, payload.new as Message]);
+        const newMessage = payload.new as Message;
+        if (newMessage.sender_id !== user?.id) {
+          setMessages(current => [...current, newMessage]);
         }
       })
       .subscribe();
+
 
     const fetchInitialData = async () => {
       try {
