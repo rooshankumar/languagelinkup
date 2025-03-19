@@ -1,47 +1,71 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
+import { MessageType } from '@/types/chat';
 
 export const chatService = {
-  getChatDetails: async (chatId: string) => {
+  async getChats(userId: string) {
     const { data, error } = await supabase
       .from('chats')
-      .select('*')
-      .eq('id', chatId)
+      .select(`
+        id,
+        created_at,
+        updated_at,
+        user1_id,
+        user2_id,
+        chat_messages (
+          id,
+          content,
+          content_type,
+          created_at,
+          sender_id
+        )
+      `)
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async sendMessage(chatId: string, senderId: string, content: string, contentType: MessageType = 'text') {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert({
+        chat_id: chatId,
+        sender_id: senderId,
+        content,
+        content_type: contentType
+      })
+      .select()
       .single();
 
     if (error) throw error;
     return data;
   },
 
-  getMessages: async (chatId: string) => {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
-  },
-
-  subscribeToMessages: (chatId: string, callback: (payload: any) => void) => {
-    return supabase
-      .channel(`chat-${chatId}`)
+  subscribeToChat: (chatId: string, callback: (payload: any) => void) => {
+    const channel = supabase
+      .channel(`chat:${chatId}`)
       .on('postgres_changes', {
-        event: '*',
+        event: 'INSERT',
         schema: 'public',
-        table: 'messages',
+        table: 'chat_messages',
         filter: `chat_id=eq.${chatId}`
       }, callback)
       .subscribe();
-  },
-  subscribeToTyping: (conversationId: string, callback: (payload: any) => void) => {
-    return supabase
-      .from(`typing_status`)
-      .on('UPDATE', callback)
-      .eq('conversation_id', conversationId)
-      .subscribe();
+
+    return channel;
   },
 
+  async markMessagesAsRead(messageIds: string[]) {
+    if (!messageIds.length) return;
+
+    const { error } = await supabase
+      .from('chat_messages')
+      .update({ is_read: true })
+      .in('id', messageIds);
+
+    if (error) throw error;
+  },
   async createConversation(user1_id: string, user2_id: string) {
     const { data: existingConv, error: checkError } = await supabase
       .from('chats')
@@ -66,28 +90,7 @@ export const chatService = {
     if (error) throw error;
     return data;
   },
-
-  async sendMessage(conversationId: string, senderId: string, content: string, type: MessageType = 'text', fileUrl?: string, fileType?: string) {
-    const { data, error } = await supabase
-      .from('messages')
-      .insert([{
-        conversation_id: conversationId,
-        sender_id: senderId,
-        content,
-        type,
-        file_url: fileUrl,
-        file_type: fileType,
-        is_read: false,
-        created_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async uploadFile(file: File, path: string) {
+    uploadFile: async (file: File, path: string) => {
     const { data, error } = await supabase.storage
       .from('chat-attachments')
       .upload(path, file);
@@ -96,7 +99,7 @@ export const chatService = {
     return data;
   },
 
-  async getFileUrl(path: string) {
+  getFileUrl: async (path: string) => {
     const { data } = supabase.storage
       .from('chat-attachments')
       .getPublicUrl(path);
@@ -104,7 +107,7 @@ export const chatService = {
     return data.publicUrl;
   },
 
-  async addReaction(messageId: string, userId: string, emoji: string) {
+  addReaction: async (messageId: string, userId: string, emoji: string) => {
     const { data, error } = await supabase
       .from('message_reactions')
       .insert([{
@@ -120,7 +123,7 @@ export const chatService = {
     return data;
   },
 
-  async markAsRead(conversationId: string, userId: string) {
+  markAsRead: async (conversationId: string, userId: string) => {
     const { error } = await supabase
       .from('messages')
       .update({ is_read: true })
@@ -130,7 +133,7 @@ export const chatService = {
     if (error) throw error;
   },
 
-  async updateTypingStatus(conversationId: string, userId: string, isTyping: boolean) {
+  updateTypingStatus: async (conversationId: string, userId: string, isTyping: boolean) => {
     await supabase
       .from('typing_status')
       .update({ is_typing: isTyping, last_typed: new Date().toISOString() })
