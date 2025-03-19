@@ -111,7 +111,8 @@ const Community = () => {
       return;
     }
 
-    const chatId = await chatService.createChat(currentUserId, partnerId);
+    const chat = await chatService.createOrGetChat(partnerId);
+    const chatId = chat?.id;
     if (chatId) {
       navigate(`/chat/${chatId}`);
     } else {
