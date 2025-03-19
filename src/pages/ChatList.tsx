@@ -4,23 +4,21 @@ import { Search, Plus, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
+import { ChatPreview } from '@/types/chat';
 
 interface ChatPreview {
   id: string;
   partner: {
     id: string;
-    name: string;
-    avatar: string | null;
-    language: string;
-    online: boolean;
+    username: string;
+    profilePicture: string | null;
+    isOnline: boolean;
   };
   lastMessage: {
-    text: string;
-    timestamp: Date;
-    isRead: boolean;
-    senderId: string;
-  };
-  unreadCount: number;
+    content: string | null;
+    timestamp: string;
+  } | null;
+  updatedAt: string;
 }
 
 const ChatList = () => {
@@ -35,7 +33,6 @@ const ChatList = () => {
       try {
         setIsLoading(true);
 
-        // Get current user
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -47,109 +44,66 @@ const ChatList = () => {
         const userId = session.user.id;
         setCurrentUserId(userId);
 
-        // Fetch all conversations, partners, and messages in one query
-        const { data: conversations, error: conversationsError } = await supabase
-          .from('conversations')
-          .select(
-            `
-              id,
-              user1_id,
-              user2_id,
-              updated_at,
-              messages(
-                id, sender_id, content, created_at, is_read
-              ),
-              partner:users!conversations_user1_id_fkey(
-                id, username, profile_picture, native_language, is_online
-              )
-            `
-          )
+        // Fetch chats and their latest messages
+        const { data: chats, error: chatsError } = await supabase
+          .from('chats')
+          .select(`
+            id,
+            user1_id,
+            user2_id,
+            updated_at,
+            chat_messages (
+              id, sender_id, content, created_at
+            ),
+            user1:users!chats_user1_id_fkey (
+              id, username, profile_picture, is_online
+            ),
+            user2:users!chats_user2_id_fkey (
+              id, username, profile_picture, is_online
+            )
+          `)
           .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
           .order('updated_at', { ascending: false });
 
-        if (conversationsError) {
-          throw conversationsError;
-        }
+        if (chatsError) throw chatsError;
 
-        const formattedChats = conversations.map((conv) => {
-          const partner = conv.partner;
-          if (!partner) return null;
+        if (chats) {
+          const formattedChats = chats.map((chat) => {
+            const partner = chat.user1_id === userId ? chat.user2 : chat.user1;
+            const latestMessage = chat.chat_messages?.[0];
 
-          // Get latest message
-          const latestMessage =
-            conv.messages.length > 0
-              ? conv.messages.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-              : null;
-
-          let lastMessage = {
-            text: 'Start a conversation',
-            timestamp: new Date(),
-            isRead: true,
-            senderId: '',
-          };
-
-          let unreadCount = 0;
-
-          if (latestMessage) {
-            lastMessage = {
-              text: latestMessage.content || '',
-              timestamp: new Date(latestMessage.created_at),
-              isRead: latestMessage.is_read,
-              senderId: latestMessage.sender_id,
+            return {
+              id: chat.id,
+              partner: {
+                id: partner.id,
+                username: partner.username,
+                profilePicture: partner.profile_picture,
+                isOnline: partner.is_online,
+              },
+              lastMessage: latestMessage
+                ? {
+                    content: latestMessage.content,
+                    timestamp: latestMessage.created_at,
+                  }
+                : null,
+              updatedAt: chat.updated_at,
             };
+          });
 
-            unreadCount = conv.messages.filter(
-              (m) => m.sender_id !== userId && !m.is_read
-            ).length;
-          }
-
-          return {
-            id: conv.id,
-            partner: {
-              id: partner.id,
-              name: partner.username,
-              avatar: partner.profile_picture,
-              language: partner.native_language,
-              online: partner.is_online,
-            },
-            lastMessage,
-            unreadCount,
-          };
-        });
-
-        setChats(formattedChats.filter((chat) => chat !== null) as ChatPreview[]);
-      } catch (error: any) {
+          setChats(formattedChats);
+        }
+      } catch (error) {
         console.error('Error fetching chats:', error);
-        toast({
-          title: 'Failed to load chats',
-          description: error.message || 'Please try again later',
-          variant: 'destructive',
-        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserAndChats();
-
-    // Subscribe to real-time updates for new messages
-    const subscription = supabase
-      .channel('chat-updates')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        () => {
-          fetchUserAndChats(); // Refresh chat list when a new message arrives
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
-  const formatTime = (date: Date) => {
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today);
@@ -165,7 +119,7 @@ const ChatList = () => {
   };
 
   const filteredChats = chats.filter((chat) =>
-    chat.partner.name.toLowerCase().includes(searchTerm.toLowerCase())
+    chat.partner.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -184,9 +138,9 @@ const ChatList = () => {
           <h1 className="text-2xl font-bold">Messages</h1>
           <Button
             onClick={() => navigate('/community')}
-            icon={<Plus className="h-4 w-4" />}
-            size="sm"
+            className="flex items-center gap-2"
           >
+            <Plus className="h-4 w-4" />
             New Chat
           </Button>
         </div>
@@ -203,30 +157,38 @@ const ChatList = () => {
         </div>
       </div>
 
-      <div className="overflow-y-auto h-[calc(100vh-10rem)]">
+      <div className="divide-y">
         {filteredChats.length > 0 ? (
           filteredChats.map((chat) => (
             <div
               key={chat.id}
+              className="p-4 hover:bg-muted/50 cursor-pointer"
               onClick={() => navigate(`/chat/${chat.id}`)}
-              className="p-4 border-b hover:bg-muted/30 cursor-pointer transition-colors"
             >
-              <div className="flex items-start">
-                <img
-                  src={chat.partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.partner.name)}`}
-                  alt={chat.partner.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div className="ml-3 flex-1">
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-medium">{chat.partner.name}</h3>
-                    <span className="text-xs text-muted-foreground">{formatTime(chat.lastMessage.timestamp)}</span>
-                  </div>
-                  <p className={`text-sm truncate ${chat.unreadCount > 0 ? 'font-medium' : 'text-muted-foreground'}`}>
-                    {chat.lastMessage.senderId === currentUserId ? 'You: ' : ''}
-                    {chat.lastMessage.text}
-                  </p>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img
+                    src={chat.partner.profilePicture || '/placeholder.svg'}
+                    alt={chat.partner.username}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  {chat.partner.isOnline && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                  )}
                 </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium">{chat.partner.username}</h3>
+                  {chat.lastMessage && (
+                    <p className="text-sm text-muted-foreground truncate">
+                      {chat.lastMessage.content}
+                    </p>
+                  )}
+                </div>
+                {chat.lastMessage && (
+                  <div className="text-xs text-muted-foreground">
+                    {formatTime(chat.lastMessage.timestamp)}
+                  </div>
+                )}
               </div>
             </div>
           ))
