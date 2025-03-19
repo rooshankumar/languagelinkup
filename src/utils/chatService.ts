@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabaseClient';
 
 export interface Message {
@@ -75,8 +76,31 @@ export const chatService = {
       }
 
       return newChat;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Chat error:', error);
+      throw error;
+    }
+  },
+
+  getChatDetails: async (chatId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      const { data, error } = await supabase
+        .from('chats')
+        .select(`
+          *,
+          messages:chat_messages(*)
+        `)
+        .eq('id', chatId)
+        .single();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching chat details:', error);
       throw error;
     }
   },
