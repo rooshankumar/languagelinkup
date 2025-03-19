@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import type { Chat, ChatMessage } from '@/types/chat';
 
 export const chatService = {
-  async getChatDetails(chatId: string): Promise<Chat> {
+  async getChatDetails(chatId: string): Promise<Chat | null> {
     try {
       const { data: chatData, error } = await supabase
         .from('chats')
@@ -14,7 +14,7 @@ export const chatService = {
           user1_id,
           user2_id,
           users!chats_user1_id_fkey (
-            id, 
+            id,
             username,
             profile_picture,
             is_online,
@@ -31,11 +31,17 @@ export const chatService = {
         .eq('id', chatId)
         .single();
 
-      if (error) throw error;
-      if (!chatData) throw new Error('Chat not found');
+      if (error) {
+        console.error('Error fetching chat:', error);
+        return null;
+      }
 
-      const currentUserId = (await supabase.auth.getUser()).data.user?.id;
-      const partner = chatData.user1_id === currentUserId 
+      if (!chatData) return null;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const currentUserId = user?.id;
+
+      const partner = chatData.user1_id === currentUserId
         ? chatData.users.find(u => u.id === chatData.user2_id)
         : chatData.users.find(u => u.id === chatData.user1_id);
 
@@ -46,8 +52,8 @@ export const chatService = {
         partner: partner || null
       };
     } catch (error) {
-      console.error('Error getting chat details:', error);
-      throw error;
+      console.error('Error in getChatDetails:', error);
+      return null;
     }
   },
 
@@ -55,53 +61,54 @@ export const chatService = {
     try {
       const { data, error } = await supabase
         .from('chat_messages')
-        .select(`
-          id,
-          content,
-          created_at,
-          sender_id,
-          chat_id,
-          type,
-          attachment_url
-        `)
+        .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching messages:', error);
+        return [];
+      }
+
       return data || [];
     } catch (error) {
-      console.error('Error getting messages:', error);
-      throw error;
+      console.error('Error in getMessages:', error);
+      return [];
     }
   },
 
-  async sendMessage(
-    chatId: string, 
-    senderId: string, 
-    content: string, 
-    type: 'text' | 'voice' | 'attachment' = 'text',
-    attachmentUrl?: string
-  ): Promise<void> {
+  async createChat(userId: string, partnerId: string): Promise<string | null> {
     try {
-      const { error: messageError } = await supabase
-        .from('chat_messages')
-        .insert({
-          chat_id: chatId,
-          sender_id: senderId,
-          content,
-          type,
-          attachment_url: attachmentUrl
-        });
-
-      if (messageError) throw messageError;
-
-      await supabase
+      const { data: existingChat, error: checkError } = await supabase
         .from('chats')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', chatId);
+        .select('id')
+        .or(`and(user1_id.eq.${userId},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${userId})`)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing chat:', checkError);
+        return null;
+      }
+
+      if (existingChat) return existingChat.id;
+
+      const { data: newChat, error: createError } = await supabase
+        .from('chats')
+        .insert([
+          { user1_id: userId, user2_id: partnerId }
+        ])
+        .select('id')
+        .single();
+
+      if (createError) {
+        console.error('Error creating chat:', createError);
+        return null;
+      }
+
+      return newChat?.id || null;
     } catch (error) {
-      console.error('Error sending message:', error);
-      throw error;
+      console.error('Error in createChat:', error);
+      return null;
     }
   },
 
