@@ -1,15 +1,10 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Chat, ChatMessage } from '@/types/chat';
+import { Message, ContentType } from '@/types/supabase';
 
-export interface Message {
-  id: string;
-  chat_id: string;
-  sender_id: string;
+export interface SendMessageOptions {
   content: string;
-  is_read: boolean;
-  created_at: string;
-  type?: 'text' | 'voice' | 'attachment';
+  type: 'text' | 'voice' | 'attachment';
   attachment_url?: string;
 }
 
@@ -159,60 +154,21 @@ export const chatService = {
       console.error('Error in markChatAsRead:', error);
       return false;
     }
-  }
-};
-import { supabase } from '@/lib/supabaseClient'
-import { Message, ContentType } from '@/types/supabase'
-
-export const chatService = {
-  async sendMessage(chatId: string, content: string, contentType: ContentType = 'text') {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('User not authenticated')
-
-    const { data, error } = await supabase
-      .from('messages')
-      .insert({
-        chat_id: chatId,
-        sender_id: user.id,
-        content,
-        content_type: contentType
-      })
-      .select('*, profile:profiles(*)')
-      .single()
-
-    if (error) throw error
-    return data
   },
 
   async uploadAttachment(file: File) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('User not authenticated')
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `${user.id}/${fileName}`
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
 
     const { data, error } = await supabase.storage
       .from('attachments')
-      .upload(filePath, file)
+      .upload(filePath, file);
 
-    if (error) throw error
-    return data
-  },
-
-  subscribeToChat(chatId: string, callback: (message: Message) => void) {
-    return supabase
-      .channel(`chat:${chatId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatId}`
-        },
-        callback
-      )
-      .subscribe()
+    if (error) throw error;
+    return data;
   }
-}
+};
