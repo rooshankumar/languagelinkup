@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -39,11 +38,16 @@ const Onboarding = () => {
     native_language: '',
     learning_languages: [] as string[],
     date_of_birth: '',
+    profile_picture: null, // Added for profile picture
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLImageElement>) => { //updated to handle image input
+    const { name, value, files } = e.target;
+    if (name === 'profile_picture') {
+      setFormData(prev => ({ ...prev, [name]: files![0] })); //handle file upload
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleNext = () => setStep(prev => prev + 1);
@@ -62,7 +66,7 @@ const Onboarding = () => {
               Welcome!
             </h1>
             <div className="flex justify-center gap-2 mb-8">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4, 5].map((i) => ( // Added step 5
                 <div
                   key={i}
                   className={`h-2 w-12 rounded-full transition-colors ${
@@ -182,10 +186,39 @@ const Onboarding = () => {
               </div>
             </OnboardingStep>
 
+            <OnboardingStep
+              title="Profile Picture"
+              icon={<User className="h-6 w-6 text-primary" />}
+              isActive={step === 4}
+            >
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="profile_picture">Profile Picture</Label>
+                  <input
+                    type="file"
+                    id="profile_picture"
+                    name="profile_picture"
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="pt-4 flex justify-between">
+                  <Button variant="outline" onClick={handleBack}>
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button onClick={handleNext}>
+                    Continue
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </OnboardingStep>
+
+
             <OnboardingStep 
               title="Ready to Start" 
               icon={<CheckCircle className="h-6 w-6 text-primary" />} 
-              isActive={step === 4}
+              isActive={step === 5}
             >
               <div className="space-y-6">
                 <div className="bg-primary/5 rounded-lg p-6 text-center">
@@ -201,9 +234,9 @@ const Onboarding = () => {
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button onClick={handleNext}>
+                  <Button >
                     Get Started
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    {/*<ChevronRight className="ml-2 h-4 w-4" />*/}
                   </Button>
                 </div>
               </div>
