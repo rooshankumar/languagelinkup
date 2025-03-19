@@ -1,4 +1,3 @@
-
 import { supabase } from '../lib/supabaseClient';
 
 export const chatService = {
@@ -32,7 +31,7 @@ export const chatService = {
       .single();
 
     if (error) throw error;
-    
+
     // Update chat's updated_at timestamp
     await supabase
       .from('chats')
