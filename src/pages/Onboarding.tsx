@@ -1,72 +1,125 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { ChevronLeft, ChevronRight, User, Languages, Calendar, CheckCircle, Globe } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronRight, ChevronLeft, Languages, User, Globe, CheckCircle, Calendar, Loader2 } from 'lucide-react';
 
-interface OnboardingStepProps {
+type OnboardingStepProps = {
+  children: React.ReactNode;
   title: string;
   icon: React.ReactNode;
   isActive: boolean;
-  children: React.ReactNode;
-}
+};
 
-const OnboardingStep = ({ title, icon, isActive, children }: OnboardingStepProps) => {
+const OnboardingStep = ({ children, title, icon, isActive }: OnboardingStepProps) => {
   if (!isActive) return null;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-6">
-        {icon}
-        <h2 className="text-xl font-semibold">{title}</h2>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="max-w-md w-full mx-auto"
+    >
+      <div className="mb-8 text-center">
+        <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+          {icon}
+        </div>
+        <h2 className="text-2xl font-bold">{title}</h2>
+        <p className="text-muted-foreground mt-2">
+          Let's personalize your experience
+        </p>
       </div>
       {children}
-    </div>
+    </motion.div>
   );
 };
 
-const Onboarding = () => {
+export type OnboardingFormData = {
+  full_name: string;
+  username: string;
+  bio: string;
+  native_language: string;
+  learning_languages: string[];
+  avatar_url: string;
+  date_of_birth: string;
+  proficiency_level: string;
+};
+
+export const OnboardingFlow = ({ onSubmit, isLoading = false }: { 
+  onSubmit: (data: OnboardingFormData) => Promise<void>;
+  isLoading?: boolean;
+}) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     full_name: '',
     username: '',
     bio: '',
     native_language: '',
-    learning_languages: [] as string[],
+    learning_languages: [],
+    avatar_url: '',
     date_of_birth: '',
-    profile_picture: null, // Added for profile picture
+    proficiency_level: '',
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLImageElement>) => { //updated to handle image input
-    const { name, value, files } = e.target;
-    if (name === 'profile_picture') {
-      setFormData(prev => ({ ...prev, [name]: files![0] })); //handle file upload
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleNext = () => setStep(prev => prev + 1);
-  const handleBack = () => setStep(prev => prev - 1);
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleNext = () => {
+    if (step < 5) setStep(step + 1);
+  };
+
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const handleSubmit = async () => {
+    await onSubmit(formData);
+  };
+
+  const languages = [
+    'English', 'Spanish', 'French', 'German', 'Chinese', 
+    'Japanese', 'Korean', 'Russian', 'Arabic', 'Portuguese', 'Italian'
+  ];
+
+  const proficiencyLevels = [
+    'Beginner', 'Elementary', 'Intermediate', 
+    'Upper Intermediate', 'Advanced', 'Fluent', 'Native'
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="fixed top-0 right-0 p-4 z-10">
-        <ThemeToggle />
-      </header>
-
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-primary tracking-tight mb-2">
-              Welcome!
+              Language Learning Profile
             </h1>
             <div className="flex justify-center gap-2 mb-8">
-              {[1, 2, 3, 4, 5].map((i) => ( // Added step 5
+              {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
                   className={`h-2 w-12 rounded-full transition-colors ${
@@ -78,6 +131,8 @@ const Onboarding = () => {
           </div>
 
           <div className="bg-card rounded-xl border shadow-sm p-6">
+            {/* Steps components remain the same as in the original code */}
+            {/* Step 1: Personal Information */}
             <OnboardingStep 
               title="Personal Information" 
               icon={<User className="h-6 w-6 text-primary" />} 
@@ -126,6 +181,7 @@ const Onboarding = () => {
               </div>
             </OnboardingStep>
 
+            {/* Step 2: Language Skills */}
             <OnboardingStep 
               title="Language Skills" 
               icon={<Languages className="h-6 w-6 text-primary" />} 
@@ -133,14 +189,69 @@ const Onboarding = () => {
             >
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="native_language">Native Language</Label>
-                  <Input
-                    id="native_language"
-                    name="native_language"
-                    placeholder="Your native language"
+                  <Label>Native Language</Label>
+                  <Select 
+                    onValueChange={(value) => handleSelectChange('native_language', value)}
                     value={formData.native_language}
-                    onChange={handleInputChange}
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your native language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map(language => (
+                        <SelectItem key={language} value={language}>
+                          {language}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Languages You're Learning</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {languages.map(language => (
+                      <div key={language} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`learning-${language}`}
+                          checked={formData.learning_languages.includes(language)}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            setFormData(prev => ({
+                              ...prev,
+                              learning_languages: isChecked
+                                ? [...prev.learning_languages, language]
+                                : prev.learning_languages.filter(lang => lang !== language),
+                            }));
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <label htmlFor={`learning-${language}`} className="text-sm">
+                          {language}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Your Proficiency Level</Label>
+                  <Select 
+                    onValueChange={(value) => handleSelectChange('proficiency_level', value)}
+                    value={formData.proficiency_level}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your proficiency level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {proficiencyLevels.map(level => (
+                        <SelectItem key={level} value={level}>
+                          {level}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="pt-4 flex justify-between">
@@ -156,6 +267,7 @@ const Onboarding = () => {
               </div>
             </OnboardingStep>
 
+            {/* Step 3: Date of Birth */}
             <OnboardingStep 
               title="Date of Birth" 
               icon={<Calendar className="h-6 w-6 text-primary" />} 
@@ -170,7 +282,11 @@ const Onboarding = () => {
                     type="date"
                     value={formData.date_of_birth}
                     onChange={handleInputChange}
+                    max={new Date().toISOString().split('T')[0]}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    This helps us find suitable language partners for you.
+                  </p>
                 </div>
 
                 <div className="pt-4 flex justify-between">
@@ -186,21 +302,45 @@ const Onboarding = () => {
               </div>
             </OnboardingStep>
 
-            <OnboardingStep
-              title="Profile Picture"
-              icon={<User className="h-6 w-6 text-primary" />}
+            {/* Step 4: Profile Picture */}
+            <OnboardingStep 
+              title="Profile Picture" 
+              icon={<User className="h-6 w-6 text-primary" />} 
               isActive={step === 4}
             >
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="profile_picture">Profile Picture</Label>
+              <div className="space-y-6">
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="h-32 w-32 rounded-full bg-secondary flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                    {avatarPreview ? (
+                      <img 
+                        src={avatarPreview} 
+                        alt="Avatar preview" 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-16 w-16 text-muted-foreground" />
+                    )}
+                  </div>
+
                   <input
                     type="file"
-                    id="profile_picture"
-                    name="profile_picture"
-                    onChange={handleInputChange}
+                    accept="image/*"
+                    id="avatar"
+                    className="hidden"
+                    onChange={handleAvatarChange}
                   />
+                  <Label 
+                    htmlFor="avatar" 
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md cursor-pointer"
+                  >
+                    {avatarPreview ? 'Change Photo' : 'Upload Photo'}
+                  </Label>
+
+                  <p className="text-sm text-muted-foreground">
+                    Choose a profile picture that represents you
+                  </p>
                 </div>
+
                 <div className="pt-4 flex justify-between">
                   <Button variant="outline" onClick={handleBack}>
                     <ChevronLeft className="mr-2 h-4 w-4" />
@@ -214,7 +354,7 @@ const Onboarding = () => {
               </div>
             </OnboardingStep>
 
-
+            {/* Step 5: Ready to Start */}
             <OnboardingStep 
               title="Ready to Start" 
               icon={<CheckCircle className="h-6 w-6 text-primary" />} 
@@ -225,7 +365,7 @@ const Onboarding = () => {
                   <Globe className="h-12 w-12 text-primary mx-auto mb-4" />
                   <h3 className="text-xl font-medium mb-2">You're all set!</h3>
                   <p className="text-muted-foreground">
-                    Start connecting with others and improve your skills.
+                    Start connecting with language partners around the world and improve your language skills.
                   </p>
                 </div>
 
@@ -234,9 +374,13 @@ const Onboarding = () => {
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button >
-                    Get Started
-                    {/*<ChevronRight className="ml-2 h-4 w-4" />*/}
+                  <Button onClick={handleSubmit} disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Finishing up...
+                      </>
+                    ) : 'Get Started'}
                   </Button>
                 </div>
               </div>
@@ -248,4 +392,4 @@ const Onboarding = () => {
   );
 };
 
-export default Onboarding;
+export default OnboardingFlow;
