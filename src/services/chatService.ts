@@ -1,15 +1,39 @@
-import { supabase } from '@/lib/supabaseClient';
-import { Message, MessageType, TypingStatus } from '@/types/chat';
+import { supabase } from '../lib/supabaseClient';
 
 export const chatService = {
-  subscribeToMessages: (conversationId: string, callback: (payload: any) => void) => {
-    return supabase
-      .from(`messages`)
-      .on('INSERT', (payload) => callback(payload.new))
-      .eq('conversation_id', conversationId)
-      .subscribe();
+  getChatDetails: async (chatId: string) => {
+    const { data, error } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('id', chatId)
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
+  getMessages: async (chatId: string) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
+  subscribeToMessages: (chatId: string, callback: (payload: any) => void) => {
+    return supabase
+      .channel(`chat-${chatId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'messages',
+        filter: `chat_id=eq.${chatId}`
+      }, callback)
+      .subscribe();
+  },
   subscribeToTyping: (conversationId: string, callback: (payload: any) => void) => {
     return supabase
       .from(`typing_status`)
