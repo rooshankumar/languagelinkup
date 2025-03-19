@@ -380,30 +380,32 @@ export const Onboarding = () => {
               icon={<CheckCircle className="h-6 w-6 text-primary" />}
               isActive={step === 5}
             >
-              <div className="space-y-6">
-                <div className="bg-primary/5 rounded-lg p-6 text-center">
-                  <Globe className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-medium mb-2">You're all set!</h3>
-                  <p className="text-muted-foreground">
-                    Start connecting with language partners around the world and improve your language skills.
-                  </p>
-                </div>
+              <form onSubmit={handleSubmit}> {/* Added onSubmit prop here */}
+                <div className="space-y-6">
+                  <div className="bg-primary/5 rounded-lg p-6 text-center">
+                    <Globe className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">You're all set!</h3>
+                    <p className="text-muted-foreground">
+                      Start connecting with language partners around the world and improve your language skills.
+                    </p>
+                  </div>
 
-                <div className="pt-4 flex justify-between">
-                  <Button variant="outline" onClick={handleBack}>
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button onClick={handleSubmit} disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Finishing up...
-                      </>
-                    ) : 'Get Started'}
-                  </Button>
+                  <div className="pt-4 flex justify-between">
+                    <Button variant="outline" onClick={handleBack}>
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </Button>
+                    <Button type="submit" disabled={isLoading}> {/* Added type="submit" */}
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Finishing up...
+                        </>
+                      ) : 'Get Started'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </form>
             </OnboardingStep>
           </div>
         </div>
