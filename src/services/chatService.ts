@@ -8,17 +8,25 @@ export const chatService = {
       const { data: chatData, error: chatError } = await supabase
         .from('chats')
         .select(`
-          *,
-          user1:users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
-          user2:users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active)
+          id,
+          created_at,
+          updated_at,
+          user1_id,
+          user2_id,
+          users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
+          users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active)
         `)
         .eq('id', chatId)
         .single();
 
       if (chatError) throw chatError;
 
-      const currentUserId = (await supabase.auth.getUser()).data.user?.id;
-      const partner = chatData.user1.id === currentUserId ? chatData.user2 : chatData.user1;
+      const { data: { user } } = await supabase.auth.getUser();
+      const currentUserId = user?.id;
+      
+      const user1 = chatData.users.find((u: any) => u.id === chatData.user1_id);
+      const user2 = chatData.users.find((u: any) => u.id === chatData.user2_id);
+      const partner = user1?.id === currentUserId ? user2 : user1;
 
       return {
         id: chatData.id,
@@ -34,7 +42,15 @@ export const chatService = {
     try {
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('*')
+        .select(`
+          id,
+          content,
+          created_at,
+          sender_id,
+          chat_id,
+          type,
+          attachment_url
+        `)
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
@@ -60,12 +76,11 @@ export const chatService = {
 
       if (messageError) throw messageError;
 
-      const { error: updateError } = await supabase
+      await supabase
         .from('chats')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', chatId);
 
-      if (updateError) throw updateError;
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
@@ -76,7 +91,7 @@ export const chatService = {
     return supabase
       .channel(`chat:${chatId}`)
       .on('postgres_changes', {
-        event: '*',
+        event: 'INSERT',
         schema: 'public',
         table: 'chat_messages',
         filter: `chat_id=eq.${chatId}`
