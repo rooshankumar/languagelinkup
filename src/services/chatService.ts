@@ -1,11 +1,11 @@
 
 import { supabase } from '@/lib/supabaseClient';
-import { Chat, Message } from '@/types/chat';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 export const chatService = {
-  async getChatDetails(chatId: string) {
+  async getChatDetails(chatId: string): Promise<Chat> {
     try {
-      const { data: chatData, error: chatError } = await supabase
+      const { data: chatData, error } = await supabase
         .from('chats')
         .select(`
           id,
@@ -13,24 +13,37 @@ export const chatService = {
           updated_at,
           user1_id,
           user2_id,
-          users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
-          users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active)
+          users!chats_user1_id_fkey (
+            id, 
+            username,
+            profile_picture,
+            is_online,
+            last_active
+          ),
+          users!chats_user2_id_fkey (
+            id,
+            username,
+            profile_picture,
+            is_online,
+            last_active
+          )
         `)
         .eq('id', chatId)
         .single();
 
-      if (chatError) throw chatError;
+      if (error) throw error;
+      if (!chatData) throw new Error('Chat not found');
 
-      const { data: { user } } = await supabase.auth.getUser();
-      const currentUserId = user?.id;
-      
-      const user1 = chatData.users.find((u: any) => u.id === chatData.user1_id);
-      const user2 = chatData.users.find((u: any) => u.id === chatData.user2_id);
-      const partner = user1?.id === currentUserId ? user2 : user1;
+      const currentUserId = (await supabase.auth.getUser()).data.user?.id;
+      const partner = chatData.user1_id === currentUserId 
+        ? chatData.users.find(u => u.id === chatData.user2_id)
+        : chatData.users.find(u => u.id === chatData.user1_id);
 
       return {
         id: chatData.id,
-        partner
+        createdAt: chatData.created_at,
+        updatedAt: chatData.updated_at,
+        partner: partner || null
       };
     } catch (error) {
       console.error('Error getting chat details:', error);
@@ -38,7 +51,7 @@ export const chatService = {
     }
   },
 
-  async getMessages(chatId: string) {
+  async getMessages(chatId: string): Promise<ChatMessage[]> {
     try {
       const { data, error } = await supabase
         .from('chat_messages')
@@ -62,7 +75,13 @@ export const chatService = {
     }
   },
 
-  async sendMessage(chatId: string, senderId: string, content: string, type = 'text', attachmentUrl?: string) {
+  async sendMessage(
+    chatId: string, 
+    senderId: string, 
+    content: string, 
+    type: 'text' | 'voice' | 'attachment' = 'text',
+    attachmentUrl?: string
+  ): Promise<void> {
     try {
       const { error: messageError } = await supabase
         .from('chat_messages')
@@ -80,7 +99,6 @@ export const chatService = {
         .from('chats')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', chatId);
-
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
