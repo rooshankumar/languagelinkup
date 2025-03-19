@@ -52,6 +52,15 @@ const HideMobileNavInChat = () => {
   );
 };
 
+const ProtectedRoute = ({ children }) => {
+  // Implement your authentication logic here.  This is a placeholder.
+  const isAuthenticated = true; // Replace with actual authentication check
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+  return children;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -59,44 +68,38 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <PageTracker />
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<Blog />} />
-          <Route path="/legal/:page" element={<Legal />} />
+          <PageTracker />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<Blog />} />
+            <Route path="/legal/:page" element={<Legal />} />
 
-          {/* App routes with layout */}
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/chats" element={<ChatList />} />
-            <Route path="/chat/:chatId" element={<Chat />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/debug/community" element={
-              <React.Suspense fallback={<div>Loading...</div>}>
-                {React.createElement(React.lazy(() => import('./pages/DebugCommunity')))}
-              </React.Suspense>
-            } />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
+            {/* Protected routes with layout */}
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/chats" element={<ChatList />} />
+              <Route path="/chat/:id" element={<Chat />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
 
-          {/* Redirect /chats to ensure it's the main message page */}
-          <Route path="/messages" element={<Navigate to="/chats" replace />} />
+            {/* Redirect /chats to ensure it's the main message page */}
+            <Route path="/messages" element={<Navigate to="/chats" replace />} />
 
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <HideMobileNavInChat />
-      </BrowserRouter>
-    </TooltipProvider>
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <HideMobileNavInChat />
+        </BrowserRouter>
+      </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
 
-// No additional setup needed
 
 export default App;

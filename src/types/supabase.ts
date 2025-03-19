@@ -159,3 +159,25 @@ export interface Database {
     }
   }
 }
+import { Database } from './supabase-types'
+
+export type UserProfile = Database['public']['Tables']['profiles']['Row']
+export type Message = Database['public']['Tables']['messages']['Row']
+
+export type ContentType = 'text' | 'voice' | 'attachment'
+
+export interface MessageWithProfile extends Message {
+  profile: UserProfile
+}
+
+export interface ChatParticipant {
+  user_id: string
+  profile: UserProfile
+}
+
+export interface Chat {
+  id: string
+  created_at: string
+  participants: ChatParticipant[]
+  last_message?: Message
+}
