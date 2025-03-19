@@ -90,17 +90,22 @@ export const Onboarding = () => {
   const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       setIsLoading(true);
+
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
 
       // Upload avatar if exists
       let avatar_url = formData.avatar_url;
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
-        const filePath = `${user?.id}/${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(filePath, avatarFile);
 
@@ -115,7 +120,7 @@ export const Onboarding = () => {
 
       // Create profile
       const { error } = await supabase.from('profiles').upsert({
-        id: user?.id,
+        id: user.id,
         ...formData,
         avatar_url,
         updated_at: new Date().toISOString(),
@@ -126,7 +131,7 @@ export const Onboarding = () => {
       toast.success('Profile created successfully!');
       navigate('/dashboard');
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || 'Failed to create profile');
     } finally {
       setIsLoading(false);
     }
