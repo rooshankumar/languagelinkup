@@ -1,5 +1,5 @@
 
-export type MessageType = 'text' | 'emoji' | 'file' | 'gif';
+export type MessageType = 'text' | 'image' | 'file' | 'emoji';
 
 export interface ChatMessage {
   id: string;
@@ -11,6 +11,14 @@ export interface ChatMessage {
   attachment_url?: string;
 }
 
+export interface ChatUser {
+  id: string;
+  username: string;
+  profile_picture: string | null;
+  is_online: boolean;
+  last_active: string;
+}
+
 export interface Chat {
   id: string;
   user1_id: string;
@@ -18,4 +26,6 @@ export interface Chat {
   created_at: string;
   updated_at: string;
   chat_messages?: ChatMessage[];
+  user1?: ChatUser;
+  user2?: ChatUser;
 }
