@@ -49,7 +49,7 @@ export type OnboardingFormData = {
   native_language: string;
   learning_languages: string[];
   avatar_url: string;
-  date_of_birth: string;
+  dob: string;
   proficiency_level: string;
 };
 
@@ -65,7 +65,7 @@ export const Onboarding = () => {
     native_language: '',
     learning_languages: [],
     avatar_url: '',
-    date_of_birth: '',
+    dob: '',
     proficiency_level: '',
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -295,12 +295,12 @@ export const Onboarding = () => {
             >
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
+                  <Label htmlFor="dob">Date of Birth</Label>
                   <Input
-                    id="date_of_birth"
-                    name="date_of_birth"
+                    id="dob"
+                    name="dob"
                     type="date"
-                    value={formData.date_of_birth}
+                    value={formData.dob}
                     onChange={handleInputChange}
                     max={new Date().toISOString().split('T')[0]}
                   />
@@ -380,7 +380,7 @@ export const Onboarding = () => {
               icon={<CheckCircle className="h-6 w-6 text-primary" />}
               isActive={step === 5}
             >
-              <form onSubmit={handleSubmit}> {/* Added onSubmit prop here */}
+              <form onSubmit={handleSubmit}>
                 <div className="space-y-6">
                   <div className="bg-primary/5 rounded-lg p-6 text-center">
                     <Globe className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -395,7 +395,7 @@ export const Onboarding = () => {
                       <ChevronLeft className="mr-2 h-4 w-4" />
                       Back
                     </Button>
-                    <Button type="submit" disabled={isLoading}> {/* Added type="submit" */}
+                    <Button type="submit" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
