@@ -40,6 +40,21 @@ export default function Chat() {
       return;
     }
 
+    // Subscribe to real-time updates
+    const subscription = supabase
+      .channel(`chat:${chatId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `chat_id=eq.${chatId}`
+      }, (payload) => {
+        if (payload.new.sender_id !== user?.id) {
+          setMessages(current => [...current, payload.new as Message]);
+        }
+      })
+      .subscribe();
+
     const fetchInitialData = async () => {
       try {
         setLoading(true);
@@ -64,16 +79,39 @@ export default function Chat() {
     };
 
     fetchInitialData();
-  }, [chatId, navigate, toast]);
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [chatId, navigate, toast, user?.id]);
 
   const sendMessage = async (type: 'text' | 'voice' | 'attachment' = 'text', content: string = newMessage, attachmentUrl?: string) => {
     if (!user || !chatId) return;
 
+    const tempMessage = {
+      id: crypto.randomUUID(),
+      chat_id: chatId,
+      sender_id: user.id,
+      content,
+      content_type: type,
+      attachment_url: attachmentUrl,
+      created_at: new Date().toISOString()
+    };
+
+    // Optimistic update
+    setMessages(current => [...current, tempMessage]);
+    setNewMessage('');
+    setShowEmojiPicker(false);
+
     try {
-      await chatService.sendMessage(chatId, content, type, attachmentUrl);
-      setNewMessage('');
-      setShowEmojiPicker(false);
+      const sentMessage = await chatService.sendMessage(chatId, content, type, attachmentUrl);
+      // Replace temp message with real one
+      setMessages(current => 
+        current.map(msg => msg.id === tempMessage.id ? sentMessage : msg)
+      );
     } catch (error) {
+      // Remove temp message on error
+      setMessages(current => current.filter(msg => msg.id !== tempMessage.id));
       toast({
         title: 'Error',
         description: 'Failed to send message',
