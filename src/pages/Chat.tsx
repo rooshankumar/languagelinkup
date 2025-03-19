@@ -20,48 +20,46 @@ interface Message {
 }
 
 export default function Chat() {
-  const { chatId } = useParams();
+  const { id: chatId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [chatDetails, setChatDetails] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
   const userId = user?.id;
 
   useEffect(() => {
+    if (!chatId) {
+      setError('Chat ID is missing');
+      return;
+    }
+
     const fetchInitialData = async () => {
       try {
-        if (!chatId) return;
-
-        const [chatData, messagesData] = await Promise.all([
-          chatService.getChatDetails(chatId),
-          chatService.getMessages(chatId)
-        ]);
-
-        setChatDetails(chatData);
-        setMessages(messagesData);
-
-        const subscription = chatService.subscribeToMessages(chatId, (payload) => {
-          if (payload.new) {
-            setMessages(prev => [...prev, payload.new]);
-          }
-        });
-
-        return () => {
-          subscription.unsubscribe();
-        };
+        setLoading(true);
+        const details = await chatService.getChatDetails(chatId); //This call needs to be updated in chatService.ts
+        setChatDetails(details);
+        setMessages(details.messages);
       } catch (err: any) {
-        setError(err.message);
-        toast({
-          title: 'Error',
-          description: 'Failed to load chat history',
-          variant: 'destructive',
-        });
-        navigate('/chats');
+        console.error('Error fetching chat:', err);
+        setError(err.message || 'Failed to load chat');
+        if (err.message?.includes('not authenticated')) {
+          navigate('/login');
+        } else if(err.message === 'Invalid user ID or partner ID.'){
+          //Handle this specific error case
+          toast({
+            title: 'Error',
+            description: 'Invalid user ID or partner ID.',
+            variant: 'destructive',
+          });
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -91,7 +89,7 @@ export default function Chat() {
   };
 
   if (error) return <div>Error: {error}</div>;
-  if (!chatDetails || !user) return <div>Loading...</div>;
+  if (loading || !chatDetails || !user) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto relative">

@@ -44,6 +44,18 @@ export const chatService = {
     if (!user) throw new Error('User not authenticated');
 
     try {
+      // Verify partner exists
+      const { data: partnerData, error: partnerError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', otherUserId)
+        .single();
+
+      if (partnerError || !partnerData) {
+        console.error('Partner not found:', otherUserId);
+        throw new Error('Chat partner not found');
+      }
+
       // Check for existing chat
       const { data: existingChat, error: checkError } = await supabase
         .from('chats')
@@ -51,7 +63,7 @@ export const chatService = {
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${user.id})`)
         .single();
 
-      if (checkError && checkError.code !== 'PGRST116') { // Not found error
+      if (checkError && checkError.code !== 'PGRST116') {
         throw new Error('Failed to check existing chat');
       }
 
@@ -83,41 +95,59 @@ export const chatService = {
   },
 
   getChatDetails: async (chatId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
     try {
+      // Validate auth state
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
+        console.error('Authentication error:', sessionError || 'No session found');
+        throw new Error('User not authenticated');
+      }
+
+      // Validate chat ID
+      if (!chatId) {
+        console.error('Chat ID is missing');
+        throw new Error('Chat ID is required');
+      }
+
+      // Fetch chat with participant details
       const { data, error } = await supabase
         .from('chats')
         .select(`
           *,
-          messages:chat_messages(*)
+          messages:chat_messages(*),
+          user1:users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
+          user2:users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active)
         `)
         .eq('id', chatId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching chat:', error);
+        throw new Error('Failed to fetch chat details');
+      }
 
-      return data;
+      if (!data) {
+        console.error('Chat not found:', chatId);
+        throw new Error('Chat not found');
+      }
+
+      // Determine chat partner
+      const partner = data.user1_id === session.user.id ? data.user2 : data.user1;
+      if (!partner) {
+        console.error('Chat partner not found');
+        throw new Error('Chat partner not found');
+      }
+
+      return {
+        id: data.id,
+        partner,
+        messages: data.messages || [],
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
     } catch (error) {
-      console.error('Error fetching chat details:', error);
+      console.error('Error in getChatDetails:', error);
       throw error;
-    }
-  },
-
-  markAsRead: async (messageIds: string[]) => {
-    if (!messageIds.length) return;
-
-    try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .update({ is_read: true })
-        .in('id', messageIds);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-      throw new Error('Failed to mark messages as read');
     }
   }
 };
