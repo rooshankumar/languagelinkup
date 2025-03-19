@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { MessageType } from '@/types/chat';
 
 export const chatService = {
