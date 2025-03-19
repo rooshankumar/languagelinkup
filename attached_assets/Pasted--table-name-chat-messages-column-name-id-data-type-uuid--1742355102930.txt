@@ -1,0 +1,407 @@
+[
+  {
+    "table_name": "chat_messages",
+    "column_name": "id",
+    "data_type": "uuid",
+    "constraint_name": null,
+    "fk_column": "id",
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chat_messages",
+    "column_name": "chat_id",
+    "data_type": "uuid",
+    "constraint_name": "fk_chat_messages_chat",
+    "fk_column": "chat_id",
+    "referenced_table": "chats",
+    "referenced_column": "id"
+  },
+  {
+    "table_name": "chat_messages",
+    "column_name": "sender_id",
+    "data_type": "uuid",
+    "constraint_name": "chat_messages_sender_id_fkey",
+    "fk_column": "sender_id",
+    "referenced_table": "users",
+    "referenced_column": "id"
+  },
+  {
+    "table_name": "chat_messages",
+    "column_name": "content",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chat_messages",
+    "column_name": "content_type",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chat_messages",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chat_messages",
+    "column_name": "attachment_url",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chats",
+    "column_name": "id",
+    "data_type": "uuid",
+    "constraint_name": null,
+    "fk_column": "id",
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chats",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "chats",
+    "column_name": "user1_id",
+    "data_type": "uuid",
+    "constraint_name": "fk_chats_user1",
+    "fk_column": "user1_id",
+    "referenced_table": "users",
+    "referenced_column": "id"
+  },
+  {
+    "table_name": "chats",
+    "column_name": "user2_id",
+    "data_type": "uuid",
+    "constraint_name": "fk_chats_user2",
+    "fk_column": "user2_id",
+    "referenced_table": "users",
+    "referenced_column": "id"
+  },
+  {
+    "table_name": "chats",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "constraint_name": "user_profiles_user_id_fkey",
+    "fk_column": "user_id",
+    "referenced_table": "users",
+    "referenced_column": "id"
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "constraint_name": null,
+    "fk_column": "user_id",
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "name",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "email",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "avatar",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "bio",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_profiles",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_settings",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "constraint_name": "user_settings_user_id_fkey",
+    "fk_column": "user_id",
+    "referenced_table": "users",
+    "referenced_column": "id"
+  },
+  {
+    "table_name": "user_settings",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "constraint_name": null,
+    "fk_column": "user_id",
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_settings",
+    "column_name": "dark_mode",
+    "data_type": "boolean",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_settings",
+    "column_name": "notifications",
+    "data_type": "boolean",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "user_settings",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "id",
+    "data_type": "uuid",
+    "constraint_name": null,
+    "fk_column": "id",
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "username",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "email",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "native_language",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "learning_language",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "proficiency",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "bio",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "avatars",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "last_active",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "is_online",
+    "data_type": "boolean",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "dob",
+    "data_type": "date",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "profile_picture",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "location",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "avatar_url",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "streak",
+    "data_type": "integer",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "vocabulary_count",
+    "data_type": "integer",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "minutes_practiced",
+    "data_type": "integer",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "chat_partners",
+    "data_type": "integer",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "last_lesson",
+    "data_type": "text",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  },
+  {
+    "table_name": "users",
+    "column_name": "next_lesson_time",
+    "data_type": "timestamp without time zone",
+    "constraint_name": null,
+    "fk_column": null,
+    "referenced_table": null,
+    "referenced_column": null
+  }
+]
