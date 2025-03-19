@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +7,7 @@ import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { chatService } from '@/services/chatService';
 
@@ -15,7 +16,7 @@ interface Message {
   content: string;
   sender_id: string;
   created_at: string;
-  type: 'text' | 'voice' | 'attachment';
+  content_type: 'text' | 'voice' | 'attachment';
   attachment_url?: string;
 }
 
@@ -42,7 +43,7 @@ export default function Chat() {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const details = await chatService.getChatDetails(chatId); //This call needs to be updated in chatService.ts
+        const details = await chatService.getChatDetails(chatId);
         setChatDetails(details);
         setMessages(details.messages);
       } catch (err: any) {
@@ -51,7 +52,6 @@ export default function Chat() {
         if (err.message?.includes('not authenticated')) {
           navigate('/login');
         } else if(err.message === 'Invalid user ID or partner ID.'){
-          //Handle this specific error case
           toast({
             title: 'Error',
             description: 'Invalid user ID or partner ID.',
@@ -64,13 +64,13 @@ export default function Chat() {
     };
 
     fetchInitialData();
-  }, [chatId, navigate]);
+  }, [chatId, navigate, toast]);
 
-  const sendMessage = async (type: 'text' | 'voice' | 'attachment', content: string, attachmentUrl?: string) => {
+  const sendMessage = async (type: 'text' | 'voice' | 'attachment' = 'text', content: string = newMessage, attachmentUrl?: string) => {
     if (!user || !chatId) return;
 
     try {
-      await chatService.sendMessage(chatId, user.id, content, type, attachmentUrl);
+      await chatService.sendMessage(chatId, content, type, attachmentUrl);
       setNewMessage('');
       setShowEmojiPicker(false);
     } catch (error) {
@@ -81,7 +81,6 @@ export default function Chat() {
       });
     }
   };
-
 
   const handleEmojiSelect = (emoji: any) => {
     setNewMessage((prev) => prev + emoji.native);
@@ -94,7 +93,10 @@ export default function Chat() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto relative">
       <div className="flex items-center p-4 border-b">
-        <Avatar src={chatDetails.partner.profile_picture} fallback={chatDetails.partner.username[0]} />
+        <Avatar>
+          <AvatarImage src={chatDetails.partner.profile_picture} />
+          <AvatarFallback>{chatDetails.partner.username[0]}</AvatarFallback>
+        </Avatar>
         <div className="ml-4">
           <h2 className="font-semibold">{chatDetails.partner.username}</h2>
           <p className="text-sm text-gray-500">
@@ -119,7 +121,7 @@ export default function Chat() {
               <p className="break-words">{message.content}</p>
               {message.attachment_url && (
                 <div className="mt-2">
-                  {message.type === 'voice' ? (
+                  {message.content_type === 'voice' ? (
                     <audio controls src={message.attachment_url} className="w-full" />
                   ) : (
                     <a
@@ -154,7 +156,7 @@ export default function Chat() {
           placeholder="Type a message..."
           className="flex-1"
         />
-        <Button onClick={() => sendMessage('text', newMessage)}>Send</Button>
+        <Button onClick={() => sendMessage()}>Send</Button>
       </div>
     </div>
   );

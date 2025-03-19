@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import UserProfileCard from '@/components/UserProfileCard';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -31,18 +32,33 @@ const calculateAge = (dob: string | null): number | null => {
 };
 
 // Convert database user to UI format
-const mapDatabaseUserToUIUser = (user: UserData) => ({
-  id: user.id,
-  name: user.username || "Unknown User",
-  avatar: user.profile_picture && user.profile_picture.startsWith("http")
-    ? user.profile_picture
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
-  bio: user.bio || "No bio available.",
-  nativeLanguage: user.native_language || "Unknown",
-  learningLanguages: [{ language: user.learning_language || "Unknown", proficiency: user.proficiency || "Unknown" }],
-  online: user.is_online,
-  age: calculateAge(user.dob),
-});
+const mapDatabaseUserToUIUser = (user: UserData) => {
+  // Ensure the proficiency value is one of the allowed values
+  let proficiency: "Beginner" | "Intermediate" | "Advanced" | "Fluent" = "Beginner";
+  
+  if (user.proficiency === "Intermediate" || 
+      user.proficiency === "Advanced" || 
+      user.proficiency === "Fluent") {
+    proficiency = user.proficiency;
+  }
+  
+  return {
+    id: user.id,
+    name: user.username || "Unknown User",
+    avatar: user.profile_picture && user.profile_picture.startsWith("http")
+      ? user.profile_picture
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
+    bio: user.bio || "No bio available.",
+    nativeLanguage: user.native_language || "Unknown",
+    learningLanguages: [{ 
+      language: user.learning_language || "Unknown", 
+      proficiency: proficiency
+    }],
+    online: user.is_online,
+    // Age is not required by UserProfileCard
+    learningGoals: "Become fluent in conversation"
+  };
+};
 
 const Community = () => {
   const navigate = useNavigate();

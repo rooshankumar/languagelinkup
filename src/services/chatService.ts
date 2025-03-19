@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import type { Chat, ChatMessage } from '@/types/chat';
 
 export interface Message {
@@ -14,7 +14,7 @@ export interface Message {
 }
 
 export const chatService = {
-  sendMessage: async (chatId: string, content: string) => {
+  sendMessage: async (chatId: string, content: string, type: 'text' | 'voice' | 'attachment' = 'text', attachmentUrl?: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -25,7 +25,8 @@ export const chatService = {
           chat_id: chatId,
           sender_id: user.id,
           content: content,
-          is_read: false,
+          content_type: type,
+          attachment_url: attachmentUrl,
           created_at: new Date().toISOString()
         })
         .select()

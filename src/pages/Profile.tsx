@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
-import { toast } from "@/hooks/use-toast";
-import Button from "@/components/Button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import UserProfileCard from "@/components/UserProfileCard";
 import ProfileEdit from "@/components/ProfileEdit";
 import { uploadProfilePicture } from "@/utils/fileUpload";
@@ -16,7 +17,7 @@ interface UserProfile {
   proficiency?: string;
   bio?: string;
   location?: string;
-  avatar_url?: string | File;
+  avatar_url?: string;
 }
 
 const Profile = () => {
@@ -24,6 +25,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const fetchUserProfile = async () => {
     try {
@@ -99,7 +101,7 @@ const Profile = () => {
     setIsEditing(false);
   };
 
-  const handleSaveProfile = async (updatedProfile: UserProfile) => {
+  const handleSaveProfile = async (updatedProfile: UserProfile & { avatar_url?: File | string }) => {
     setIsLoading(true);
     try {
       let avatarUrl = userProfile?.avatar_url;
@@ -146,6 +148,14 @@ const Profile = () => {
     }
   };
 
+  // Ensure proficiency is a valid value for UserProfileCard
+  const getValidProficiency = (proficiency: string | undefined): "Beginner" | "Intermediate" | "Advanced" | "Fluent" => {
+    if (proficiency === "Intermediate" || proficiency === "Advanced" || proficiency === "Fluent") {
+      return proficiency;
+    }
+    return "Beginner";
+  };
+
   const formattedUserData = userProfile
     ? {
         id: userProfile.id,
@@ -158,7 +168,7 @@ const Profile = () => {
           ? [
               {
                 language: userProfile.learning_language,
-                proficiency: userProfile.proficiency as "Beginner" | "Intermediate" | "Advanced" | "Fluent",
+                proficiency: getValidProficiency(userProfile.proficiency),
               },
             ]
           : [],

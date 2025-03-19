@@ -1,9 +1,8 @@
+
 import React, { useState, useRef } from 'react';
-import Button from '@/components/Button';
+import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabaseClient';
-import { uploadProfilePicture } from '@/utils/fileUpload';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
   id: string;
@@ -14,13 +13,13 @@ interface UserProfile {
   proficiency?: string;
   bio?: string;
   location?: string;
-  avatar_url?: string | File;
+  avatar_url?: string;
 }
 
 interface ProfileEditProps {
   userProfile: UserProfile | null;
   onCancel: () => void;
-  onSave: (updatedProfile: UserProfile) => void;
+  onSave: (updatedProfile: UserProfile & { avatar_url?: File | string }) => void;
 }
 
 const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
@@ -33,10 +32,11 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(
-    typeof userProfile?.avatar_url === 'string' ? userProfile.avatar_url : null
+    userProfile?.avatar_url || null
   );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const languages = [
     "English", "Spanish", "French", "German", "Italian",
@@ -85,38 +85,7 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
     setIsLoading(true);
 
     try {
-      let avatarUrl = userProfile.avatar_url;
-
-      if (profilePicture) {
-        avatarUrl = await uploadProfilePicture(profilePicture, userProfile.id);
-        const { data: { publicUrl } } = supabase.storage
-          .from('user_uploads')
-          .getPublicUrl(`profile_pictures/${profilePicture.name}`);
-        setProfilePicturePreview(publicUrl);
-      }
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          username: name,
-          bio,
-          location,
-          native_language: nativeLanguage,
-          learning_language: learningLanguage,
-          proficiency,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userProfile.id);
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-      });
-
-      onSave({
+      const updatedProfile = {
         ...userProfile,
         username: name,
         bio,
@@ -124,8 +93,10 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         native_language: nativeLanguage,
         learning_language: learningLanguage,
         proficiency,
-        avatar_url: avatarUrl,
-      });
+        avatar_url: profilePicture || userProfile.avatar_url,
+      };
+
+      onSave(updatedProfile);
     } catch (error: any) {
       toast({
         title: "Error updating profile",
@@ -269,7 +240,6 @@ const ProfileEdit = ({ userProfile, onCancel, onSave }: ProfileEditProps) => {
         </Button>
         <Button
           onClick={handleSave}
-          isLoading={isLoading}
           disabled={!name || !nativeLanguage || !learningLanguage || !proficiency}
         >
           Save Changes

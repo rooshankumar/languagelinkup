@@ -13,4 +13,21 @@ export interface ChatMessage {
   sender_id: string;
   content: string;
   created_at: string;
+  content_type: string;
+  attachment_url?: string;
+}
+
+export interface ChatPreview {
+  id: string;
+  partner: {
+    id: string;
+    username: string;
+    profilePicture: string | null;
+    isOnline: boolean;
+  };
+  lastMessage: {
+    content: string | null;
+    timestamp: string;
+  } | null;
+  updatedAt: string;
 }
