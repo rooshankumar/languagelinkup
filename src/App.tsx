@@ -63,11 +63,11 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <PageTracker />
           <Routes>
             {/* Public routes */}
@@ -95,9 +95,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <HideMobileNavInChat />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
