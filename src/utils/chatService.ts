@@ -1,9 +1,8 @@
-
 import { supabase } from '@/lib/supabaseClient';
 
 export interface Message {
   id: string;
-  conversation_id: string;
+  chat_id: string;
   sender_id: string;
   content: string;
   is_read: boolean;
@@ -11,15 +10,15 @@ export interface Message {
 }
 
 export const chatService = {
-  sendMessage: async (conversationId: string, message: string) => {
+  sendMessage: async (chatId: string, message: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     try {
       const { data, error } = await supabase
-        .from('messages')
+        .from('chat_messages')
         .insert({
-          conversation_id: conversationId,
+          chat_id: chatId,
           sender_id: user.id,
           content: message,
           is_read: false,
@@ -39,29 +38,29 @@ export const chatService = {
     }
   },
 
-  createOrGetConversation: async (otherUserId: string) => {
+  createOrGetChat: async (otherUserId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     try {
-      // Check for existing conversation
-      const { data: existingConv, error: checkError } = await supabase
-        .from('conversations')
+      // Check for existing chat
+      const { data: existingChat, error: checkError } = await supabase
+        .from('chats')
         .select('id')
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${user.id})`)
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') { // Not found error
-        throw new Error('Failed to check existing conversation');
+        throw new Error('Failed to check existing chat');
       }
 
-      if (existingConv) {
-        return existingConv;
+      if (existingChat) {
+        return existingChat;
       }
 
-      // Create new conversation
-      const { data: newConv, error: createError } = await supabase
-        .from('conversations')
+      // Create new chat
+      const { data: newChat, error: createError } = await supabase
+        .from('chats')
         .insert({
           user1_id: user.id,
           user2_id: otherUserId,
@@ -72,37 +71,14 @@ export const chatService = {
         .single();
 
       if (createError) {
-        throw new Error('Failed to create new conversation');
+        throw new Error('Failed to create new chat');
       }
 
-      return newConv;
+      return newChat;
     } catch (error: any) {
-      console.error('Conversation error:', error);
+      console.error('Chat error:', error);
       throw error;
     }
-  },
-
-  subscribeToConversation: (conversationId: string, callback: (payload: any) => void) => {
-    const channel = supabase
-      .channel(`chat:${conversationId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`
-      }, callback)
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to chat updates');
-        }
-        if (status === 'CLOSED') {
-          console.log('Subscription closed, attempting to reconnect...');
-          // Attempt to resubscribe after a delay
-          setTimeout(() => channel.subscribe(), 1000);
-        }
-      });
-
-    return channel;
   },
 
   markAsRead: async (messageIds: string[]) => {
@@ -110,7 +86,7 @@ export const chatService = {
 
     try {
       const { error } = await supabase
-        .from('messages')
+        .from('chat_messages')
         .update({ is_read: true })
         .in('id', messageIds);
 
