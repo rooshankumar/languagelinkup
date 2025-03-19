@@ -1,143 +1,131 @@
 import { supabase } from '@/lib/supabaseClient';
 import type { Chat, ChatMessage } from '@/types/chat';
 
+export interface Message {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  type?: 'text' | 'voice' | 'attachment';
+  attachment_url?: string;
+}
+
 export const chatService = {
-  /** ✅ Fetch chat details (returns existing chat or creates a new one) */
-  async getChatDetails(userId: string | null, partnerId: string | null): Promise<Chat | null> {
-    try {
-      if (!userId || !partnerId) {
-        console.error("❌ Invalid user ID or partner ID.");
-        return null;
-      }
+  sendMessage: async (chatId: string, content: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-      // 🔍 Check if chat exists between the users
-      const { data: chatData, error: fetchError } = await supabase
-        .from('chats')
-        .select(`
-          id,
-          created_at,
-          updated_at,
-          user1_id,
-          user2_id,
-          user1:users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
-          user2:users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active),
-          chat_messages!chat_messages_chat_id_fkey (id, sender_id, content, created_at)
-        `)
-        .or(`(user1_id.eq.${userId}.and.user2_id.eq.${partnerId}), (user1_id.eq.${partnerId}.and.user2_id.eq.${userId})`)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching chat:', fetchError);
-        return null;
-      }
-
-      if (chatData) {
-        return {
-          id: chatData.id,
-          createdAt: chatData.created_at,
-          updatedAt: chatData.updated_at,
-          partner: chatData.user1_id === userId ? chatData.user2 : chatData.user1,
-          messages: chatData.chat_messages || [],
-        };
-      }
-
-      // 🆕 No chat found → Create a new one
-      console.log("ℹ No chat found, creating a new one...");
-      const newChatId = await chatService.createChat(userId, partnerId);
-      if (!newChatId) return null;
-
-      return {
-        id: newChatId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        partner: null,
-        messages: [],
-      };
-    } catch (error) {
-      console.error('❌ Error in getChatDetails:', error);
-      return null;
-    }
-  },
-
-  /** ✅ Create a new chat if none exists */
-  async createChat(userId: string, partnerId: string): Promise<string | null> {
-    try {
-      const { data: newChat, error } = await supabase
-        .from('chats')
-        .insert([
-          { 
-            user1_id: userId, 
-            user2_id: partnerId,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ])
-        .select('id')
-        .single();
-
-      if (error) {
-        console.error('❌ Error creating chat:', error);
-        return null;
-      }
-
-      return newChat?.id || null;
-    } catch (error) {
-      console.error('❌ Error in createChat:', error);
-      return null;
-    }
-  },
-
-  /** ✅ Send a message in a chat */
-  async sendMessage(chatId: string, senderId: string, content: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert({
-          chat_id: chatId,
-          sender_id: senderId,
-          content: content,
-          created_at: new Date().toISOString()
-        });
-
-      if (error) {
-        console.error('❌ Error sending message:', error);
-        return false;
-      }
-
-      // ✅ Update chat timestamp
-      await supabase
-        .from('chats')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', chatId);
-
-      return true;
-    } catch (error) {
-      console.error('❌ Error in sendMessage:', error);
-      return false;
-    }
-  },
-
-  /** ✅ Fetch all messages in a chat */
-  async getMessages(chatId: string): Promise<ChatMessage[]> {
     try {
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
+        .insert({
+          chat_id: chatId,
+          sender_id: user.id,
+          content: content,
+          is_read: false,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
-      if (error) {
-        console.error('❌ Error fetching messages:', error);
-        return [];
-      }
-
-      return data || [];
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('❌ Error in getMessages:', error);
-      return [];
+      console.error('Error sending message:', error);
+      throw error;
     }
   },
 
+  getChatDetails: async (chatId: string) => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
+        throw new Error('User not authenticated');
+      }
+
+      if (!chatId) {
+        throw new Error('Chat ID is missing');
+      }
+
+      const { data, error } = await supabase
+        .from('chats')
+        .select(`
+          *,
+          messages:chat_messages(*),
+          user1:users!chats_user1_id_fkey (id, username, profile_picture, is_online, last_active),
+          user2:users!chats_user2_id_fkey (id, username, profile_picture, is_online, last_active)
+        `)
+        .eq('id', chatId)
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('Chat not found');
+
+      const partner = data.user1_id === session.user.id ? data.user2 : data.user1;
+      if (!partner) throw new Error('Chat partner not found');
+
+      return {
+        id: data.id,
+        partner,
+        messages: data.messages || [],
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    } catch (error) {
+      console.error('Error in getChatDetails:', error);
+      throw error;
+    }
+  },
+
+  createOrGetChat: async (partnerId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      const { data: partnerData, error: partnerError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', partnerId)
+        .single();
+
+      if (partnerError || !partnerData) {
+        throw new Error('Chat partner not found');
+      }
+
+      const { data: existingChat, error: checkError } = await supabase
+        .from('chats')
+        .select('id')
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${user.id})`)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw new Error('Failed to check existing chat');
+      }
+
+      if (existingChat) {
+        return existingChat;
+      }
+
+      const { data: newChat, error: createError } = await supabase
+        .from('chats')
+        .insert({
+          user1_id: user.id,
+          user2_id: partnerId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (createError) throw new Error('Failed to create new chat');
+      return newChat;
+    } catch (error) {
+      console.error('Chat error:', error);
+      throw error;
+    }
+  },
   /** ✅ Live message subscription */
   subscribeToMessages(chatId: string, callback: (payload: any) => void) {
     return supabase
