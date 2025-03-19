@@ -1,5 +1,5 @@
 
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabaseClient';
 
 export const chatService = {
   async getChats(userId: string) {
