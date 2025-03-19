@@ -118,8 +118,8 @@ export const Onboarding = () => {
         avatar_url = publicUrl;
       }
 
-      // Create profile
-      const { error } = await supabase.from('profiles').upsert({
+      // Create user profile
+      const { error } = await supabase.from('users').upsert({
         id: user.id,
         ...formData,
         avatar_url,
