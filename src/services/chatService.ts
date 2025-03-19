@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabaseClient';
 import type { Chat, ChatMessage } from '@/types/chat';
 
@@ -79,25 +80,20 @@ export const chatService = {
     }
   },
 
-  createOrGetChat: async (partnerId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
+  findOrCreateChat: async (partnerId: string) => {
     try {
-      const { data: partnerData, error: partnerError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', partnerId)
-        .single();
-
-      if (partnerError || !partnerData) {
-        throw new Error('Chat partner not found');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
+        throw new Error('User not authenticated');
       }
 
+      const userId = session.user.id;
+
+      // Check if chat exists
       const { data: existingChat, error: checkError } = await supabase
         .from('chats')
         .select('id')
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${user.id})`)
+        .or(`and(user1_id.eq.${userId},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${userId})`)
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -105,28 +101,34 @@ export const chatService = {
       }
 
       if (existingChat) {
+        console.log('Found existing chat:', existingChat.id);
         return existingChat;
       }
 
+      // Create new chat if none exists
       const { data: newChat, error: createError } = await supabase
         .from('chats')
         .insert({
-          user1_id: user.id,
+          user1_id: userId,
           user2_id: partnerId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .select()
+        .select('id')
         .single();
 
-      if (createError) throw new Error('Failed to create new chat');
+      if (createError) {
+        throw new Error('Failed to create new chat');
+      }
+
+      console.log('Created new chat:', newChat.id);
       return newChat;
     } catch (error) {
       console.error('Chat error:', error);
       throw error;
     }
   },
-  /** ✅ Live message subscription */
+
   subscribeToMessages(chatId: string, callback: (payload: any) => void) {
     return supabase
       .channel(`chat:${chatId}`)
@@ -139,7 +141,6 @@ export const chatService = {
       .subscribe();
   },
 
-  /** ✅ Mark chat as read (updates last read timestamp for a user) */
   async markChatAsRead(chatId: string, userId: string): Promise<boolean> {
     try {
       const { error } = await supabase
@@ -149,12 +150,12 @@ export const chatService = {
         ]);
 
       if (error) {
-        console.error('❌ Error marking chat as read:', error);
+        console.error('Error marking chat as read:', error);
         return false;
       }
       return true;
     } catch (error) {
-      console.error('❌ Error in markChatAsRead:', error);
+      console.error('Error in markChatAsRead:', error);
       return false;
     }
   }

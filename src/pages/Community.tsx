@@ -111,10 +111,9 @@ const Community = () => {
       return;
     }
 
-    const chat = await chatService.createOrGetChat(partnerId);
-    const chatId = chat?.id;
-    if (chatId) {
-      navigate(`/chat/${chatId}`);
+    const chat = await chatService.findOrCreateChat(partnerId);
+    if (chat?.id) {
+      navigate(`/chat/${chat.id}`);
     } else {
       toast({
         title: "Chat Error",
