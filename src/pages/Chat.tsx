@@ -206,8 +206,8 @@ export default function Chat() {
           <Avatar>
             <AvatarImage 
               src={chatDetails.partner.profile_picture 
-                ? supabase.storage.from('avatars').getPublicUrl(chatDetails.partner.profile_picture).data.publicUrl
-                : null
+                ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${chatDetails.partner.profile_picture}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(chatDetails.partner.username)}&size=128`
               } 
             />
             <AvatarFallback>{chatDetails.partner.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
