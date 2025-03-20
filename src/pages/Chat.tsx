@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,27 +55,34 @@ export default function Chat() {
     }
 
     const subscription = supabase
-      .channel(`chat:${chatId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'chat_messages',
-        filter: `chat_id=eq.${chatId}`
-      }, (payload) => {
-        const newMessage = payload.new as Message;
-        if (newMessage.sender_id !== user?.id) {
-          setMessages(current => [...current, newMessage]);
-          updateMessageStatus(newMessage.id, 'seen');
-        }
-      })
-      .on('presence', { event: 'sync' }, () => {
-        const presenceState = subscription.presenceState();
-        const partnerState = Object.values(presenceState).find((state: any) => 
-          state.user_id !== user?.id
-        );
-        setPartnerIsTyping(partnerState?.is_typing || false);
-      })
-      .subscribe();
+      .channel(`chat:${chatId}`);
+
+    await subscription.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        subscription.track({ user_id: user?.id, is_typing: false });
+      }
+    });
+
+    subscription.on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'chat_messages',
+      filter: `chat_id=eq.${chatId}`
+    }, (payload) => {
+      const newMessage = payload.new as Message;
+      if (newMessage.sender_id !== user?.id) {
+        setMessages(current => [...current, newMessage]);
+        updateMessageStatus(newMessage.id, 'seen');
+      }
+    })
+    .on('presence', { event: 'sync' }, () => {
+      const presenceState = subscription.presenceState();
+      const partnerState = Object.values(presenceState).find((state: any) => 
+        state.user_id !== user?.id
+      );
+      setPartnerIsTyping(partnerState?.is_typing || false);
+    })
+    .subscribe();
 
     const fetchInitialData = async () => {
       try {
@@ -248,7 +254,7 @@ export default function Chat() {
                       {message.status === 'sending' && '🕒'}
                       {message.status === 'sent' && '✓'}
                       {message.status === 'delivered' && '✓✓'}
-                      {message.status === 'seen' && '✓✓'}
+                      {message.status === 'seen' && '✓✓✓'}
                     </span>
                   )}
                 </div>
