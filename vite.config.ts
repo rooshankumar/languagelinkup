@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 3001,
     strictPort: false,
     allowedHosts: [
-      "6200a603-aca2-41ec-8408-5a623a11af8a-00-xkbyhzmr5g6t.pike.replit.dev","a59b62ab-cc61-4e77-9b72-9106b413f847-00-1jifo6qmua7bw.sisko.replit.dev","39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev",
+      "6200a603-aca2-41ec-8408-5a623a11af8a-00-xkbyhzmr5g6t.pike.replit.dev","a59b62ab-cc61-4e77-9b72-9106b413f847-00-1jifo6qmua7bw.sisko.replit.dev","9ec223de-0e4d-4b0f-a2ac-2c3c4ed27f9b-00-1jkbxu2oa02vf.pike.replit.dev","39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev",
       "7001cd1e-73c4-47f9-8864-33504126e24a-00-2gqtw3rglxf6u.sisko.replit.dev",
       "fff8f511-bc76-4636-9b8a-7b825d99beac-00-3j33owa5eiaf0.pike.replit.dev",
       "4a65f675-9a22-48a0-acb0-df7f4cbbf60d-00-29u6rzodkf2mr.pike.replit.dev",
