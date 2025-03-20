@@ -54,35 +54,37 @@ export default function Chat() {
       return;
     }
 
-    const subscription = supabase
-      .channel(`chat:${chatId}`);
+    const setupSubscription = async () => {
+      const subscription = supabase
+        .channel(`chat:${chatId}`);
 
-    await subscription.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        subscription.track({ user_id: user?.id, is_typing: false });
-      }
-    });
+      await subscription.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          subscription.track({ user_id: user?.id, is_typing: false });
+        }
+      });
 
-    subscription.on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'chat_messages',
-      filter: `chat_id=eq.${chatId}`
-    }, (payload) => {
-      const newMessage = payload.new as Message;
-      if (newMessage.sender_id !== user?.id) {
-        setMessages(current => [...current, newMessage]);
-        updateMessageStatus(newMessage.id, 'seen');
-      }
-    })
-    .on('presence', { event: 'sync' }, () => {
-      const presenceState = subscription.presenceState();
-      const partnerState = Object.values(presenceState).find((state: any) => 
-        state.user_id !== user?.id
-      );
-      setPartnerIsTyping(partnerState?.is_typing || false);
-    })
-    .subscribe();
+      subscription.on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `chat_id=eq.${chatId}`
+      }, (payload) => {
+        const newMessage = payload.new as Message;
+        if (newMessage.sender_id !== user?.id) {
+          setMessages(current => [...current, newMessage]);
+          updateMessageStatus(newMessage.id, 'seen');
+        }
+      })
+      .on('presence', { event: 'sync' }, () => {
+        const presenceState = subscription.presenceState();
+        const partnerState = Object.values(presenceState).find((state: any) => 
+          state.user_id !== user?.id
+        );
+        setPartnerIsTyping(partnerState?.is_typing || false);
+      })
+      .subscribe();
+    };
 
     const fetchInitialData = async () => {
       try {
@@ -104,9 +106,11 @@ export default function Chat() {
       }
     };
 
+    setupSubscription();
     fetchInitialData();
     return () => {
-      subscription.unsubscribe();
+      // Unsubscribe from the subscription
+      supabase.channel(`chat:${chatId}`).unsubscribe();
     };
   }, [chatId, navigate, toast, user?.id]);
 
