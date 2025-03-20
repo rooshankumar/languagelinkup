@@ -65,59 +65,10 @@ const Community = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [loadingLike, setLoadingLike] = useState(false);
-
-  const handleLike = async () => {
-    try {
-      setLoadingLike(true);
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user?.id || !userId) return;
-
-      const { error } = await supabase
-        .from('user_likes')
-        .insert([
-          { user_id: session.session.user.id, liked_user_id: userId }
-        ]);
-
-      if (error) throw error;
-      setHasLiked(true);
-      setLikesCount(prev => prev + 1);
-    } catch (error) {
-      console.error('Error liking profile:', error);
-    } finally {
-      setLoadingLike(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchLikes = async () => {
-      if (!userId) return;
-      
-      const { data: session } = await supabase.auth.getSession();
-      const currentUserId = session?.session?.user?.id;
-
-      // Get total likes
-      const { count } = await supabase
-        .from('user_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('liked_user_id', userId);
-
-      setLikesCount(count || 0);
-
-      // Check if current user has liked
-      if (currentUserId) {
-        const { data } = await supabase
-          .from('user_likes')
-          .select('*')
-          .eq('user_id', currentUserId)
-          .eq('liked_user_id', userId)
-          .maybeSingle();
-
-        setHasLiked(!!data);
-      }
-    };
-
-    fetchLikes();
-  }, [userId]);
+  const [error, setError] = useState<Error | null>(null);
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
+  const toast = useToast();
 
   const handleLike = async () => {
     try {
@@ -144,7 +95,7 @@ const Community = () => {
           .select();
 
         if (error) throw error;
-        
+
         setHasLiked(true);
         setLikesCount(prev => prev + 1);
       }
@@ -159,75 +110,37 @@ const Community = () => {
       setLoadingLike(false);
     }
   };
-  const [error, setError] = useState<Error | null>(null);
-  const [filtersVisible, setFiltersVisible] = useState(false);
-  const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
-  const toast = useToast(); 
 
   useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error("Error fetching session:", sessionError);
-          return;
-        }
+    const fetchLikes = async () => {
+      if (!userId) return;
 
-        const currentUserId = sessionData?.session?.user?.id;
-        if (!currentUserId) return;
+      const { data: session } = await supabase.auth.getSession();
+      const currentUserId = session?.session?.user?.id;
 
-        let query = supabase
-          .from('users')
-          .select(`
-            id,
-            username,
-            email,
-            native_language,
-            learning_language,
-            proficiency,
-            bio,
-            location,
-            avatar_url,
-            profile_picture,
-            is_online,
-            last_active,
-            dob
-          `)
-          .neq('id', currentUserId)
-          .order('last_active', { ascending: false });
+      // Get total likes
+      const { count } = await supabase
+        .from('user_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('liked_user_id', userId);
 
-        const { data, error } = await query;
-        if (error) throw error;
+      setLikesCount(count || 0);
 
-        setUsers(data || []);
-      } catch (err: any) {
-        setError(err);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch community members.',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
+      // Check if current user has liked
+      if (currentUserId) {
+        const { data } = await supabase
+          .from('user_likes')
+          .select('*')
+          .eq('user_id', currentUserId)
+          .eq('liked_user_id', userId)
+          .maybeSingle();
+
+        setHasLiked(!!data);
       }
-    }
+    };
 
-    if (!userId) {
-        fetchUsers();
-    }
-  }, [userId, toast]); 
-
-
-  const filteredUsers = users.filter(user => {
-    const age = calculateAge(user.dob);
-    return (
-      (!filters.onlineOnly || user.is_online) &&
-      (!filters.ageRange ||
-        (filters.ageRange === "18-25" && age && age >= 18 && age <= 25) ||
-        (filters.ageRange === "26-35" && age && age >= 26 && age <= 35) ||
-        (filters.ageRange === "36+" && age && age >= 36))
-    );
-  });
+    fetchLikes();
+  }, [userId]);
 
   const handleChatClick = async (partnerId: string) => {
     const { data: session } = await supabase.auth.getSession();
@@ -295,6 +208,71 @@ const Community = () => {
     );
   }
 
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error("Error fetching session:", sessionError);
+          return;
+        }
+
+        const currentUserId = sessionData?.session?.user?.id;
+        if (!currentUserId) return;
+
+        let query = supabase
+          .from('users')
+          .select(`
+            id,
+            username,
+            email,
+            native_language,
+            learning_language,
+            proficiency,
+            bio,
+            location,
+            avatar_url,
+            profile_picture,
+            is_online,
+            last_active,
+            dob
+          `)
+          .neq('id', currentUserId)
+          .order('last_active', { ascending: false });
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        setUsers(data || []);
+      } catch (err: any) {
+        setError(err);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch community members.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (!userId) {
+        fetchUsers();
+    }
+  }, [userId, toast]); 
+
+
+  const filteredUsers = users.filter(user => {
+    const age = calculateAge(user.dob);
+    return (
+      (!filters.onlineOnly || user.is_online) &&
+      (!filters.ageRange ||
+        (filters.ageRange === "18-25" && age && age >= 18 && age <= 25) ||
+        (filters.ageRange === "26-35" && age && age >= 26 && age <= 35) ||
+        (filters.ageRange === "36+" && age && age >= 36))
+    );
+  });
 
   return (
     <div className="py-8 max-w-6xl mx-auto px-4">
