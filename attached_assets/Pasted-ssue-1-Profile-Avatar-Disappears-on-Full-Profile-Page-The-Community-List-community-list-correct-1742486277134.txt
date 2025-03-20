@@ -1,0 +1,86 @@
+ssue 1: Profile Avatar Disappears on Full Profile Page
+
+The Community List (/community/list) correctly displays user avatars, but when clicking on a profile, the avatar disappears on the Full Profile Page (/community/:userId).
+Ensure the avatar data is correctly passed and displayed on the Full Profile Page.
+Check if the profile API or state management is failing to retain the avatar URL.
+🎯 Fix Expected:
+
+Ensure the profile component receives user data properly, including the avatar.
+If fetching data from an API, verify that the avatar field is included in the response.
+Fix missing props or state updates causing the avatar to disappear.
+📌 Example Fix (React Component for Full Profile Page)
+
+jsx
+Copy
+Edit
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+const UserProfile = () => {
+  const { userId } = useParams();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetch(`/api/users/${userId}`)  // Ensure this API returns avatar URL
+      .then((res) => res.json())
+      .then((data) => setUser(data))
+      .catch((error) => console.error("Error fetching user:", error));
+  }, [userId]);
+
+  if (!user) return <p>Loading...</p>;
+
+  return (
+    <div className="profile-container">
+      <img src={user.avatar || "/default-avatar.png"} alt="Profile Avatar" className="profile-avatar" />
+      <h2>{user.name}, {user.age}</h2>
+      <p>{user.bio}</p>
+    </div>
+  );
+};
+
+export default UserProfile;
+Ensures the avatar is fetched and displayed properly.
+Uses a default avatar if the user’s avatar is missing.
+Issue 2: Make Community List & Full Profile Responsive for Mobile Users
+
+The current layout does not scale well on smaller screens.
+Ensure both Community List & User Profile pages are mobile-friendly.
+Use CSS media queries or Flexbox/Grid to optimize layout.
+🎯 Fix Expected:
+
+Ensure avatars, text, and buttons resize properly on small screens.
+Apply responsive breakpoints for different devices.
+Ensure touch-friendly navigation (no tiny buttons).
+📌 Example Fix (CSS for Responsiveness)
+
+css
+Copy
+Edit
+.profile-container {
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  padding: 16px;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 12px;
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+}
+✅ Expected Outcome After Fix:
+
+Clicking a profile now correctly displays the avatar.
+Pages scale properly on mobile devices.
+Users can easily navigate without UI breaking.
