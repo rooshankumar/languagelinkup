@@ -1,11 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';
-import UserPreviewCard from '@/components/UserPreviewCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { UserPreviewCard } from '@/components/UserPreviewCard';
+import { supabase } from '@/lib/supabaseClient';
 
 const CommunityList = () => {
   const navigate = useNavigate();
@@ -33,10 +33,8 @@ const CommunityList = () => {
       setLoading(false);
     };
 
-    // Initial fetch
     fetchUsers();
 
-    // Set up real-time subscription
     const subscription = supabase
       .channel('public:users')
       .on('postgres_changes', 
@@ -69,15 +67,20 @@ const CommunityList = () => {
     navigate(`/community/${userId}`);
   };
 
-  if (loading) {
-    return <div className="p-8 text-center">Loading community members...</div>;
-  }
-
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Language Community</h1>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/community')}
+              className="p-2"
+            >
+              ← Back
+            </Button>
+            <h1 className="text-2xl font-bold">Language Partners</h1>
+          </div>
           <div className="relative w-64">
             <Input
               type="text"
@@ -90,17 +93,21 @@ const CommunityList = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredUsers.map(user => (
-            <UserPreviewCard
-              key={user.id}
-              user={user}
-              onClick={() => handleUserClick(user.id)}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-8">Loading community members...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredUsers.map(user => (
+              <UserPreviewCard
+                key={user.id}
+                user={user}
+                onClick={() => handleUserClick(user.id)}
+              />
+            ))}
+          </div>
+        )}
 
-        {filteredUsers.length === 0 && (
+        {!loading && filteredUsers.length === 0 && (
           <div className="text-center text-muted-foreground py-8">
             No users found matching your search.
           </div>

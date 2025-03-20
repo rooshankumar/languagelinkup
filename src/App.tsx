@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import ChatList from "./pages/ChatList";
 import Community from "./pages/Community";
+import CommunityList from "./pages/CommunityList";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Blog from "./pages/Blog";
