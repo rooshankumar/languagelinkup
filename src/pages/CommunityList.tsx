@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { UserPreviewCard } from '@/components/UserPreviewCard';
+import UserPreviewCard from '@/components/UserPreviewCard';
 import { supabase } from '@/lib/supabaseClient';
 
 const CommunityList = () => {
