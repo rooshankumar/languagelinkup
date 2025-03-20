@@ -44,7 +44,7 @@ const mapDatabaseUserToUIUser = (user: UserData) => {
   return {
     id: user.id,
     name: user.username || "Unknown User",
-    avatar: user.avatar_url ? `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
+    avatar: user.profile_picture ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
     bio: user.bio || "No bio available.",
     nativeLanguage: user.native_language || "Unknown",
     learningLanguages: [{ 

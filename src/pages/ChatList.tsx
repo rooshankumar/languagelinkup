@@ -77,7 +77,7 @@ const ChatList = () => {
               partner: {
                 id: partner.id,
                 username: partner.username,
-                profilePicture: partner.avatar_url ? `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${partner.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.username || "User")}&background=random`,
+                profilePicture: partner.profile_picture ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${partner.profile_picture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.username || "User")}&background=random`,
                 isOnline: partner.is_online,
               },
               lastMessage: latestMessage
