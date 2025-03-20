@@ -25,20 +25,7 @@ const MobileNavbar = () => {
       icon: Settings,
       href: '/settings',
     },
-    {
-      label: 'Logout',
-      icon: LogOut,
-      onClick: async () => {
-        try {
-          await supabase.auth.signOut();
-          toast({ title: 'Logged out successfully!' });
-          navigate('/login');
-        } catch (error) {
-          console.error('Error logging out:', error);
-          toast({ title: 'Error logging out', error });
-        }
-      },
-    },
+    
   ];
 
   return (

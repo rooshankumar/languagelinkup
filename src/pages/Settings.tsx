@@ -61,12 +61,36 @@ const Settings = () => {
       <h1 className="text-3xl font-bold">Settings</h1>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
           <TabsTrigger value="subscription">Subscription</TabsTrigger>
         </TabsList>
+
+        <div className="mt-4">
+          <Button 
+            variant="destructive" 
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut();
+                toast({
+                  title: "Success",
+                  description: "Logged out successfully"
+                });
+                navigate('/login');
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: "Failed to log out",
+                  variant: "destructive"
+                });
+              }
+            }}
+          >
+            Log Out
+          </Button>
+        </div>
 
         <TabsContent value="account">
           <Card>
