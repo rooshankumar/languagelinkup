@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import UserProfileCard from '@/components/UserProfileCard';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Filter } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { chatService } from '@/services/chatService';
+import { supabase } from '@/lib/supabaseClient';
+import UserProfileCard from '@/components/UserProfileCard';
+import { MessageCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast'; 
+import { chatService } from '@/services/chatService'; 
 
 interface UserData {
   id: string;
@@ -20,7 +20,6 @@ interface UserData {
   is_online: boolean;
 }
 
-// Function to calculate age from DOB
 const calculateAge = (dob: string | null): number | null => {
   if (!dob) return null;
   const birthDate = new Date(dob);
@@ -30,9 +29,7 @@ const calculateAge = (dob: string | null): number | null => {
   return monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
 };
 
-// Convert database user to UI format
 const mapDatabaseUserToUIUser = (user: UserData) => {
-  // Ensure the proficiency value is one of the allowed values
   let proficiency: "Beginner" | "Intermediate" | "Advanced" | "Fluent" = "Beginner";
 
   if (user.proficiency === "Intermediate" ||
@@ -56,23 +53,23 @@ const mapDatabaseUserToUIUser = (user: UserData) => {
       proficiency: proficiency
     }],
     online: user.is_online,
-    // Age is not required by UserProfileCard
     learningGoals: "Become fluent in conversation"
   };
 };
 
 const Community = () => {
+  const { userId } = useParams();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
+  const toast = useToast(); 
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        console.log('Fetching users from database...');
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) {
           console.error("Error fetching session:", sessionError);
@@ -80,7 +77,6 @@ const Community = () => {
         }
 
         const currentUserId = sessionData?.session?.user?.id;
-        console.log("Current User ID:", currentUserId);
         if (!currentUserId) return;
 
         let query = supabase
@@ -97,7 +93,8 @@ const Community = () => {
             avatar_url,
             profile_picture,
             is_online,
-            last_active
+            last_active,
+            dob
           `)
           .neq('id', currentUserId)
           .order('last_active', { ascending: false });
@@ -118,8 +115,11 @@ const Community = () => {
       }
     }
 
-    fetchUsers();
-  }, []);
+    if (!userId) {
+        fetchUsers();
+    }
+  }, [userId, toast]); 
+
 
   const filteredUsers = users.filter(user => {
     const age = calculateAge(user.dob);
@@ -153,39 +153,111 @@ const Community = () => {
     }
   };
 
+  const [userprofile, setUserprofile] = useState<UserData | null>(null);
+  const [loadingprofile, setLoadingprofile] = useState(true);
+  const [errorprofile, setErrorprofile] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (userId) {
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          if (error) throw error;
+          if (!data) throw new Error('User not found');
+
+          setUserprofile(data);
+        }
+      } catch (err: any) {
+        setErrorprofile(err.message);
+      } finally {
+        setLoadingprofile(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  if (userId && loadingprofile) {
+    return <div className="p-8 text-center">Loading profile...</div>;
+  }
+
+  if (userId && (errorprofile || !userprofile)) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
+        <p className="mb-4 text-muted-foreground">This user profile does not exist or has been removed.</p>
+        <Button onClick={() => navigate('/community/list')}>
+          Return to Community List
+        </Button>
+      </div>
+    );
+  }
+
+
   return (
     <div className="py-8 max-w-6xl mx-auto px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Language Community</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate('/community/list')}>
-            View List
+      {userId ? (
+        <div className="container mx-auto py-8 px-4 max-w-2xl">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/community/list')}
+            className="mb-6"
+          >
+            ← Back to List
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setFiltersVisible(!filtersVisible)}>
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
+
+          <UserProfileCard user={mapDatabaseUserToUIUser(userprofile!)} compact={false} />
+
+          <div className="mt-6">
+            <Button
+              onClick={() => navigate(`/chat/${userprofile?.id}`)}
+              className="w-full"
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Start Conversation
+            </Button>
+          </div>
         </div>
-      </div>
-
-      {loading && <p>Loading community members...</p>}
-      {error && <p className="text-red-500">Error fetching community members.</p>}
-      {filteredUsers.length === 0 && !loading && <p>No community members found.</p>}
-
-      {filteredUsers.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredUsers.map(user => (
-            <div key={user.id} className="flex flex-col h-full">
-              <UserProfileCard user={mapDatabaseUserToUIUser(user)} compact={false} onClick={() => {}} />
-              <div className="p-3 border-t">
-                <Button onClick={() => handleChatClick(user.id)} className="w-full" size="sm">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Start Chatting
-                </Button>
-              </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Language Community</h1>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate('/community/list')}>
+                View List
+              </Button>
+              {/* <Button variant="outline" size="sm" onClick={() => setFiltersVisible(!filtersVisible)}>
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </Button> */}
             </div>
-          ))}
-        </div>
+          </div>
+
+          {loading && <p>Loading community members...</p>}
+          {error && <p className="text-red-500">Error fetching community members.</p>}
+          {filteredUsers.length === 0 && !loading && <p>No community members found.</p>}
+
+          {filteredUsers.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredUsers.map(user => (
+                <div key={user.id} className="flex flex-col h-full">
+                  <UserProfileCard user={mapDatabaseUserToUIUser(user)} compact={false} onClick={() => navigate(`/community/${user.id}`)} />
+                  <div className="p-3 border-t">
+                    <Button onClick={() => handleChatClick(user.id)} className="w-full" size="sm">
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Start Chatting
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
