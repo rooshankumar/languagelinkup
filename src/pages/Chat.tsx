@@ -58,7 +58,7 @@ export default function Chat() {
       const subscription = supabase
         .channel(`chat:${chatId}`);
 
-      await subscription.subscribe(async (status) => {
+      subscription.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           subscription.track({ user_id: user?.id, is_typing: false });
         }

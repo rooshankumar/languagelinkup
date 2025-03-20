@@ -56,17 +56,15 @@ const Community = () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user?.id || !userId) return;
 
-      const { error: likeError } = await supabase
+      const { error } = await supabase
         .from('user_likes')
         .insert([
           { user_id: session.session.user.id, liked_user_id: userId }
         ]);
 
-      if (likeError) throw likeError;
-
+      if (error) throw error;
       setHasLiked(true);
       setLikesCount(prev => prev + 1);
-
       toast({
         title: "Success",
         description: "Profile liked successfully!",
