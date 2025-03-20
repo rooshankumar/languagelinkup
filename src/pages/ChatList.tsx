@@ -77,9 +77,9 @@ const ChatList = () => {
               partner: {
                 id: partner.id,
                 username: partner.username,
-                profilePicture: partner.profile_picture
-                  ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${partner.profile_picture}`
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.username || "User")}&background=random&size=100`,
+                profilePicture: partner.profile_picture 
+                  ? supabase.storage.from('avatars').getPublicUrl(partner.profile_picture).data.publicUrl 
+                  : null,
                 isOnline: partner.is_online,
               },
               lastMessage: latestMessage
