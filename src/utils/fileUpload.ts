@@ -44,6 +44,19 @@ export const uploadProfilePicture = async (file: File, userId: string) => {
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 
+    // Update the user's profile with the new URL
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ 
+        avatar_url: publicUrl,
+        profile_picture: publicUrl 
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
     return publicUrl;
   } catch (error) {
     console.error("Upload error:", error);

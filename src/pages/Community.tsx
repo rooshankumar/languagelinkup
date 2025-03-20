@@ -35,24 +35,24 @@ const mapDatabaseUserToUIUser = (user: UserData) => {
   // Ensure the proficiency value is one of the allowed values
   let proficiency: "Beginner" | "Intermediate" | "Advanced" | "Fluent" = "Beginner";
 
-  if (user.proficiency === "Intermediate" || 
-      user.proficiency === "Advanced" || 
+  if (user.proficiency === "Intermediate" ||
+      user.proficiency === "Advanced" ||
       user.proficiency === "Fluent") {
     proficiency = user.proficiency;
   }
 
-  const avatarUrl = user.profile_picture 
+  const avatarUrl = user.profile_picture
     ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}`
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`;
-    
+
   return {
     id: user.id,
     name: user.username || "Unknown User",
     avatar: avatarUrl,
     bio: user.bio || "No bio available.",
     nativeLanguage: user.native_language || "Unknown",
-    learningLanguages: [{ 
-      language: user.learning_language || "Unknown", 
+    learningLanguages: [{
+      language: user.learning_language || "Unknown",
       proficiency: proficiency
     }],
     online: user.is_online,
@@ -85,7 +85,20 @@ const Community = () => {
 
         let query = supabase
           .from('users')
-          .select('id, username, profile_picture, dob, is_online, last_active, native_language, learning_language, proficiency, bio')
+          .select(`
+            id,
+            username,
+            email,
+            native_language,
+            learning_language,
+            proficiency,
+            bio,
+            location,
+            avatar_url,
+            profile_picture,
+            is_online,
+            last_active
+          `)
           .neq('id', currentUserId)
           .order('last_active', { ascending: false });
 

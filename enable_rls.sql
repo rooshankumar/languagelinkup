@@ -67,3 +67,12 @@ WITH CHECK (
     AND sender_id = auth.uid()
   )
 );
+-- Enable RLS
+ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- Create policy to allow public read access to avatars bucket
+CREATE POLICY "Public Access to Avatars" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'avatars' AND owner IS NOT NULL
+  );
