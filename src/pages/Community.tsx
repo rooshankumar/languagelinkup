@@ -1,61 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
+import { UserData } from '@/types';
+import { useToast } from '@/hooks/use-toast';
+import { chatService } from '@/services/chatService';
 import UserProfileCard from '@/components/UserProfileCard';
-import { MessageCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast'; 
-import { chatService } from '@/services/chatService'; 
-
-interface UserData {
-  id: string;
-  username: string;
-  profile_picture: string | null;
-  dob: string | null;
-  native_language: string;
-  learning_language: string;
-  proficiency: string;
-  bio: string | null;
-  last_active: string;
-  is_online: boolean;
-}
-
-const calculateAge = (dob: string | null): number | null => {
-  if (!dob) return null;
-  const birthDate = new Date(dob);
-  const today = new Date();
-  const age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  return monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
-};
-
-const mapDatabaseUserToUIUser = (user: UserData) => {
-  let proficiency: "Beginner" | "Intermediate" | "Advanced" | "Fluent" = "Beginner";
-
-  if (user.proficiency === "Intermediate" ||
-      user.proficiency === "Advanced" ||
-      user.proficiency === "Fluent") {
-    proficiency = user.proficiency;
-  }
-
-  const avatarUrl = user.profile_picture
-    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}`
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`;
-
-  return {
-    id: user.id,
-    name: user.username || "Unknown User",
-    avatar: avatarUrl,
-    bio: user.bio || "No bio available.",
-    nativeLanguage: user.native_language || "Unknown",
-    learningLanguages: [{
-      language: user.learning_language || "Unknown",
-      proficiency: proficiency
-    }],
-    online: user.is_online,
-    learningGoals: "Become fluent in conversation"
-  };
-};
 
 const Community = () => {
   const { userId } = useParams();
@@ -65,40 +16,20 @@ const Community = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [loadingLike, setLoadingLike] = useState(false);
-
-  const handleLike = async () => {
-    try {
-      setLoadingLike(true);
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user?.id || !userId) return;
-
-      const { error } = await supabase
-        .from('user_likes')
-        .insert([
-          { user_id: session.session.user.id, liked_user_id: userId }
-        ]);
-
-      if (error) throw error;
-      setHasLiked(true);
-      setLikesCount(prev => prev + 1);
-    } catch (error) {
-      console.error('Error liking profile:', error);
-    } finally {
-      setLoadingLike(false);
-    }
-  };
+  const [error, setError] = useState<Error | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     const fetchLikes = async () => {
       if (!userId) return;
-      
+
       const { data: session } = await supabase.auth.getSession();
       const currentUserId = session?.session?.user?.id;
 
       // Get total likes
       const { count } = await supabase
         .from('user_likes')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('liked_user_id', userId);
 
       setLikesCount(count || 0);
@@ -110,7 +41,7 @@ const Community = () => {
           .select('*')
           .eq('user_id', currentUserId)
           .eq('liked_user_id', userId)
-          .single();
+          .maybeSingle();
 
         setHasLiked(!!data);
       }
@@ -118,10 +49,135 @@ const Community = () => {
 
     fetchLikes();
   }, [userId]);
-  const [error, setError] = useState<Error | null>(null);
+
+  const handleLike = async () => {
+    try {
+      setLoadingLike(true);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id || !userId) return;
+
+      const { error: likeError } = await supabase
+        .from('user_likes')
+        .insert([
+          { user_id: session.session.user.id, liked_user_id: userId }
+        ]);
+
+      if (likeError) throw likeError;
+
+      setHasLiked(true);
+      setLikesCount(prev => prev + 1);
+
+      toast({
+        title: "Success",
+        description: "Profile liked successfully!",
+      });
+    } catch (error) {
+      console.error('Error liking profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to like profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingLike(false);
+    }
+  };
+
+  const handleChatClick = async (partnerId: string) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const currentUserId = session?.session?.user?.id;
+
+      if (!currentUserId || !partnerId) {
+        throw new Error("Invalid user or partner ID");
+      }
+
+      const chat = await chatService.findOrCreateChat(partnerId);
+
+      if (chat?.id) {
+        navigate(`/chat/${chat.id}`);
+      } else {
+        throw new Error("Could not create or find chat");
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast({
+        title: "Chat Error",
+        description: "Could not start a chat. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const [userprofile, setUserprofile] = useState<UserData | null>(null);
+  const [loadingprofile, setLoadingprofile] = useState(true);
+  const [errorprofile, setErrorprofile] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (userId) {
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          if (error) throw error;
+          if (!data) throw new Error('User not found');
+
+          setUserprofile(data);
+        }
+      } catch (err: any) {
+        setErrorprofile(err.message);
+      } finally {
+        setLoadingprofile(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  const calculateAge = (dob: string | null): number | null => {
+    if (!dob) return null;
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    return monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+  };
+
+  const mapDatabaseUserToUIUser = (user: UserData) => {
+    let proficiency: "Beginner" | "Intermediate" | "Advanced" | "Fluent" = "Beginner";
+
+    if (user.proficiency === "Intermediate" ||
+        user.proficiency === "Advanced" ||
+        user.proficiency === "Fluent") {
+      proficiency = user.proficiency;
+    }
+
+    const avatarUrl = user.profile_picture
+      ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`;
+
+    return {
+      id: user.id,
+      name: user.username || "Unknown User",
+      avatar: avatarUrl,
+      bio: user.bio || "No bio available.",
+      nativeLanguage: user.native_language || "Unknown",
+      learningLanguages: [{
+        language: user.learning_language || "Unknown",
+        proficiency: proficiency
+      }],
+      online: user.is_online,
+      learningGoals: "Become fluent in conversation"
+    };
+  };
+
+
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
-  const toast = useToast(); 
 
   useEffect(() => {
     async function fetchUsers() {
@@ -188,56 +244,6 @@ const Community = () => {
     );
   });
 
-  const handleChatClick = async (partnerId: string) => {
-    const { data: session } = await supabase.auth.getSession();
-    const currentUserId = session?.session?.user?.id;
-
-    if (!currentUserId || !partnerId) {
-      console.error("❌ Invalid user or partner ID:", { currentUserId, partnerId });
-      return;
-    }
-
-    const chat = await chatService.findOrCreateChat(partnerId);
-    if (chat?.id) {
-      navigate(`/chat/${chat.id}`);
-    } else {
-      toast({
-        title: "Chat Error",
-        description: "Could not start a chat. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const [userprofile, setUserprofile] = useState<UserData | null>(null);
-  const [loadingprofile, setLoadingprofile] = useState(true);
-  const [errorprofile, setErrorprofile] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (userId) {
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-          if (error) throw error;
-          if (!data) throw new Error('User not found');
-
-          setUserprofile(data);
-        }
-      } catch (err: any) {
-        setErrorprofile(err.message);
-      } finally {
-        setLoadingprofile(false);
-      }
-    };
-
-    fetchUser();
-  }, [userId]);
-
   if (userId && loadingprofile) {
     return <div className="p-8 text-center">Loading profile...</div>;
   }
@@ -253,7 +259,6 @@ const Community = () => {
       </div>
     );
   }
-
 
   return (
     <div className="py-8 max-w-6xl mx-auto px-4">
@@ -283,18 +288,22 @@ const Community = () => {
             <h2 className="text-2xl font-bold mt-4">{userprofile?.username}</h2>
             <p className="text-muted-foreground mt-2">{userprofile?.bio}</p>
             <div className="flex items-center justify-center gap-2 mt-4">
-              <span className="text-sm text-muted-foreground">
-                {likesCount} {likesCount === 1 ? 'like' : 'likes'}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLike}
-                disabled={hasLiked || loadingLike}
-                className="gap-2"
-              >
-                {hasLiked ? "❤️ Liked" : "🤍 Like"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleLike}
+                  disabled={loadingLike || hasLiked}
+                  variant={hasLiked ? "secondary" : "default"}
+                >
+                  {hasLiked ? 'Liked' : 'Like'} ({likesCount})
+                </Button>
+                <Button
+                  onClick={() => handleChatClick(userId)}
+                  variant="outline"
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Start Conversation
+                </Button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="text-center">
@@ -308,15 +317,6 @@ const Community = () => {
             </div>
           </div>
 
-          <div className="mt-6">
-            <Button
-              onClick={() => navigate(`/chat/${userprofile?.id}`)}
-              className="w-full"
-            >
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Start Conversation
-            </Button>
-          </div>
         </div>
       ) : (
         <>
