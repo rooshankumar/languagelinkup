@@ -22,6 +22,9 @@ interface UserProfileCardProps {
 
 const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProps) => {
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random`;
+  const supabaseUrl = "https://czubndssgwedqqzlsazn.supabase.co"; //replace with your actual supabase url if needed.  This is hardcoded because the original code doesn't use env variables.
+  const avatarUrl = user.avatar ? `${supabaseUrl}/storage/v1/object/public/avatars/${user.id}/${user.avatar}.jpg` : fallbackAvatar;
+
 
   if (compact) {
     return (
@@ -31,20 +34,14 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
       >
         <div className="flex items-center gap-3">
           <div className="relative">
-            {user.avatar ? (
-              <img 
-                src={user.avatar} 
-                alt={user.name}
-                className="w-12 h-12 rounded-full object-cover" 
-                onError={(e) => {
-                  e.currentTarget.src = fallbackAvatar;
-                }}
-              />
-            ) : (
-              <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-full">
-                <User className="h-6 w-6 text-muted-foreground" />
-              </div>
-            )}
+            <img 
+              src={avatarUrl} 
+              alt={user.name}
+              className="w-12 h-12 rounded-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.src = fallbackAvatar;
+              }}
+            />
             {user.online !== undefined && (
               <span className={`absolute bottom-0 right-0 w-3 h-3 ${user.online ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-white`}></span>
             )}
@@ -77,20 +74,14 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
       <div className="p-5">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative">
-            {user.avatar ? (
-              <img 
-                src={user.avatar} 
-                alt={user.name}
-                className="w-20 h-20 rounded-full object-cover" 
-                onError={(e) => {
-                  e.currentTarget.src = fallbackAvatar;
-                }}
-              />
-            ) : (
-              <div className="w-20 h-20 bg-muted flex items-center justify-center rounded-full">
-                <User className="h-10 w-10 text-muted-foreground" />
-              </div>
-            )}
+            <img 
+              src={avatarUrl} 
+              alt={user.name}
+              className="w-20 h-20 rounded-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.src = fallbackAvatar;
+              }}
+            />
             {user.online !== undefined && (
               <span className={`absolute bottom-1 right-1 w-4 h-4 ${user.online ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-white`}></span>
             )}
