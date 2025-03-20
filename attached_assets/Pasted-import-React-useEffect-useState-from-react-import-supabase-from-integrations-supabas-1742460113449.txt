@@ -42,7 +42,7 @@ const mapDatabaseUserToUIUser = (user: UserData) => {
   }
 
   const avatarUrl = user.profile_picture
-    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}`
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.id}/${user.profile_picture}`
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`;
 
   return {
