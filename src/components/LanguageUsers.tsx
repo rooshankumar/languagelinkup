@@ -154,7 +154,7 @@ const LanguageUsers = () => {
               <UserProfileCard 
                 user={{
                   ...user,
-                  avatar: user.avatar_url
+                  avatar: user.avatar_url ? supabase.storage.from('avatars').getPublicUrl(user.avatar_url).data.publicUrl : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`
                 }} 
                 compact={true} 
                 onClick={() => {}} 
