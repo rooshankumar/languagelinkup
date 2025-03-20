@@ -54,15 +54,16 @@ export default function Chat() {
       return;
     }
 
-    const setupSubscription = async () => {
+    const setupSubscription = () => {
       const subscription = supabase
         .channel(`chat:${chatId}`);
 
-      subscription.subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          subscription.track({ user_id: user?.id, is_typing: false });
-        }
-      });
+      subscription
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            subscription.track({ user_id: user?.id, is_typing: false });
+          }
+        });
 
       subscription.on('postgres_changes', {
         event: 'INSERT',
