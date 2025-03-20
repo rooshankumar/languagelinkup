@@ -21,6 +21,8 @@ interface UserProfileCardProps {
 }
 
 const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProps) => {
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random`;
+
   if (compact) {
     return (
       <div 
@@ -35,7 +37,7 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
                 alt={user.name}
                 className="w-12 h-12 rounded-full object-cover" 
                 onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
+                  e.currentTarget.src = fallbackAvatar;
                 }}
               />
             ) : (
@@ -81,7 +83,7 @@ const UserProfileCard = ({ user, compact = false, onClick }: UserProfileCardProp
                 alt={user.name}
                 className="w-20 h-20 rounded-full object-cover" 
                 onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
+                  e.currentTarget.src = fallbackAvatar;
                 }}
               />
             ) : (

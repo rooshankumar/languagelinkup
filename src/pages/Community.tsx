@@ -41,10 +41,14 @@ const mapDatabaseUserToUIUser = (user: UserData) => {
     proficiency = user.proficiency;
   }
 
+  const avatarUrl = user.profile_picture 
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}`
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`;
+    
   return {
     id: user.id,
     name: user.username || "Unknown User",
-    avatar: user.profile_picture ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.profile_picture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
+    avatar: avatarUrl,
     bio: user.bio || "No bio available.",
     nativeLanguage: user.native_language || "Unknown",
     learningLanguages: [{ 
