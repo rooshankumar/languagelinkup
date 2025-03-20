@@ -74,6 +74,7 @@ const App = () => {
                   <Route path="/chats" element={<ChatList />} />
                   <Route path="/chat/:id" element={<Chat />} />
                   <Route path="/community" element={<Community />} />
+                <Route path="/community/list" element={<CommunityList />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
