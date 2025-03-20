@@ -29,6 +29,47 @@
  
 @layer base {
   :root {
+
+/* Profile styles */
+.profile-container {
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  margin: 0 auto;
+  object-fit: cover;
+  border: 2px solid hsl(var(--primary));
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 0.75rem;
+  }
+  
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 0.5rem;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+}
+
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
     

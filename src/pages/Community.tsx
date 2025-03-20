@@ -211,7 +211,25 @@ const Community = () => {
             ← Back to List
           </Button>
 
-          <UserProfileCard user={mapDatabaseUserToUIUser(userprofile!)} compact={false} />
+          <div className="profile-container">
+            <img 
+              src={userprofile?.profile_picture || userprofile?.avatar_url || "/placeholder.svg"} 
+              alt="Profile Avatar" 
+              className="profile-avatar"
+            />
+            <h2 className="text-2xl font-bold mt-4">{userprofile?.username}</h2>
+            <p className="text-muted-foreground mt-2">{userprofile?.bio}</p>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="text-center">
+                <p className="font-semibold">Native Language</p>
+                <p>{userprofile?.native_language}</p>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold">Learning</p>
+                <p>{userprofile?.learning_language}</p>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-6">
             <Button
