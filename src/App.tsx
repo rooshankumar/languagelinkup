@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from './contexts/ThemeContext'; // Added ThemeProvider import
 import MobileNavbar from "./components/MobileNavbar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -55,32 +56,34 @@ const App = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <PageTracker />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<Blog />} />
-              <Route path="/legal/:page" element={<Legal />} />
+          <ThemeProvider> {/* Added ThemeProvider */}
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <PageTracker />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<Blog />} />
+                <Route path="/legal/:page" element={<Legal />} />
 
-              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/chats" element={<ChatList />} />
-                <Route path="/chat/:id" element={<Chat />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-              </Route>
+                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/chats" element={<ChatList />} />
+                  <Route path="/chat/:id" element={<Chat />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
 
-              <Route path="/messages" element={<Navigate to="/chats" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <HideMobileNavInChat />
-          </TooltipProvider>
+                <Route path="/messages" element={<Navigate to="/chats" replace />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <HideMobileNavInChat />
+            </TooltipProvider>
+          </ThemeProvider> {/* Added ThemeProvider closing tag */}
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
