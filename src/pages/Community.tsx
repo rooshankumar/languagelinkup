@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import UserProfileCard from '@/components/UserProfileCard';
@@ -35,19 +34,17 @@ const calculateAge = (dob: string | null): number | null => {
 const mapDatabaseUserToUIUser = (user: UserData) => {
   // Ensure the proficiency value is one of the allowed values
   let proficiency: "Beginner" | "Intermediate" | "Advanced" | "Fluent" = "Beginner";
-  
+
   if (user.proficiency === "Intermediate" || 
       user.proficiency === "Advanced" || 
       user.proficiency === "Fluent") {
     proficiency = user.proficiency;
   }
-  
+
   return {
     id: user.id,
     name: user.username || "Unknown User",
-    avatar: user.profile_picture && user.profile_picture.startsWith("http")
-      ? user.profile_picture
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
+    avatar: user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
     bio: user.bio || "No bio available.",
     nativeLanguage: user.native_language || "Unknown",
     learningLanguages: [{ 

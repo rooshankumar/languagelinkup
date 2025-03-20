@@ -151,7 +151,14 @@ const LanguageUsers = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto px-4">
           {users.map(user => (
             <div key={user.id} className="flex flex-col h-full">
-              <UserProfileCard user={user} compact={true} onClick={() => {}} />
+              <UserProfileCard 
+                user={{
+                  ...user,
+                  avatar: user.profile_picture
+                }} 
+                compact={true} 
+                onClick={() => {}} 
+              />
               <div className="p-3 border-t">
                 <Button
                   onClick={() => handleChatClick(user.id)}
