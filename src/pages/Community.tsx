@@ -65,13 +65,6 @@ const Community = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [loadingLike, setLoadingLike] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [filtersVisible, setFiltersVisible] = useState(false);
-  const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
-  const toast = useToast();
-  const [userprofile, setUserprofile] = useState<UserData | null>(null);
-  const [loadingprofile, setLoadingprofile] = useState(true);
-  const [errorprofile, setErrorprofile] = useState<string | null>(null);
 
   const handleLike = async () => {
     try {
@@ -79,36 +72,17 @@ const Community = () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user?.id || !userId) return;
 
-      // Don't allow self-likes
-      if (session.session.user.id === userId) {
-        toast({
-          title: "Cannot like own profile",
-          description: "You cannot like your own profile",
-          variant: "destructive"
-        });
-        return;
-      }
+      const { error } = await supabase
+        .from('user_likes')
+        .insert([
+          { user_id: session.session.user.id, liked_user_id: userId }
+        ]);
 
-      if (!hasLiked) {
-        const { error } = await supabase
-          .from('user_likes')
-          .insert([
-            { user_id: session.session.user.id, liked_user_id: userId }
-          ])
-          .select();
-
-        if (error) throw error;
-
-        setHasLiked(true);
-        setLikesCount(prev => prev + 1);
-      }
-    } catch (error: any) {
+      if (error) throw error;
+      setHasLiked(true);
+      setLikesCount(prev => prev + 1);
+    } catch (error) {
       console.error('Error liking profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to like profile. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setLoadingLike(false);
     }
@@ -117,14 +91,14 @@ const Community = () => {
   useEffect(() => {
     const fetchLikes = async () => {
       if (!userId) return;
-
+      
       const { data: session } = await supabase.auth.getSession();
       const currentUserId = session?.session?.user?.id;
 
       // Get total likes
       const { count } = await supabase
         .from('user_likes')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'exact' })
         .eq('liked_user_id', userId);
 
       setLikesCount(count || 0);
@@ -136,7 +110,7 @@ const Community = () => {
           .select('*')
           .eq('user_id', currentUserId)
           .eq('liked_user_id', userId)
-          .maybeSingle();
+          .single();
 
         setHasLiked(!!data);
       }
@@ -144,70 +118,10 @@ const Community = () => {
 
     fetchLikes();
   }, [userId]);
-
-  const handleChatClick = async (partnerId: string) => {
-    const { data: session } = await supabase.auth.getSession();
-    const currentUserId = session?.session?.user?.id;
-
-    if (!currentUserId || !partnerId) {
-      console.error("❌ Invalid user or partner ID:", { currentUserId, partnerId });
-      return;
-    }
-
-    const chat = await chatService.findOrCreateChat(partnerId);
-    if (chat?.id) {
-      navigate(`/chat/${chat.id}`);
-    } else {
-      toast({
-        title: "Chat Error",
-        description: "Could not start a chat. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (userId) {
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-          if (error) throw error;
-          if (!data) throw new Error('User not found');
-
-          setUserprofile(data);
-        }
-      } catch (err: any) {
-        setErrorprofile(err.message);
-      } finally {
-        setLoadingprofile(false);
-      }
-    };
-
-    fetchUser();
-  }, [userId]);
-
-  if (userId && loadingprofile) {
-    return <div className="p-8 text-center">Loading profile...</div>;
-  }
-
-  if (userId && (errorprofile || !userprofile)) {
-    return (
-      <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
-        <p className="mb-4 text-muted-foreground">This user profile does not exist or has been removed.</p>
-        <Button onClick={() => navigate('/community/list')}>
-          Return to Community List
-        </Button>
-      </div>
-    );
-  }
-
+  const [error, setError] = useState<Error | null>(null);
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
+  const toast = useToast(); 
 
   useEffect(() => {
     async function fetchUsers() {
@@ -273,6 +187,73 @@ const Community = () => {
         (filters.ageRange === "36+" && age && age >= 36))
     );
   });
+
+  const handleChatClick = async (partnerId: string) => {
+    const { data: session } = await supabase.auth.getSession();
+    const currentUserId = session?.session?.user?.id;
+
+    if (!currentUserId || !partnerId) {
+      console.error("❌ Invalid user or partner ID:", { currentUserId, partnerId });
+      return;
+    }
+
+    const chat = await chatService.findOrCreateChat(partnerId);
+    if (chat?.id) {
+      navigate(`/chat/${chat.id}`);
+    } else {
+      toast({
+        title: "Chat Error",
+        description: "Could not start a chat. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const [userprofile, setUserprofile] = useState<UserData | null>(null);
+  const [loadingprofile, setLoadingprofile] = useState(true);
+  const [errorprofile, setErrorprofile] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (userId) {
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          if (error) throw error;
+          if (!data) throw new Error('User not found');
+
+          setUserprofile(data);
+        }
+      } catch (err: any) {
+        setErrorprofile(err.message);
+      } finally {
+        setLoadingprofile(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  if (userId && loadingprofile) {
+    return <div className="p-8 text-center">Loading profile...</div>;
+  }
+
+  if (userId && (errorprofile || !userprofile)) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
+        <p className="mb-4 text-muted-foreground">This user profile does not exist or has been removed.</p>
+        <Button onClick={() => navigate('/community/list')}>
+          Return to Community List
+        </Button>
+      </div>
+    );
+  }
+
 
   return (
     <div className="py-8 max-w-6xl mx-auto px-4">
