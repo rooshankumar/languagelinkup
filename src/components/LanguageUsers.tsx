@@ -154,7 +154,7 @@ const LanguageUsers = () => {
               <UserProfileCard 
                 user={{
                   ...user,
-                  avatar: user.profile_picture
+                  avatar: user.avatar_url
                 }} 
                 compact={true} 
                 onClick={() => {}} 

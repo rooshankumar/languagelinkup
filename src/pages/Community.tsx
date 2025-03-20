@@ -44,7 +44,7 @@ const mapDatabaseUserToUIUser = (user: UserData) => {
   return {
     id: user.id,
     name: user.username || "Unknown User",
-    avatar: user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
+    avatar: user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "User")}&background=random`,
     bio: user.bio || "No bio available.",
     nativeLanguage: user.native_language || "Unknown",
     learningLanguages: [{ 
