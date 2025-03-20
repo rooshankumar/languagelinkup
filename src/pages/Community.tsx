@@ -98,7 +98,7 @@ const Community = () => {
       // Get total likes
       const { count } = await supabase
         .from('user_likes')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('liked_user_id', userId);
 
       setLikesCount(count || 0);
@@ -110,7 +110,7 @@ const Community = () => {
           .select('*')
           .eq('user_id', currentUserId)
           .eq('liked_user_id', userId)
-          .single();
+          .maybeSingle();
 
         setHasLiked(!!data);
       }
@@ -118,6 +118,47 @@ const Community = () => {
 
     fetchLikes();
   }, [userId]);
+
+  const handleLike = async () => {
+    try {
+      setLoadingLike(true);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id || !userId) return;
+
+      // Don't allow self-likes
+      if (session.session.user.id === userId) {
+        toast({
+          title: "Cannot like own profile",
+          description: "You cannot like your own profile",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!hasLiked) {
+        const { error } = await supabase
+          .from('user_likes')
+          .insert([
+            { user_id: session.session.user.id, liked_user_id: userId }
+          ])
+          .select();
+
+        if (error) throw error;
+        
+        setHasLiked(true);
+        setLikesCount(prev => prev + 1);
+      }
+    } catch (error: any) {
+      console.error('Error liking profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to like profile. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingLike(false);
+    }
+  };
   const [error, setError] = useState<Error | null>(null);
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
