@@ -69,6 +69,9 @@ const Community = () => {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
   const toast = useToast();
+  const [userprofile, setUserprofile] = useState<UserData | null>(null);
+  const [loadingprofile, setLoadingprofile] = useState(true);
+  const [errorprofile, setErrorprofile] = useState<string | null>(null);
 
   const handleLike = async () => {
     try {
@@ -163,9 +166,6 @@ const Community = () => {
     }
   };
 
-  const [userprofile, setUserprofile] = useState<UserData | null>(null);
-  const [loadingprofile, setLoadingprofile] = useState(true);
-  const [errorprofile, setErrorprofile] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
