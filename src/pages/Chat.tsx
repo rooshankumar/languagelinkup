@@ -204,8 +204,13 @@ export default function Chat() {
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center">
           <Avatar>
-            <AvatarImage src={chatDetails.partner.avatar_url} />
-            <AvatarFallback>{chatDetails.partner.username[0]}</AvatarFallback>
+            <AvatarImage 
+              src={chatDetails.partner.profile_picture 
+                ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${chatDetails.partner.profile_picture}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(chatDetails.partner.username || "User")}&background=random&size=100`
+              } 
+            />
+            <AvatarFallback>{chatDetails.partner.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
           </Avatar>
           <div className="ml-4">
             <h2 className="font-semibold">{chatDetails.partner.username}</h2>
