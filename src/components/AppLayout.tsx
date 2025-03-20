@@ -2,6 +2,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import MobileNavbar from './MobileNavbar';
+import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 const AppLayout = () => {
