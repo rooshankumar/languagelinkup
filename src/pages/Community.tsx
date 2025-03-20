@@ -62,6 +62,62 @@ const Community = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [likesCount, setLikesCount] = useState(0);
+  const [hasLiked, setHasLiked] = useState(false);
+  const [loadingLike, setLoadingLike] = useState(false);
+
+  const handleLike = async () => {
+    try {
+      setLoadingLike(true);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id || !userId) return;
+
+      const { error } = await supabase
+        .from('user_likes')
+        .insert([
+          { user_id: session.session.user.id, liked_user_id: userId }
+        ]);
+
+      if (error) throw error;
+      setHasLiked(true);
+      setLikesCount(prev => prev + 1);
+    } catch (error) {
+      console.error('Error liking profile:', error);
+    } finally {
+      setLoadingLike(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchLikes = async () => {
+      if (!userId) return;
+      
+      const { data: session } = await supabase.auth.getSession();
+      const currentUserId = session?.session?.user?.id;
+
+      // Get total likes
+      const { count } = await supabase
+        .from('user_likes')
+        .select('*', { count: 'exact' })
+        .eq('liked_user_id', userId);
+
+      setLikesCount(count || 0);
+
+      // Check if current user has liked
+      if (currentUserId) {
+        const { data } = await supabase
+          .from('user_likes')
+          .select('*')
+          .eq('user_id', currentUserId)
+          .eq('liked_user_id', userId)
+          .single();
+
+        setHasLiked(!!data);
+      }
+    };
+
+    fetchLikes();
+  }, [userId]);
   const [error, setError] = useState<Error | null>(null);
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({ ageRange: "", onlineOnly: false });
@@ -212,13 +268,34 @@ const Community = () => {
           </Button>
 
           <div className="profile-container">
-            <img 
-              src={userprofile?.profile_picture || userprofile?.avatar_url || "/placeholder.svg"} 
-              alt="Profile Avatar" 
-              className="profile-avatar"
-            />
+            <picture>
+              <source
+                srcSet={userprofile?.profile_picture || userprofile?.avatar_url}
+                type="image/webp"
+              />
+              <img 
+                src={userprofile?.profile_picture || userprofile?.avatar_url || "/placeholder.svg"} 
+                alt="Profile Avatar" 
+                className="profile-avatar"
+                loading="eager"
+              />
+            </picture>
             <h2 className="text-2xl font-bold mt-4">{userprofile?.username}</h2>
             <p className="text-muted-foreground mt-2">{userprofile?.bio}</p>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <span className="text-sm text-muted-foreground">
+                {likesCount} {likesCount === 1 ? 'like' : 'likes'}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLike}
+                disabled={hasLiked || loadingLike}
+                className="gap-2"
+              >
+                {hasLiked ? "❤️ Liked" : "🤍 Like"}
+              </Button>
+            </div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="text-center">
                 <p className="font-semibold">Native Language</p>
