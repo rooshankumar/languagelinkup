@@ -10,15 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { chatService } from '@/services/chatService';
 import { supabase } from '@/lib/supabaseClient';
-import { Loader2, Image as ImageIcon, Smile, Send, Settings, ArrowLeft } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Smile, Send, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
-
-// Simple mobile detection hook - replace with a more robust solution if needed
-const useIsMobile = () => {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  return isMobile;
-};
 
 interface Message {
   id: string;
@@ -47,7 +41,6 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const userId = user?.id;
-  const isMobile = useIsMobile();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -208,15 +201,6 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto relative bg-background">
-      {isMobile && (
-        <button
-          onClick={() => navigate('/chats')}
-          className="flex items-center gap-2 p-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Back to Chats
-        </button>
-      )}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center">
           <Avatar>
