@@ -21,8 +21,30 @@ const ResetPassword = () => {
         description: "Invalid or expired reset link",
         variant: "destructive"
       });
-      navigate('/auth-error');
+      navigate('/auth');
+      return;
     }
+    
+    // Verify token validity
+    const verifyToken = async () => {
+      try {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: 'recovery'
+        });
+        
+        if (error) throw error;
+      } catch (error: any) {
+        toast({ 
+          title: "Error", 
+          description: "Invalid or expired reset link",
+          variant: "destructive"
+        });
+        navigate('/auth');
+      }
+    };
+    
+    verifyToken();
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
