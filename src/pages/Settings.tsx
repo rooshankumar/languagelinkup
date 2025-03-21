@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 
+import { useNavigate } from 'react-router-dom';
+
 const Settings = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
