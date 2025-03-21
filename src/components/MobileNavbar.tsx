@@ -1,9 +1,7 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MessageCircle, Globe, Settings, LogOut } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { supabase } from '@/lib/supabaseClient';
-import { toast } from '@/hooks/use-toast';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { MessageCircle, Globe, Settings, LogOut, Languages, Book, Users, User } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { toast } from '@/components/ui/use-toast';
 
 const MobileNavbar = () => {
   const location = useLocation();
@@ -11,71 +9,56 @@ const MobileNavbar = () => {
 
   const navItems = [
     {
+      label: 'Learn',
+      icon: Book,
+      href: '/learn',
+    },
+    {
       label: 'Messages',
       icon: MessageCircle,
       href: '/chats',
     },
     {
       label: 'Community',
-      icon: Globe,
+      icon: Users,
       href: '/community',
     },
     {
-      label: 'Settings',
-      icon: Settings,
-      href: '/settings',
+      label: 'Resources',
+      icon: Globe,
+      href: '/resources',
     },
     {
-      label: 'Logout',
-      icon: LogOut,
-      onClick: async () => {
-        try {
-          await supabase.auth.signOut();
-          toast({ title: 'Logged out successfully!' });
-          navigate('/login');
-        } catch (error) {
-          console.error('Error logging out:', error);
-          toast({ title: 'Error logging out', error });
-        }
-      },
+      label: 'Profile',
+      icon: User,
+      href: '/profile',
     },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">
-      <nav className="flex items-center justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">
+      <div className="grid grid-cols-5 h-16">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href ||
             (item.href !== '/' && location.pathname.startsWith(item.href));
 
+          const Icon = item.icon;
+
           return (
-            <div key={item.label} className="flex flex-col items-center justify-center w-full h-full transition-colors">
-              {item.href ? (
-                <Link
-                  to={item.href}
-                  className={cn(
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-xs mt-1">{item.label}</span>
-                </Link>
-              ) : (
-                <button
-                  onClick={item.onClick}
-                  className={cn(
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-xs mt-1">{item.label}</span>
-                </button>
-              )}
-            </div>
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`flex flex-col items-center justify-center space-y-1 ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-xs">{item.label}</span>
+            </Link>
           );
         })}
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 };
 
