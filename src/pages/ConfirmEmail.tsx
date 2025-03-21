@@ -1,22 +1,27 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
 const ConfirmEmail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const token = searchParams.get('token');
   const [oldEmail, setOldEmail] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const token = searchParams.get('token');
 
   useEffect(() => {
     if (!token) {
-      toast({ title: "Error", description: "Invalid email confirmation link" });
-      navigate('/auth');
+      toast({ 
+        title: "Error", 
+        description: "Invalid email confirmation link",
+        variant: "destructive"
+      });
+      navigate('/auth-error');
       return;
     }
     verifyToken();
@@ -24,26 +29,54 @@ const ConfirmEmail = () => {
 
   const verifyToken = async () => {
     try {
+      setIsLoading(true);
       const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) throw error;
-      setOldEmail(user.email || '');
+      if (error) throw error;
+
+      setOldEmail(user?.email || '');
       setNewEmail(searchParams.get('new_email') || '');
     } catch (error: any) {
-      toast({ title: "Error", description: error.message });
-      navigate('/auth');
+      toast({ 
+        title: "Error", 
+        description: error.message,
+        variant: "destructive"
+      });
+      navigate('/auth-error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleConfirm = async () => {
     try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'email_change'
+      });
+
       if (error) throw error;
-      toast({ title: "Success", description: "Email updated successfully" });
+
+      toast({ 
+        title: "Success", 
+        description: "Email updated successfully" 
+      });
       setTimeout(() => navigate('/dashboard'), 3000);
     } catch (error: any) {
-      toast({ title: "Error", description: error.message });
+      toast({ 
+        title: "Error", 
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-md mx-auto mt-16 p-6">
+        <p>Verifying email confirmation...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-md mx-auto mt-16 p-6">
