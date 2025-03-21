@@ -69,7 +69,8 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/MagicLink" element={<MagicLink />} />
-                <Route path="/ResetPassword" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/ResetPassword" element={<Navigate to="/reset-password" replace />} />
                 <Route path="/ConfirmEmail" element={<ConfirmEmail />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/blog" element={<Blog />} />

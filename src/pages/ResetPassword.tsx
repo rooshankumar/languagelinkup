@@ -27,12 +27,17 @@ const ResetPassword = () => {
     
     const verifyToken = async () => {
       try {
-        const { data, error } = await supabase.auth.verifyOtp({
-          token: token,
-          type: 'recovery'
-        });
+        // First verify if session exists
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (error) throw error;
+        if (!session) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token: token,
+            type: 'recovery'
+          });
+          
+          if (error) throw error;
+        }
       } catch (error: any) {
         console.error('Reset password error:', error);
         toast({ 
