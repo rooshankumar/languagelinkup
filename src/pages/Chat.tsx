@@ -211,7 +211,7 @@ export default function Chat() {
             <AvatarImage 
               src={chatDetails.partner.profile_picture 
                 ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${chatDetails.partner.profile_picture}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(chatDetails.partner.username)}&size=128`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(chatDetails.partner.username || "User")}&background=random`
               } 
             />
             <AvatarFallback>{chatDetails.partner.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
