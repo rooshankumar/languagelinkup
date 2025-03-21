@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 const Settings = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [notifications, setNotifications] = useState({
@@ -20,6 +21,25 @@ const Settings = () => {
     dailyReminders: true,
     spacedRepetition: true
   });
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
+      navigate('/auth');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
   const [privacy, setPrivacy] = useState({
     messagePermission: 'everyone',
     profileVisibility: 'public',
@@ -58,7 +78,13 @@ const Settings = () => {
 
   return (
     <div className="container mx-auto py-6 space-y-8">
-      <h1 className="text-3xl font-bold">Settings</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <Button variant="destructive" onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </div>
 
       <Tabs defaultValue="account" className="w-full">
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
