@@ -66,19 +66,22 @@ const App = () => {
               <Sonner />
               <PageTracker />
               <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/MagicLink" element={<MagicLink />} />
+                <Route path="/magic-link" element={<MagicLink />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/ResetPassword" element={<Navigate to="/reset-password" replace />} />
-                <Route path="/ConfirmEmail" element={<ConfirmEmail />} />
+                <Route path="/confirm-email" element={<ConfirmEmail />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<Blog />} />
                 <Route path="/legal/:page" element={<Legal />} />
 
+                {/* Protected routes with AppLayout */}
                 <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/learn" element={<Dashboard />} />
+                  <Route path="/resources" element={<Dashboard />} />
                   <Route path="/chats" element={<ChatList />} />
                   <Route path="/chat/:id" element={<Chat />} />
                   <Route path="/community" element={<Navigate to="/community/list" replace />} />
@@ -88,7 +91,13 @@ const App = () => {
                   <Route path="/settings" element={<Settings />} />
                 </Route>
 
+                {/* Redirects for old/alternative routes */}
                 <Route path="/messages" element={<Navigate to="/chats" replace />} />
+                <Route path="/MagicLink" element={<Navigate to="/magic-link" replace />} />
+                <Route path="/ResetPassword" element={<Navigate to="/reset-password" replace />} />
+                <Route path="/ConfirmEmail" element={<Navigate to="/confirm-email" replace />} />
+
+                {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <HideMobileNavInChat />

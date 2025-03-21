@@ -30,6 +30,31 @@
 @layer base {
   :root {
 
+/* Global responsive styles */
+.responsive-container {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.responsive-grid {
+  @apply grid gap-4 sm:gap-6 md:gap-8;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.responsive-card {
+  @apply rounded-lg border bg-card p-4 sm:p-6;
+}
+
+/* Consistent spacing for all pages */
+.page-padding {
+  @apply p-4 sm:p-6 md:p-8;
+}
+
+/* Fix mobile bottom padding for content */
+.mobile-pb {
+  @apply pb-20 md:pb-0;
+}
+
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .container {
