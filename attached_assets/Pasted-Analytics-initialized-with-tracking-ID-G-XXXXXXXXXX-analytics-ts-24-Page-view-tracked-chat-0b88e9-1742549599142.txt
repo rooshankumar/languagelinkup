@@ -1,0 +1,145 @@
+Analytics initialized with tracking ID: G-XXXXXXXXXX
+analytics.ts:24 Page view tracked: /chat/0b88e93f-58f0-4a89-93a8-8973aecfea17
+Chat.tsx:87 Uncaught (in promise) tried to subscribe multiple times. 'subscribe' can only be called a single time per channel instance
+setupSubscription @ Chat.tsx:87
+(anonymous) @ Chat.tsx:109
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=112b7c84:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=112b7c84:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=112b7c84:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=112b7c84:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=112b7c84:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=112b7c84:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=112b7c84:19447
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=112b7c84:18868
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=112b7c84:9119
+commitRootImpl @ chunk-W6L2VRDA.js?v=112b7c84:19432
+commitRoot @ chunk-W6L2VRDA.js?v=112b7c84:19277
+finishConcurrentRender @ chunk-W6L2VRDA.js?v=112b7c84:18805
+performConcurrentWorkOnRoot @ chunk-W6L2VRDA.js?v=112b7c84:18718
+workLoop @ chunk-W6L2VRDA.js?v=112b7c84:197
+flushWork @ chunk-W6L2VRDA.js?v=112b7c84:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=112b7c84:384Understand this errorAI
+Chat.tsx:87 Uncaught (in promise) tried to subscribe multiple times. 'subscribe' can only be called a single time per channel instance
+setupSubscription @ Chat.tsx:87
+(anonymous) @ Chat.tsx:109
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=112b7c84:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=112b7c84:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=112b7c84:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=112b7c84:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=112b7c84:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=112b7c84:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=112b7c84:19447
+(anonymous) @ chunk-W6L2VRDA.js?v=112b7c84:19328
+workLoop @ chunk-W6L2VRDA.js?v=112b7c84:197
+flushWork @ chunk-W6L2VRDA.js?v=112b7c84:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=112b7c84:384Understand this errorAI
+Settings.tsx:86 Uncaught ReferenceError: LogOut is not defined
+    at Settings (Settings.tsx:86:12)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=112b7c84:11548:26)
+    at mountIndeterminateComponent (chunk-W6L2VRDA.js?v=112b7c84:14926:21)
+    at beginWork (chunk-W6L2VRDA.js?v=112b7c84:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-W6L2VRDA.js?v=112b7c84:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-W6L2VRDA.js?v=112b7c84:3699:24)
+    at invokeGuardedCallback (chunk-W6L2VRDA.js?v=112b7c84:3733:39)
+    at beginWork$1 (chunk-W6L2VRDA.js?v=112b7c84:19765:15)
+    at performUnitOfWork (chunk-W6L2VRDA.js?v=112b7c84:19198:20)
+    at workLoopSync (chunk-W6L2VRDA.js?v=112b7c84:19137:13)
+Settings @ Settings.tsx:86
+renderWithHooks @ chunk-W6L2VRDA.js?v=112b7c84:11548
+mountIndeterminateComponent @ chunk-W6L2VRDA.js?v=112b7c84:14926
+beginWork @ chunk-W6L2VRDA.js?v=112b7c84:15914
+callCallback2 @ chunk-W6L2VRDA.js?v=112b7c84:3674
+invokeGuardedCallbackDev @ chunk-W6L2VRDA.js?v=112b7c84:3699
+invokeGuardedCallback @ chunk-W6L2VRDA.js?v=112b7c84:3733
+beginWork$1 @ chunk-W6L2VRDA.js?v=112b7c84:19765
+performUnitOfWork @ chunk-W6L2VRDA.js?v=112b7c84:19198
+workLoopSync @ chunk-W6L2VRDA.js?v=112b7c84:19137
+renderRootSync @ chunk-W6L2VRDA.js?v=112b7c84:19116
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=112b7c84:18874
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=112b7c84:9119
+(anonymous) @ chunk-W6L2VRDA.js?v=112b7c84:18627Understand this errorAI
+Settings.tsx:86 Uncaught ReferenceError: LogOut is not defined
+    at Settings (Settings.tsx:86:12)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=112b7c84:11548:26)
+    at mountIndeterminateComponent (chunk-W6L2VRDA.js?v=112b7c84:14926:21)
+    at beginWork (chunk-W6L2VRDA.js?v=112b7c84:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-W6L2VRDA.js?v=112b7c84:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-W6L2VRDA.js?v=112b7c84:3699:24)
+    at invokeGuardedCallback (chunk-W6L2VRDA.js?v=112b7c84:3733:39)
+    at beginWork$1 (chunk-W6L2VRDA.js?v=112b7c84:19765:15)
+    at performUnitOfWork (chunk-W6L2VRDA.js?v=112b7c84:19198:20)
+    at workLoopSync (chunk-W6L2VRDA.js?v=112b7c84:19137:13)
+Settings @ Settings.tsx:86
+renderWithHooks @ chunk-W6L2VRDA.js?v=112b7c84:11548
+mountIndeterminateComponent @ chunk-W6L2VRDA.js?v=112b7c84:14926
+beginWork @ chunk-W6L2VRDA.js?v=112b7c84:15914
+callCallback2 @ chunk-W6L2VRDA.js?v=112b7c84:3674
+invokeGuardedCallbackDev @ chunk-W6L2VRDA.js?v=112b7c84:3699
+invokeGuardedCallback @ chunk-W6L2VRDA.js?v=112b7c84:3733
+beginWork$1 @ chunk-W6L2VRDA.js?v=112b7c84:19765
+performUnitOfWork @ chunk-W6L2VRDA.js?v=112b7c84:19198
+workLoopSync @ chunk-W6L2VRDA.js?v=112b7c84:19137
+renderRootSync @ chunk-W6L2VRDA.js?v=112b7c84:19116
+recoverFromConcurrentError @ chunk-W6L2VRDA.js?v=112b7c84:18736
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=112b7c84:18879
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=112b7c84:9119
+(anonymous) @ chunk-W6L2VRDA.js?v=112b7c84:18627Understand this errorAI
+chunk-W6L2VRDA.js?v=112b7c84:14032 The above error occurred in the <Settings> component:
+
+    at Settings (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/src/pages/Settings.tsx?t=1742549551403:23:23)
+    at RenderedRoute (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/react-router-dom.js?v=902c8848:4069:5)
+    at Outlet (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/react-router-dom.js?v=902c8848:4444:26)
+    at div
+    at main
+    at div
+    at AppLayout
+    at ProtectedRoute (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/src/App.tsx?t=1742549551403:156:27)
+    at RenderedRoute (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/react-router-dom.js?v=902c8848:4069:5)
+    at Routes (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/react-router-dom.js?v=902c8848:4508:5)
+    at Provider (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/chunk-OFAXGNVV.js?v=112b7c84:22:15)
+    at TooltipProvider (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=8211aa24:59:5)
+    at ThemeProvider (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/src/contexts/ThemeContext.tsx:21:33)
+    at AuthProvider (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/src/contexts/AuthContext.tsx:15:32)
+    at QueryClientProvider (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/@tanstack_react-query.js?v=52e30712:2794:3)
+    at Router (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/react-router-dom.js?v=902c8848:4451:15)
+    at BrowserRouter (https://5ba576cf-a4ae-4be6-bc6c-f2d912c2d708-00-2zznqlgdu7zep.sisko.repl.co:3001/node_modules/.vite/deps/react-router-dom.js?v=902c8848:5196:5)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-W6L2VRDA.js?v=112b7c84:14032
+update.callback @ chunk-W6L2VRDA.js?v=112b7c84:14052
+callCallback @ chunk-W6L2VRDA.js?v=112b7c84:11248
+commitUpdateQueue @ chunk-W6L2VRDA.js?v=112b7c84:11265
+commitLayoutEffectOnFiber @ chunk-W6L2VRDA.js?v=112b7c84:17093
+commitLayoutMountEffects_complete @ chunk-W6L2VRDA.js?v=112b7c84:17980
+commitLayoutEffects_begin @ chunk-W6L2VRDA.js?v=112b7c84:17969
+commitLayoutEffects @ chunk-W6L2VRDA.js?v=112b7c84:17920
+commitRootImpl @ chunk-W6L2VRDA.js?v=112b7c84:19353
+commitRoot @ chunk-W6L2VRDA.js?v=112b7c84:19277
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=112b7c84:18895
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=112b7c84:9119
+(anonymous) @ chunk-W6L2VRDA.js?v=112b7c84:18627Understand this errorAI
+chunk-W6L2VRDA.js?v=112b7c84:9129 Uncaught ReferenceError: LogOut is not defined
+    at Settings (Settings.tsx:86:12)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=112b7c84:11548:26)
+    at mountIndeterminateComponent (chunk-W6L2VRDA.js?v=112b7c84:14926:21)
+    at beginWork (chunk-W6L2VRDA.js?v=112b7c84:15914:22)
+    at beginWork$1 (chunk-W6L2VRDA.js?v=112b7c84:19753:22)
+    at performUnitOfWork (chunk-W6L2VRDA.js?v=112b7c84:19198:20)
+    at workLoopSync (chunk-W6L2VRDA.js?v=112b7c84:19137:13)
+    at renderRootSync (chunk-W6L2VRDA.js?v=112b7c84:19116:15)
+    at recoverFromConcurrentError (chunk-W6L2VRDA.js?v=112b7c84:18736:28)
+    at performSyncWorkOnRoot (chunk-W6L2VRDA.js?v=112b7c84:18879:28)
+Settings @ Settings.tsx:86
+renderWithHooks @ chunk-W6L2VRDA.js?v=112b7c84:11548
+mountIndeterminateComponent @ chunk-W6L2VRDA.js?v=112b7c84:14926
+beginWork @ chunk-W6L2VRDA.js?v=112b7c84:15914
+beginWork$1 @ chunk-W6L2VRDA.js?v=112b7c84:19753
+performUnitOfWork @ chunk-W6L2VRDA.js?v=112b7c84:19198
+workLoopSync @ chunk-W6L2VRDA.js?v=112b7c84:19137
+renderRootSync @ chunk-W6L2VRDA.js?v=112b7c84:19116
+recoverFromConcurrentError @ chunk-W6L2VRDA.js?v=112b7c84:18736
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=112b7c84:18879
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=112b7c84:9119
+(anonymous) @ chunk-W6L2VRDA.js?v=112b7c84:18627Understand this errorAI
