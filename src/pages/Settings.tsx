@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
+import { LogOut } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
 
