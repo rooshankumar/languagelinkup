@@ -72,14 +72,8 @@ const CommunityList = () => {
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/community')}
-              className="p-2"
-            >
-              ← Back
-            </Button>
-            <h1 className="text-2xl font-bold">Language Partners</h1>
+            
+            <h1 className="text-2xl font-bold">Our Community</h1>
           </div>
           <div className="relative w-64">
             <Input
