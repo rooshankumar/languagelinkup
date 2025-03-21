@@ -54,7 +54,7 @@ export default function Chat() {
       return;
     }
 
-    const setupSubscription = useCallback(async () => {
+    const setupSubscription = async () => {
       const channel = supabase.channel(`chat:${chatId}`);
       channel
         .on('postgres_changes', {
@@ -81,7 +81,7 @@ export default function Chat() {
       return () => {
         channel.unsubscribe();
       };
-    }, [chatId, user?.id]);
+    };
 
 
     const fetchInitialData = async () => {
@@ -104,9 +104,19 @@ export default function Chat() {
       }
     };
 
-    setupSubscription();
-    fetchInitialData();
-  }, [chatId, navigate, toast, user?.id, setupSubscription]);
+    let cleanup: (() => void) | undefined;
+    
+    const init = async () => {
+      cleanup = await setupSubscription();
+      await fetchInitialData();
+    };
+    
+    init();
+    
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [chatId, navigate, toast, user?.id]);
 
   const handleTyping = () => {
     if (!isTyping) {
