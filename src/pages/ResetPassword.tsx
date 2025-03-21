@@ -18,26 +18,26 @@ const ResetPassword = () => {
     if (!token) {
       toast({ 
         title: "Error", 
-        description: "Invalid or expired reset link",
+        description: "Invalid reset link - no token provided",
         variant: "destructive"
       });
       navigate('/auth');
       return;
     }
     
-    // Verify token validity
     const verifyToken = async () => {
       try {
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: token,
+        const { data, error } = await supabase.auth.verifyOtp({
+          token: token,
           type: 'recovery'
         });
         
         if (error) throw error;
       } catch (error: any) {
+        console.error('Reset password error:', error);
         toast({ 
           title: "Error", 
-          description: "Invalid or expired reset link",
+          description: "Invalid or expired reset link. Please request a new one.",
           variant: "destructive"
         });
         navigate('/auth');
@@ -45,7 +45,7 @@ const ResetPassword = () => {
     };
     
     verifyToken();
-  }, [token]);
+  }, [token, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
