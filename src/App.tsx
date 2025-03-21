@@ -22,6 +22,9 @@ import Onboarding from "./pages/Onboarding";
 import Legal from "./pages/Legal";
 import AppLayout from "./components/AppLayout";
 import { initializeAnalytics, trackPageView } from "./utils/analytics";
+import ResetPassword from "./pages/ResetPassword"; // Importing ResetPassword component
+import ConfirmEmail from "./pages/ConfirmEmail"; // Importing ConfirmEmail component
+import MagicLink from "./pages/MagicLink"; // Importing MagicLink component
 
 initializeAnalytics("G-XXXXXXXXXX");
 
@@ -65,6 +68,9 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/confirm-email" element={<ConfirmEmail />} />
+                <Route path="/magic-login" element={<MagicLink />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<Blog />} />
