@@ -9,9 +9,9 @@ const MobileNavbar = () => {
 
   const navItems = [
     {
-      label: 'Learn',
-      icon: Book,
-      href: '/learn',
+      label: 'Dashboard',
+      icon: Languages,
+      href: '/dashboard',
     },
     {
       label: 'Messages',
@@ -24,16 +24,33 @@ const MobileNavbar = () => {
       href: '/community',
     },
     {
-      label: 'Resources',
-      icon: Globe,
-      href: '/resources',
-    },
-    {
       label: 'Profile',
       icon: User,
       href: '/profile',
     },
+    {
+      label: 'Settings',
+      icon: Settings,
+      href: '/settings',
+    },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
+      navigate('/auth');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">

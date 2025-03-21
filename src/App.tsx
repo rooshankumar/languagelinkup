@@ -80,11 +80,16 @@ const App = () => {
                 {/* Protected routes with AppLayout */}
                 <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/learn" element={<Dashboard />} />
-                  <Route path="/resources" element={<Dashboard />} />
                   <Route path="/chats" element={<ChatList />} />
                   <Route path="/chat/:id" element={<Chat />} />
                   <Route path="/community" element={<Navigate to="/community/list" replace />} />
+                  <Route path="/community/list" element={<CommunityList />} />
+                  <Route path="/community/:userId" element={<Community />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  {/* Add redirects for old routes */}
+                  <Route path="/learn" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/resources" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/community/list" element={<CommunityList />} />
                   <Route path="/community/:userId" element={<Community />} />
                   <Route path="/profile" element={<Profile />} />
