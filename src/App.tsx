@@ -68,9 +68,9 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/confirm-email" element={<ConfirmEmail />} />
-                <Route path="/magic-login" element={<MagicLink />} />
+                <Route path="/MagicLink" element={<MagicLink />} />
+                <Route path="/ResetPassword" element={<ResetPassword />} />
+                <Route path="/ConfirmEmail" element={<ConfirmEmail />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<Blog />} />

@@ -7,7 +7,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading } = useAuth()
   const navigate = useNavigate()
 
-  const authPages = ['/magic-login', '/reset-password', '/confirm-email', '/auth-error'];
+  const authPages = ['/MagicLink', '/ResetPassword', '/ConfirmEmail', '/auth-error'];
   const currentPath = window.location.pathname;
 
   useEffect(() => {
