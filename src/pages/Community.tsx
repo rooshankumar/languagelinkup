@@ -99,7 +99,11 @@ const Community = () => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      toast.error("Failed to start chat. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Chat Error",
+        description: "Failed to start chat. Please try again."
+      });
     }
   };
 
