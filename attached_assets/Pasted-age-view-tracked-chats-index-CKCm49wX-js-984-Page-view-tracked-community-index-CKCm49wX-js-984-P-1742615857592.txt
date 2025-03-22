@@ -1,0 +1,130 @@
+age view tracked: /chats
+index-CKCm49wX.js:984 Page view tracked: /community
+index-CKCm49wX.js:984 Page view tracked: /community/list
+index-CKCm49wX.js:984 Page view tracked: /community/7d7417b1-30df-416f-a71b-9ab0f75dcaad
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%2Cuser2_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%29%2Cand%28user1_id.eq.7d7417b1-30df-416f-a71b-9ab0f75dcaad%2Cuser2_id.eq.2ff80b5d-bd64-4dfb-a575-01532b9e53e9%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id:1 
+            
+            
+           Failed to load resource: the server responded with a status of 409 ()Understand this errorAI
+index-CKCm49wX.js:233 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+findOrCreateChat @ index-CKCm49wX.js:233Understand this errorAI
+index-CKCm49wX.js:970 Chat error: Error: Failed to create new chat
+    at Object.findOrCreateChat (index-CKCm49wX.js:233:972)
+    at async k (index-CKCm49wX.js:970:4348)
+k @ index-CKCm49wX.js:970Understand this errorAI
+index-CKCm49wX.js:970 Uncaught (in promise) TypeError: w is not a function
+    at k (index-CKCm49wX.js:970:4507)Understand this errorAI
