@@ -16,7 +16,7 @@ const AuthPlaceholder = () => {
     // In a real implementation, this would connect to your authentication backend
     toast({
       title: isLogin ? "Logged in successfully" : "Account created",
-      description: "Welcome to MyLanguage app!",
+      description: "Welcome to roshLingua app!",
     });
     
     navigate('/dashboard');
