@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm Email Change</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center; margin-bottom: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #0EA5E9, #38BDF8); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; width: 200px; margin: 20px auto; display: block; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Confirm Email Change</h2>
+        <p>Click below to confirm changing your email from {{ .Email }} to {{ .NewEmail }}:</p>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change" class="button">Confirm Change</a>
+        <p class="footer">If you didn't request this change, please ignore this email.</p>
+    </div>
+</body>
+</html>

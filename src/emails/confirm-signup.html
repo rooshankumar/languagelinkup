@@ -3,21 +3,21 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to RoshLingua - Confirm Your Signup</title>
+    <title>Confirm Your Signup</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
-        h2 { color: #333; }
-        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #007bff, #00c3ff); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center; margin-bottom: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #4F46E5, #6366F1); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; width: 200px; margin: 20px auto; display: block; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Confirm Your Signup</h2>
-        <p>Thank you for signing up on <strong>RoshLingua</strong>! Click the button below to verify your email:</p>
-        <a href="https://roshlingua.vercel.app/ConfirmEmail?token={{ .Token }}" class="button">Confirm Email</a>
-        <p class="footer">If you didn't request this, please ignore this email.</p>
+        <h2>Confirm your signup</h2>
+        <p>Welcome! Please confirm your email address to get started:</p>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup" class="button">Confirm Email</a>
+        <p class="footer">If you didn't create an account, you can safely ignore this email.</p>
     </div>
 </body>
 </html>
