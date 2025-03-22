@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -12,48 +13,59 @@ export interface Database {
       users: {
         Row: {
           id: string
-          username: string | null
-          email: string | null
+          full_name: string | null
+          avatar_url: string | null
           native_language: string | null
           learning_language: string | null
-          proficiency: string | null
+          language_level: string | null
           bio: string | null
-          location: string | null
-          avatar_url: string | null
           created_at: string
-          updated_at: string | null
-          is_online: boolean
-          last_active: string | null
+          updated_at: string
         }
         Insert: {
-          id?: string
-          username?: string | null
-          email?: string | null
+          id: string
+          full_name?: string | null
+          avatar_url?: string | null
           native_language?: string | null
           learning_language?: string | null
-          proficiency?: string | null
+          language_level?: string | null
           bio?: string | null
-          location?: string | null
-          avatar_url?: string | null
           created_at?: string
-          updated_at?: string | null
-          is_online?: boolean
-          last_active?: string | null
+          updated_at?: string
         }
         Update: {
           id?: string
-          username?: string | null
-          email?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
           native_language?: string | null
           learning_language?: string | null
-          proficiency?: string | null
+          language_level?: string | null
           bio?: string | null
-          location?: string | null
-          avatar_url?: string | null
           created_at?: string
-          updated_at?: string | null
-          is_online?: boolean
-          last_active?: string | null
+          updated_at?: string
+        }
+      }
+      chats: {
+        Row: {
+          id: string
+          created_at: string
+          user1_id: string
+          user2_id: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user1_id: string
+          user2_id: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user1_id?: string
+          user2_id?: string
+          updated_at?: string
         }
       }
       chat_messages: {
@@ -85,47 +97,24 @@ export interface Database {
           attachment_url?: string | null
         }
       }
-      chats: {
+      likes: {
         Row: {
           id: string
-          user1_id: string
-          user2_id: string
+          user_id: string
+          target_user_id: string
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
-          user1_id: string
-          user2_id: string
+          user_id: string
+          target_user_id: string
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          user1_id?: string
-          user2_id?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      message_receipts: {
-        Row: {
-          id: string
-          message_id: string
-          user_id: string
-          seen_at: string | null
-        }
-        Insert: {
-          id?: string
-          message_id: string
-          user_id: string
-          seen_at?: string | null
-        }
-        Update: {
-          id?: string
-          message_id?: string
           user_id?: string
-          seen_at?: string | null
+          target_user_id?: string
+          created_at?: string
         }
       }
     }
