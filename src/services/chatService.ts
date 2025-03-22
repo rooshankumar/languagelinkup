@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import type { Chat, ChatMessage } from '@/types/chat';
 import { Message, ContentType } from '@/types/supabase';
 import { toast } from '@/hooks/use-toast';
@@ -9,7 +9,75 @@ export interface SendMessageOptions {
   attachment_url?: string;
 }
 
-export const chatService = {
+const chatService = {
+  async createChat(user1Id: string, user2Id: string) {
+    try {
+      const { data: newChat, error: createError } = await supabase
+        .from('chats')
+        .insert([
+          { user1_id: user1Id, user2_id: user2Id }
+        ])
+        .select('id')
+        .single();
+
+      if (createError) {
+        throw createError;
+      }
+
+      return newChat;
+    } catch (error) {
+      console.error('Create chat error:', error);
+      return null;
+    }
+  },
+
+  async findExistingChat(user1Id: string, user2Id: string) {
+    try {
+      const { data: existingChat, error } = await supabase
+        .from('chats')
+        .select('id')
+        .or(`user1_id.eq.${user1Id},user2_id.eq.${user1Id}`)
+        .or(`user1_id.eq.${user2Id},user2_id.eq.${user2Id}`)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      return existingChat;
+    } catch (error) {
+      console.error('Find chat error:', error);
+      return null;
+    }
+  },
+
+  async findOrCreateChat(user1Id: string, user2Id: string): Promise<{id: string} | null> {
+    try {
+      if (!user1Id || !user2Id) {
+        throw new Error('Both users are required');
+      }
+
+      const existingChat = await this.findExistingChat(user1Id, user2Id);
+      if (existingChat) {
+        return existingChat;
+      }
+
+      const newChat = await this.createChat(user1Id, user2Id);
+      if (!newChat) {
+        throw new Error('Failed to create chat');
+      }
+
+      return newChat;
+    } catch (error) {
+      console.error('Chat service error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create chat",
+        variant: "destructive",
+      });
+      return null;
+    }
+  },
   async sendMessage(chatId: string, content: string, type: 'text' | 'voice' | 'attachment' = 'text', attachmentUrl?: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
@@ -76,55 +144,6 @@ export const chatService = {
       throw error;
     }
   },
-
-  async findOrCreateChat(user1Id: string | undefined, user2Id: string | undefined): Promise<{id: string}> {
-    try {
-      if (!user1Id || !user2Id) {
-        throw new Error('Both user IDs are required to create or find a chat');
-      }
-
-      // First try to find existing chat
-      const { data: existingChat, error: findError } = await supabase
-        .from('chats')
-        .select('id')
-        .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
-        .single();
-
-      if (findError && findError.code !== 'PGRST116') {
-        throw new Error(`Error finding chat: ${findError.message}`);
-      }
-
-      if (existingChat) {
-        return existingChat;
-      }
-
-      // Create new chat if none exists
-      const { data: newChat, error: createError } = await supabase
-        .from('chats')
-        .insert({
-          user1_id: user1Id,
-          user2_id: user2Id,
-          created_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
-
-      if (createError) {
-        throw new Error(`Error creating chat: ${createError.message}`);
-      }
-
-      return newChat;
-    } catch (error) {
-      console.error('Chat service error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create or find chat. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  },
-
   async getChat(chatId: string) {
     const { data, error } = await supabase
       .from('chats')
@@ -201,3 +220,5 @@ export const chatService = {
     return data;
   }
 };
+
+export default chatService;

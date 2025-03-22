@@ -92,7 +92,7 @@ const Community = () => {
 
       const chat = await chatService.findOrCreateChat(user.id, partnerId);
       if (!chat?.id) {
-        throw new Error("Failed to create chat");
+        throw new Error("Could not create chat");
       }
 
       navigate(`/chat/${chat.id}`);
