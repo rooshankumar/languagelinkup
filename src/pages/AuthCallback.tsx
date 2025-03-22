@@ -11,7 +11,7 @@ const AuthCallback = () => {
       const { data: session } = await supabase.auth.getSession();
 
       if (!session || !session.session) {
-        navigate("/");
+        navigate("/auth");
         return;
       }
 
