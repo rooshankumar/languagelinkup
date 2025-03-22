@@ -221,4 +221,4 @@ const chatService = {
   }
 };
 
-export default chatService;
+export { chatService };
