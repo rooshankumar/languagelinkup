@@ -92,17 +92,17 @@ const Community = () => {
 
       const chat = await chatService.findOrCreateChat(user.id, partnerId);
 
-      if (chat?.id) {
-        navigate(`/chat/${chat.id}`);
-      } else {
+      if (!chat) {
         throw new Error("Could not create or find chat");
       }
+
+      navigate(`/chat/${chat.id}`);
     } catch (error) {
       console.error("Chat error:", error);
       toast({
+        title: "Error",
+        description: "Could not start chat. Please try again.",
         variant: "destructive",
-        title: "Chat Error",
-        description: "Failed to start chat. Please try again."
       });
     }
   };

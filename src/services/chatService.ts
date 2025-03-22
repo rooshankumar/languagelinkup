@@ -77,7 +77,7 @@ export const chatService = {
     }
   },
 
-  async findOrCreateChat(user1Id: string | undefined, user2Id: string | undefined) {
+  async findOrCreateChat(user1Id: string | undefined, user2Id: string | undefined): Promise<{id: string} | null> {
     try {
       if (!user1Id || !user2Id) {
         throw new Error('Both user IDs are required to create or find a chat');
