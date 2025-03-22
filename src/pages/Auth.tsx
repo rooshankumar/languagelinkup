@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-// Added for error handling
+import { Mail, Loader2 } from 'lucide-react'; // Added for icons
 import { toast } from '@/hooks/use-toast'; // Assuming a toast component exists
 
 
@@ -128,7 +128,13 @@ export default function Auth() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? 'Processing...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+                {loading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...</>
+                ) : mode === 'signin' ? (
+                  <><Mail className="mr-2 h-4 w-4" /> Sign In with Email</>
+                ) : (
+                  <><Mail className="mr-2 h-4 w-4" /> Sign Up with Email</>
+                )}
               </Button>
 
               <div className="relative my-4">
@@ -146,8 +152,8 @@ export default function Auth() {
                 className="w-full"
                 onClick={handleGoogleLogin}
               >
-                {/* Replace with actual Google icon */}
-                <span>Google</span> {/* Placeholder until Icons are defined */}
+                <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="mr-2 h-4 w-4" />
+                Continue with Google
               </Button>
             </form>
 
