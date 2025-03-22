@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Chat, ChatMessage } from '@/types/chat';
 import { Message, ContentType } from '@/types/supabase';
+import { toast } from '@/hooks/use-toast';
 
 export interface SendMessageOptions {
   content: string;
@@ -9,7 +10,7 @@ export interface SendMessageOptions {
 }
 
 export const chatService = {
-  sendMessage: async (chatId: string, content: string, type: 'text' | 'voice' | 'attachment' = 'text', attachmentUrl?: string) => {
+  async sendMessage(chatId: string, content: string, type: 'text' | 'voice' | 'attachment' = 'text', attachmentUrl?: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -35,7 +36,7 @@ export const chatService = {
     }
   },
 
-  getChatDetails: async (chatId: string) => {
+  async getChatDetails(chatId: string) {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session?.user) {
@@ -76,55 +77,79 @@ export const chatService = {
     }
   },
 
-  findOrCreateChat: async (partnerId: string) => {
+  async findOrCreateChat(user1Id: string, user2Id: string) {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session?.user) {
-        throw new Error('User not authenticated');
-      }
-
-      const userId = session.user.id;
-
-      // Check if chat exists
-      const { data: existingChat, error: checkError } = await supabase
+      // First try to find existing chat
+      const { data: existingChat, error: findError } = await supabase
         .from('chats')
         .select('id')
-        .or(`and(user1_id.eq.${userId},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${userId})`)
+        .or(`and(user1_id.eq.${user1Id},user2_id.eq.${user2Id}),and(user1_id.eq.${user2Id},user2_id.eq.${user1Id})`)
         .single();
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw new Error('Failed to check existing chat');
+      if (findError && findError.code !== 'PGRST116') {
+        throw new Error(`Error finding chat: ${findError.message}`);
       }
 
       if (existingChat) {
-        console.log('Found existing chat:', existingChat.id);
-        return existingChat;
+        return existingChat.id;
       }
 
       // Create new chat if none exists
       const { data: newChat, error: createError } = await supabase
         .from('chats')
         .insert({
-          user1_id: userId,
-          user2_id: partnerId,
+          user1_id: user1Id,
+          user2_id: user2Id,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
         })
         .select('id')
         .single();
 
       if (createError) {
-        throw new Error('Failed to create new chat');
+        throw new Error(`Error creating chat: ${createError.message}`);
       }
 
-      console.log('Created new chat:', newChat.id);
-      return newChat;
+      return newChat.id;
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error('Chat service error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create or find chat. Please try again.',
+        variant: 'destructive',
+      });
       throw error;
     }
   },
 
+  async getChat(chatId: string) {
+    const { data, error } = await supabase
+      .from('chats')
+      .select(`
+        id,
+        created_at,
+        user1_id,
+        user2_id,
+        messages:chat_messages(
+          id,
+          content,
+          created_at,
+          sender_id
+        )
+      `)
+      .eq('id', chatId)
+      .single();
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load chat messages.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+
+    return data;
+  },
   subscribeToMessages(chatId: string, callback: (payload: any) => void) {
     return supabase
       .channel(`chat:${chatId}`)
