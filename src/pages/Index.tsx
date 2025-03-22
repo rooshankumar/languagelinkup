@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import AuthPlaceholder from '@/components/AuthPlaceholder';
+import Auth from '@/pages/Auth';
 import LanguageUsers from '@/components/LanguageUsers';
 import Button from '@/components/Button';
 import { MessageCircle, Languages } from 'lucide-react';
@@ -40,7 +40,7 @@ export default function Index() {
       
       {showAuth ? (
         <div className="mb-16">
-          <AuthPlaceholder />
+          <Auth />
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-8 mb-16">
