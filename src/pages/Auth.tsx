@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 // Added for error handling
-import { toast } from '@/components/ui/toast'; // Assuming a toast component exists
+import { toast } from '@/hooks/use-toast'; // Assuming a toast component exists
 
 
 export default function Auth() {
