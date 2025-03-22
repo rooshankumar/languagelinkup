@@ -211,8 +211,8 @@ export default function Chat() {
         <div className="flex items-center">
           <Avatar>
             <AvatarImage 
-              src={chatDetails.partner.profile_picture 
-                ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${chatDetails.partner.profile_picture}`
+              src={chatDetails.partner.avatar_url 
+                ? supabase.storage.from('avatars').getPublicUrl(chatDetails.partner.avatar_url).data.publicUrl
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(chatDetails.partner.username || "User")}&background=random&color=fff&size=128`
               } 
               onError={(e) => {
