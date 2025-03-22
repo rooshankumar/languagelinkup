@@ -13,7 +13,7 @@ export default function Index() {
     setShowAuth(true);
     
     toast({
-      title: "Welcome to MyLanguage",
+      title: "Welcome to roshLingua",
       description: "Sign in or create an account to start your language journey!",
     });
   };
