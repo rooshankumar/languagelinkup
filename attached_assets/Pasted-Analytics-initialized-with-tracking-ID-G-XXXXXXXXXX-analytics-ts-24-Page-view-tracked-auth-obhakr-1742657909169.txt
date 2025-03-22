@@ -1,0 +1,71 @@
+Analytics initialized with tracking ID: G-XXXXXXXXXX
+analytics.ts:24 Page view tracked: /auth
+obhakrlrvmmroosuejnh.supabase.co/auth/v1/token?grant_type=password:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 ()Understand this errorAI
+obhakrlrvmmroosuejnh.supabase.co/auth/v1/token?grant_type=password:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 ()Understand this errorAI
+analytics.ts:24 Page view tracked: /dashboard
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=eq.8e405b62-2515-498f-ac55-e23aab3bdc39:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+Dashboard.tsx:61 Error fetching user data: Object
+fetchUserData @ Dashboard.tsx:61Understand this errorAI
+analytics.ts:24 Page view tracked: /profile
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=eq.8e405b62-2515-498f-ac55-e23aab3bdc39:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+Profile.tsx:55 Error fetching user profile: JSON object requested, multiple (or no) rows returned
+fetchUserProfile @ Profile.tsx:55Understand this errorAI
+analytics.ts:24 Page view tracked: /settings
+analytics.ts:24 Page view tracked: /dashboard
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=eq.8e405b62-2515-498f-ac55-e23aab3bdc39:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+Dashboard.tsx:61 Error fetching user data: Object
+fetchUserData @ Dashboard.tsx:61Understand this errorAI
+analytics.ts:24 Page view tracked: /community
+analytics.ts:24 Page view tracked: /community/list
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=neq.8e405b62-2515-498f-ac55-e23aab3bdc39&order=last_active.desc:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 ()Understand this errorAI
+CommunityList.tsx:173 Error fetching users: Object
+fetchUsers @ CommunityList.tsx:173Understand this errorAI
+analytics.ts:24 Page view tracked: /chats
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/chats?select=id%2Cuser1_id%2Cuser2_id%2Cupdated_at%2Cchat_messages%28id%2Csender_id%2Ccontent%2Ccreated_at%29%2Cuser1%3Ausers%21chats_user1_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%29%2Cuser2%3Ausers%21chats_user2_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%29&or=%28user1_id.eq.8e405b62-2515-498f-ac55-e23aab3bdc39%2Cuser2_id.eq.8e405b62-2515-498f-ac55-e23aab3bdc39%29&order=updated_at.desc:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 ()Understand this errorAI
+ChatList.tsx:98 Error fetching chats: Object
+fetchUserAndChats @ ChatList.tsx:98Understand this errorAI
+analytics.ts:24 Page view tracked: /community
+analytics.ts:24 Page view tracked: /community/list
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=neq.8e405b62-2515-498f-ac55-e23aab3bdc39&order=last_active.desc:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 ()Understand this errorAI
+CommunityList.tsx:173 Error fetching users: Object
+fetchUsers @ CommunityList.tsx:173Understand this errorAI
+analytics.ts:24 Page view tracked: /dashboard
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=eq.8e405b62-2515-498f-ac55-e23aab3bdc39:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+Dashboard.tsx:61 Error fetching user data: Object
+fetchUserData @ Dashboard.tsx:61Understand this errorAI
+2analytics.ts:24 Page view tracked: /blog
+analytics.ts:24 Page view tracked: /profile
+obhakrlrvmmroosuejnh.supabase.co/rest/v1/users?select=*&id=eq.8e405b62-2515-498f-ac55-e23aab3bdc39:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+Profile.tsx:55 Error fetching user profile: JSON object requested, multiple (or no) rows returned
+fetchUserProfile @ Profile.tsx:55Understand this errorAI
+analytics.ts:24 Page view tracked: /settings
