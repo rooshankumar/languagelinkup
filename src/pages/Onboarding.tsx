@@ -60,7 +60,7 @@ export const Onboarding = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<OnboardingFormData>({
     full_name: '',
-    username: '',
+    gender: '',
     bio: '',
     native_language: '',
     learning_languages: [],
@@ -171,14 +171,20 @@ export const Onboarding = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    placeholder="Choose a username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                  />
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange('gender', value)}
+                    value={formData.gender}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
