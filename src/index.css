@@ -1,0 +1,249 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark mode colors */
+.dark {
+  color-scheme: dark;
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 48%;
+}
+ 
+@layer base {
+  :root {
+
+/* Global responsive styles */
+.responsive-container {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.responsive-grid {
+  @apply grid gap-4 sm:gap-6 md:gap-8;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.responsive-card {
+  @apply rounded-lg border bg-card p-4 sm:p-6;
+}
+
+/* Consistent spacing for all pages */
+.page-padding {
+  @apply p-4 sm:p-6 md:p-8;
+}
+
+/* Fix mobile bottom padding for content */
+.mobile-pb {
+  @apply pb-20 md:pb-0;
+}
+
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 5rem;
+  }
+  
+  main {
+    padding-bottom: 4rem; /* Space for mobile navigation */
+  }
+  
+  .mobile-menu-open {
+    overflow: hidden;
+  }
+}
+
+/* Consistent spacing */
+.page-container {
+  @apply container mx-auto px-4 py-6 md:py-8;
+}
+
+/* Consistent card styles */
+.card {
+  @apply bg-card rounded-lg border border-border p-4 shadow-sm;
+}
+
+/* Consistent button styles */
+.btn-mobile {
+  @apply w-full md:w-auto flex items-center justify-center;
+}
+
+
+/* Profile styles */
+.profile-container {
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  margin: 0 auto;
+  object-fit: cover;
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  background-color: hsl(var(--background));
+  transition: transform 0.2s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 0.75rem;
+  }
+  
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 0.5rem;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    
+    /* Updated primary color to deep blue */
+    --primary: 217 89% 50%;
+    --primary-foreground: 210 40% 98%;
+    
+    /* Updated secondary color to warm orange */
+    --secondary: 25 100% 50%;
+    --secondary-foreground: 210 40% 98%;
+    
+    /* Updated muted color to match design */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    /* Updated accent color to bright yellow */
+    --accent: 45 100% 51%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 89% 50%;
+    
+    /* Sidebar customization */
+    --sidebar-background: 217 89% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-accent: 217 89% 50%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    
+    /* Updated primary color in dark mode */
+    --primary: 217 89% 50%;
+    --primary-foreground: 210 40% 98%;
+    
+    /* Updated secondary color in dark mode */
+    --secondary: 25 100% 50%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --accent: 45 100% 51%;
+    --accent-foreground: 210 40% 98%;
+    
+    --card: 222.2 84% 9%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222.2 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217 89% 50%;
+    
+    /* Sidebar customization for dark mode */
+    --sidebar-background: 222.2 84% 7%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-accent: 217 89% 50%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 89% 50%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217 89% 50%;
+    --sidebar-background: 222.2 84% 7%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-accent: 217 89% 50%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+}

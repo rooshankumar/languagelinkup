@@ -1,0 +1,129 @@
+To allow Google OAuth to work both locally and in production, follow these steps:
+
+🛠️ 1. Configure Supabase for Both Local & Production
+Go to Supabase Dashboard → Your Project → Authentication → URL Configuration
+
+🔹 Add these URLs under "Redirect URLs"
+
+bash
+Copy
+Edit
+http://localhost:3000/auth/callback
+https://roshlingua.vercel.app/auth/callback
+✅ This ensures that Google OAuth can redirect correctly in both environments.
+
+🛠️ 2. Modify Google Sign-In Logic (Dynamic Redirect)
+Now, update your Google sign-in function so that it dynamically chooses the right URL based on the environment.
+
+🔹 Auth.tsx (or wherever your Google sign-in button is)
+
+tsx
+Copy
+Edit
+import { supabase } from "@/lib/supabaseClient";
+
+const signInWithGoogle = async () => {
+  const redirectTo =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000/auth/callback"
+      : "https://roshlingua.vercel.app/auth/callback";
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo },
+  });
+
+  if (error) {
+    console.error("Google Sign-In Error:", error);
+  }
+};
+✅ This will automatically switch between local (localhost) and production (vercel.app) URLs.
+
+🛠️ 3. Ensure Redirect Works Properly (Fix Auth Callback)
+Modify your OAuth callback handler to correctly check user details and redirect.
+
+🔹 AuthCallback.tsx
+
+tsx
+Copy
+Edit
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
+
+const AuthCallback = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: session } = await supabase.auth.getSession();
+
+      if (!session || !session.session) {
+        console.error("No active session. Redirecting to home.");
+        navigate("/");
+        return;
+      }
+
+      const user = session.session.user;
+
+      // Fetch user profile
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      if (error || !profile) {
+        console.warn("Profile not found. Redirecting to onboarding.");
+        navigate("/onboarding");
+        return;
+      }
+
+      if (!profile.onboarding_completed) {
+        console.log("User has not completed onboarding. Redirecting...");
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
+    };
+
+    checkUser();
+  }, [navigate]);
+
+  return <p>Redirecting...</p>;
+};
+
+export default AuthCallback;
+✅ Now, after Google sign-in:
+
+If the profile is missing → Redirects to /onboarding
+
+If onboarding is incomplete → Stays on /onboarding
+
+If onboarding is complete → Redirects to /dashboard
+
+🛠️ 4. Test in Both Environments
+Local Testing
+Run your app on localhost:3000
+
+Click "Sign in with Google"
+
+Check if it redirects to http://localhost:3000/auth/callback
+
+Ensure you land on /onboarding or /dashboard correctly
+
+Production Testing
+Deploy your app to Vercel
+
+Go to https://roshlingua.vercel.app
+
+Click "Sign in with Google"
+
+Ensure it redirects correctly
+
+✅ If testing passes, your setup is now correct! 🚀
+
+Final Setup Summary
+✅ Supabase has both local & production redirect URLs
+✅ Frontend dynamically selects the right redirect URL
+✅ Auth callback correctly checks onboarding status & redirects

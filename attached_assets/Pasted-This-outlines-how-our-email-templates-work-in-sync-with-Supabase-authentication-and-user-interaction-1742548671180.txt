@@ -1,0 +1,48 @@
+This outlines how our email templates work in sync with Supabase authentication and user interactions.
+
+🔹 1. User Initiates an Action
+A user performs an action in the app that triggers an authentication email:
+
+Signup Confirmation → New user registers
+Magic Link Login → Passwordless login request
+Reset Password → User forgets password
+Email Change Confirmation → User updates email
+User Invitation → Admin invites a new user
+Reauthentication → User is required to verify identity
+Supabase generates a secure token and sends an email with a link containing the token.
+
+🔹 2. Supabase Sends Email With Authentication Link
+The email contains:
+
+A well-designed HTML template with branding
+A call-to-action button (e.g., "Confirm Email", "Reset Password")
+A secure token inside the URL (e.g., ?token=XYZ)
+✅ Email Template Changes:
+Each email now includes a modern, visually appealing design that aligns with RoshLingua's brand.
+
+✅ Updated Email Buttons now redirect to correct pages:
+
+perl
+Copy
+Edit
+https://roshlingua.vercel.app/magic-login?token={{ .ConfirmationURL }}
+https://roshlingua.vercel.app/reset-password?token={{ .ConfirmationURL }}
+https://roshlingua.vercel.app/confirm-email?token={{ .ConfirmationURL }}
+🔹 3. User Clicks the Link
+The user clicks the email link and is taken to the corresponding page:
+
+/magic-login → Logs user in automatically
+/reset-password → Shows form to set a new password
+/confirm-email → Shows old & new email and updates the account
+The page: ✅ Extracts the token from the URL
+✅ Uses Supabase Auth API to verify the token
+✅ Performs the required action (e.g., login, reset password)
+✅ Redirects user to dashboard or shows an error if invalid
+
+🔹 4. Authentication Completed & Final Redirect
+Once the authentication action is successful, the user is redirected:
+
+https://roshlingua.vercel.app/dashboard (for logged-in users)
+https://roshlingua.vercel.app/auth-error (if token is invalid)
+Security Measures: ✅ Pages are protected so only valid tokens work.
+✅ Expired tokens show an error instead of allowing unauthorized access.

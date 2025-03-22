@@ -1,0 +1,142 @@
+ Issues to Fix & Features to Add:
+
+1️⃣ Add a "Like" Feature to Show User Appreciation
+
+Users should be able to "like" a profile, showing love and engagement.
+The like count should be displayed before the "Send Message" button on the Full Profile page.
+Users should not be able to like their own profile.
+Clicking the like button should update in real-time (without page refresh).
+✅ Expected Fix:
+
+Store likes in the database (linked to the user profile).
+Show the total number of likes on each profile.
+If a user has already liked a profile, the button should show "Liked ❤️" instead of "Like 🤍".
+📌 Example Fix for Like Feature (React Code)
+
+jsx
+Copy
+Edit
+import { useState } from "react";
+
+const UserProfile = ({ user }) => {
+  const [likes, setLikes] = useState(user.likes || 0);
+  const [liked, setLiked] = useState(false);
+
+  const handleLike = async () => {
+    if (liked) return;
+    setLiked(true);
+    setLikes(likes + 1);
+
+    await fetch(`/api/like/${user.id}`, { method: "POST" }); // Ensure backend API updates DB
+  };
+
+  return (
+    <div>
+      <h2>{user.name}, {user.age}</h2>
+      <p>{user.bio}</p>
+      <button onClick={handleLike} disabled={liked}>
+        {liked ? "Liked ❤️" : "Like 🤍"} ({likes})
+      </button>
+      <button>Send Message</button>
+    </div>
+  );
+};
+2️⃣ Fix Avatar Quality Issue
+
+Profile avatars appear blurry or broken on the Full Profile page.
+Ensure images are not being compressed too much.
+Check if avatars are properly loaded from the database/API.
+✅ Expected Fix:
+
+Ensure avatars load in high quality (srcSet for different resolutions).
+Use CSS object-fit: cover; to prevent distortion.
+📌 Example Fix for Avatar in CSS:
+
+css
+Copy
+Edit
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+3️⃣ Improve Mobile Navigation
+
+Currently, navigation is lost on mobile.
+Ensure the Community List & Profile pages have proper navigation buttons.
+Add a "Back" button on the Profile Page to return to the list.
+✅ Expected Fix:
+
+Add a Back button (← Community List) on profile pages.
+Improve mobile-friendly navigation using a bottom navbar or hamburger menu.
+📌 Example Fix (React Back Button for Profile Page):
+
+jsx
+Copy
+Edit
+import { useNavigate } from "react-router-dom";
+
+const UserProfile = () => {
+  const navigate = useNavigate();
+  return (
+    <div>
+      <button onClick={() => navigate("/community/list")}>← Community List</button>
+      {/* Profile details here */}
+    </div>
+  );
+};
+4️⃣ Add Filter Options for User List
+
+Users should be able to filter the Community List based on:
+Age range (e.g., 18-25, 26-35, etc.)
+Native Language
+Learning Language
+Filters should update the list dynamically without reloading the page.
+📌 Example Filter UI (React Code):
+
+jsx
+Copy
+Edit
+import { useState } from "react";
+
+const CommunityList = ({ users }) => {
+  const [ageFilter, setAgeFilter] = useState("");
+  const [languageFilter, setLanguageFilter] = useState("");
+
+  const filteredUsers = users.filter(user =>
+    (ageFilter ? user.age >= ageFilter[0] && user.age <= ageFilter[1] : true) &&
+    (languageFilter ? user.nativeLanguage === languageFilter : true)
+  );
+
+  return (
+    <div>
+      <label>Filter by Age:</label>
+      <select onChange={(e) => setAgeFilter(JSON.parse(e.target.value))}>
+        <option value="">All</option>
+        <option value="[18,25]">18-25</option>
+        <option value="[26,35]">26-35</option>
+      </select>
+
+      <label>Filter by Language:</label>
+      <select onChange={(e) => setLanguageFilter(e.target.value)}>
+        <option value="">All</option>
+        <option value="English">English</option>
+        <option value="Spanish">Spanish</option>
+      </select>
+
+      {filteredUsers.map(user => (
+        <div key={user.id}>
+          <img src={user.avatar} alt={user.name} />
+          <h3>{user.name}, {user.age}</h3>
+        </div>
+      ))}
+    </div>
+  );
+};
+✅ Expected Outcome After Fixes:
+
+"Like" feature lets users appreciate each other’s profiles.
+Avatars display correctly without losing quality.
+Mobile navigation is improved with a back button.
+Community List has filters for better browsing experience.

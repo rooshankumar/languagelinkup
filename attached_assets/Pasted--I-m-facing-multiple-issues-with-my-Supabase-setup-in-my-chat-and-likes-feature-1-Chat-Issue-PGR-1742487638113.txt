@@ -1,0 +1,74 @@
+"I'm facing multiple issues with my Supabase setup in my chat and likes feature.
+
+1. Chat Issue (PGRST116: JSON object requested, multiple (or no) rows returned)
+Problem:
+
+When trying to start a conversation, Supabase returns an error:
+pgsql
+Copy
+Edit
+JSON object requested, multiple (or no) rows returned
+This happens because the query expects a single row, but either no chat exists or multiple rows are returned.
+Expected Fix:
+
+Modify the query to properly handle cases where no chat exists.
+Instead of select('*'), use .maybeSingle() to avoid errors.
+Suggested Fix:
+
+ts
+Copy
+Edit
+const { data, error } = await supabase
+  .from('chats')
+  .select('*')
+  .eq('id', chatId)
+  .maybeSingle(); // This prevents the multiple/no rows error.
+2. Likes Not Counting Correctly (1,2,3,4,...)
+Problem:
+
+Each like should be counted separately, but the current logic prevents multiple likes from being added.
+Expected Fix:
+
+Allow multiple likes (Don't check for an existing like, just insert a new row).
+Count total likes correctly.
+Suggested Fix:
+
+Insert a new like without checking for existing ones:
+ts
+Copy
+Edit
+const { data, error } = await supabase
+  .from('user_likes')
+  .insert([{ user_id: userId, liked_user_id: likedUserId }]);
+Get the correct total like count:
+ts
+Copy
+Edit
+const { count, error } = await supabase
+  .from('user_likes')
+  .select('*', { count: 'exact', head: true })
+  .eq('liked_user_id', likedUserId);
+3. Supabase API Returning 406 Not Acceptable Error
+Problem:
+
+API calls to Supabase (/rest/v1/user_likes and /rest/v1/chats) fail with 406 errors.
+This means Supabase cannot process the request due to incorrect headers or query parameters.
+Expected Fix:
+
+Ensure the Accept header is set to application/json:
+ts
+Copy
+Edit
+const { data, error } = await supabase
+  .from('user_likes')
+  .select('*')
+  .eq('user_id', userId)
+  .eq('liked_user_id', likedUserId)
+  .single(); 
+Check Supabase policies (RLS rules) to ensure the user has permission to access the data.
+Final Fix Summary:
+✅ Use .maybeSingle() in chat queries to prevent the PGRST116 error.
+✅ Allow multiple likes by inserting directly without checking.
+✅ Use { count: 'exact', head: true } to get accurate like counts.
+✅ Ensure API requests have correct headers (Accept: application/json).
+✅ Verify that Row-Level Security (RLS) is correctly configured in Supabase.

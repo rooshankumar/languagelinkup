@@ -1,0 +1,52 @@
+age view tracked: /community
+czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=id&or=%28and%28user1_id.eq.686bf35c-ef4c-4ce3-9352-a31621ce3eb0%2Cuser2_id.eq.c87bc7f4-b9d6-49f8-9c0d-2a3266588743%29%2Cand%28user1_id.eq.c87bc7f4-b9d6-49f8-9c0d-2a3266588743%2Cuser2_id.eq.686bf35c-ef4c-4ce3-9352-a31621ce3eb0%29%29:1 
+            
+            
+           Failed to load resource: the server responded with a status of 406 ()Understand this errorAI
+chatService.ts:120 Created new chat: ca6153a3-5c1a-482a-99ea-9aa738ad9873
+analytics.ts:24 Page view tracked: /chat/ca6153a3-5c1a-482a-99ea-9aa738ad9873
+chunk-W6L2VRDA.js?v=26fd4578:16670 Uncaught ReferenceError: supabase is not defined
+    at Chat.tsx:44:26
+    at commitHookEffectListMount (chunk-W6L2VRDA.js?v=26fd4578:16915:34)
+    at commitPassiveMountOnFiber (chunk-W6L2VRDA.js?v=26fd4578:18156:19)
+    at commitPassiveMountEffects_complete (chunk-W6L2VRDA.js?v=26fd4578:18129:17)
+    at commitPassiveMountEffects_begin (chunk-W6L2VRDA.js?v=26fd4578:18119:15)
+    at commitPassiveMountEffects (chunk-W6L2VRDA.js?v=26fd4578:18109:11)
+    at flushPassiveEffectsImpl (chunk-W6L2VRDA.js?v=26fd4578:19490:11)
+    at flushPassiveEffects (chunk-W6L2VRDA.js?v=26fd4578:19447:22)
+    at chunk-W6L2VRDA.js?v=26fd4578:19328:17
+    at workLoop (chunk-W6L2VRDA.js?v=26fd4578:197:42)Understand this errorAI
+chunk-W6L2VRDA.js?v=26fd4578:14032 The above error occurred in the <Chat> component:
+
+    at Chat (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/src/pages/Chat.tsx:24:28)
+    at RenderedRoute (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/react-router-dom.js?v=26fd4578:4069:5)
+    at Outlet (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/react-router-dom.js?v=26fd4578:4444:26)
+    at div
+    at main
+    at div
+    at AppLayout
+    at ProtectedRoute (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/src/App.tsx:151:27)
+    at RenderedRoute (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/react-router-dom.js?v=26fd4578:4069:5)
+    at Routes (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/react-router-dom.js?v=26fd4578:4508:5)
+    at Provider (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/chunk-M57GLU2N.js?v=26fd4578:28:15)
+    at TooltipProvider (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=26fd4578:2295:5)
+    at AuthProvider (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/src/contexts/AuthContext.tsx:15:32)
+    at QueryClientProvider (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/@tanstack_react-query.js?v=26fd4578:2794:3)
+    at Router (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/react-router-dom.js?v=26fd4578:4451:15)
+    at BrowserRouter (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3002/node_modules/.vite/deps/react-router-dom.js?v=26fd4578:5196:5)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-W6L2VRDA.js?v=26fd4578:14032Understand this errorAI
+chunk-W6L2VRDA.js?v=26fd4578:9129 Uncaught ReferenceError: supabase is not defined
+    at Chat.tsx:44:26
+    at commitHookEffectListMount (chunk-W6L2VRDA.js?v=26fd4578:16915:34)
+    at commitPassiveMountOnFiber (chunk-W6L2VRDA.js?v=26fd4578:18156:19)
+    at commitPassiveMountEffects_complete (chunk-W6L2VRDA.js?v=26fd4578:18129:17)
+    at commitPassiveMountEffects_begin (chunk-W6L2VRDA.js?v=26fd4578:18119:15)
+    at commitPassiveMountEffects (chunk-W6L2VRDA.js?v=26fd4578:18109:11)
+    at flushPassiveEffectsImpl (chunk-W6L2VRDA.js?v=26fd4578:19490:11)
+    at flushPassiveEffects (chunk-W6L2VRDA.js?v=26fd4578:19447:22)
+    at chunk-W6L2VRDA.js?v=26fd4578:19328:17
+    at workLoop (chunk-W6L2VRDA.js?v=26fd4578:197:42)Understand this errorAI
