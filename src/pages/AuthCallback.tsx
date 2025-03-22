@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -8,22 +9,22 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: session } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (!session || !session.session) {
+      if (sessionError || !session) {
+        console.error("Session error:", sessionError);
         navigate("/auth");
         return;
       }
 
-      const user = session.session.user;
-
-      const { data: profile, error } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", user.id)
+        .select("*")
+        .eq("id", session.user.id)
         .single();
 
-      if (error || !profile) {
+      if (profileError || !profile) {
+        console.log("No profile found, redirecting to onboarding");
         navigate("/onboarding");
         return;
       }

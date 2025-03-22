@@ -19,8 +19,8 @@ export default function Auth() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
   const handleGoogleLogin = async () => {
-    // Always use current origin to ensure proper redirection
-    const redirectTo = `${window.location.origin}/auth/callback`;
+    // For production redirects
+    const redirectTo = window.location.origin + '/auth/callback';
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({

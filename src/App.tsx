@@ -69,6 +69,7 @@ const App = () => {
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/magic-link" element={<MagicLink />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/confirm-email" element={<ConfirmEmail />} />
