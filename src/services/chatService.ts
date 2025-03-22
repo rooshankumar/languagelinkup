@@ -77,8 +77,12 @@ export const chatService = {
     }
   },
 
-  async findOrCreateChat(user1Id: string, user2Id: string) {
+  async findOrCreateChat(user1Id: string | undefined, user2Id: string | undefined) {
     try {
+      if (!user1Id || !user2Id) {
+        throw new Error('Both user IDs are required to create or find a chat');
+      }
+
       // First try to find existing chat
       const { data: existingChat, error: findError } = await supabase
         .from('chats')

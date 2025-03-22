@@ -84,13 +84,13 @@ const Community = () => {
   const handleChatClick = async (partnerId: string) => {
     try {
       const { data: session } = await supabase.auth.getSession();
-      const currentUserId = session?.session?.user?.id;
+      const user = session?.session?.user;
 
-      if (!currentUserId || !partnerId) {
+      if (!user?.id || !partnerId) {
         throw new Error("Invalid user or partner ID");
       }
 
-      const chat = await chatService.findOrCreateChat(partnerId);
+      const chat = await chatService.findOrCreateChat(user.id, partnerId);
 
       if (chat?.id) {
         navigate(`/chat/${chat.id}`);
@@ -99,11 +99,7 @@ const Community = () => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      toast({
-        title: "Chat Error",
-        description: "Could not start a chat. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to start chat. Please try again.");
     }
   };
 
