@@ -51,6 +51,7 @@ export type OnboardingFormData = {
   avatar_url: string;
   dob: string;
   proficiency_level: string;
+  gender: string;
 };
 
 export const Onboarding = () => {
@@ -67,15 +68,29 @@ export const Onboarding = () => {
     avatar_url: '',
     dob: '',
     proficiency_level: '',
+    username: ''
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [errors, setErrors] = useState({
+    full_name: '',
+    gender: '',
+    bio: '',
+    native_language: '',
+    learning_languages: '',
+    avatar_url: '',
+    dob: '',
+    proficiency_level: '',
+    username: ''
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({...errors, [e.target.name]: ''}); //clear error on change
   };
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value });
+    setErrors({...errors, [name]: ''}); //clear error on change
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,13 +105,37 @@ export const Onboarding = () => {
   const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
 
+  const validateForm = () => {
+    const newErrors = {
+      full_name: !formData.full_name ? 'Full name is required' : '',
+      gender: !formData.gender ? 'Gender is required' : '',
+      bio: !formData.bio ? 'Bio is required' : '',
+      native_language: !formData.native_language ? 'Native Language is required' : '',
+      learning_languages: formData.learning_languages.length === 0 ? 'Select at least one language' : '',
+      avatar_url: !formData.avatar_url ? 'Avatar is required' : '',
+      dob: !formData.dob ? 'Date of Birth is required' : '',
+      proficiency_level: !formData.proficiency_level ? 'Proficiency Level is required' : '',
+      username: !formData.username ? 'Username is required' : ''
+    };
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      setIsLoading(true);
+    if (!validateForm()) return;
 
+    setIsLoading(true);
+
+    try {
       if (!user?.id) {
         throw new Error('User not authenticated');
+      }
+
+      if (!user.email_confirmed_at) {
+        toast.error('Please verify your email before proceeding with onboarding.');
+        navigate('/auth'); // Redirect to verification page
+        return;
       }
 
       // Upload avatar if exists
@@ -168,6 +207,7 @@ export const Onboarding = () => {
                     value={formData.full_name}
                     onChange={handleInputChange}
                   />
+                  {errors.full_name && <p className="text-sm text-red-500 mt-1">{errors.full_name}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -185,6 +225,19 @@ export const Onboarding = () => {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.gender && <p className="text-sm text-red-500 mt-1">{errors.gender}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                  />
+                  {errors.username && <p className="text-sm text-red-500 mt-1">{errors.username}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -196,10 +249,11 @@ export const Onboarding = () => {
                     value={formData.bio}
                     onChange={handleInputChange}
                   />
+                  {errors.bio && <p className="text-sm text-red-500 mt-1">{errors.bio}</p>}
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <Button onClick={handleNext}>
+                  <Button onClick={handleNext} disabled={!formData.full_name || !formData.gender || !formData.username}>
                     Continue
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -231,6 +285,7 @@ export const Onboarding = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.native_language && <p className="text-sm text-red-500 mt-1">{errors.native_language}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -259,6 +314,7 @@ export const Onboarding = () => {
                       </div>
                     ))}
                   </div>
+                  {errors.learning_languages && <p className="text-sm text-red-500 mt-1">{errors.learning_languages}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -278,6 +334,7 @@ export const Onboarding = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.proficiency_level && <p className="text-sm text-red-500 mt-1">{errors.proficiency_level}</p>}
                 </div>
 
                 <div className="pt-4 flex justify-between">
@@ -285,7 +342,7 @@ export const Onboarding = () => {
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button onClick={handleNext}>
+                  <Button onClick={handleNext} disabled={!formData.native_language || !formData.proficiency_level || formData.learning_languages.length === 0}>
                     Continue
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -310,6 +367,7 @@ export const Onboarding = () => {
                     onChange={handleInputChange}
                     max={new Date().toISOString().split('T')[0]}
                   />
+                  {errors.dob && <p className="text-sm text-red-500 mt-1">{errors.dob}</p>}
                   <p className="text-xs text-muted-foreground">
                     This helps us find suitable language partners for you.
                   </p>
@@ -320,7 +378,7 @@ export const Onboarding = () => {
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button onClick={handleNext}>
+                  <Button onClick={handleNext} disabled={!formData.dob}>
                     Continue
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -361,7 +419,7 @@ export const Onboarding = () => {
                   >
                     {formData.avatar_url ? 'Change Photo' : 'Upload Photo'}
                   </Label>
-
+                  {errors.avatar_url && <p className="text-sm text-red-500 mt-1">{errors.avatar_url}</p>}
                   <p className="text-sm text-muted-foreground">
                     Choose a profile picture that represents you
                   </p>
@@ -372,7 +430,7 @@ export const Onboarding = () => {
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button onClick={handleNext}>
+                  <Button onClick={handleNext} disabled={!formData.avatar_url}>
                     Continue
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>

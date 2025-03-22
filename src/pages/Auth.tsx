@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+// Added for error handling
+import { toast } from '@/components/ui/toast'; // Assuming a toast component exists
+
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -15,29 +18,69 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (mode === 'signin') {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        navigate('/dashboard');
+
+        if (!data.user?.email_confirmed_at) {
+          toast({
+            title: 'Email not verified',
+            description: 'Please check your email and verify your account before proceeding.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        navigate('/dashboard'); // Redirect after successful verified signin
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
-        // Show success message or redirect
+
+        toast({
+          title: 'Success',
+          description: 'Please check your email and click the verification link to continue with onboarding.',
+        });
       }
-    } catch (error) {
-      console.error('Authentication error:', error);
-      // Handle error (show message to user)
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -57,7 +100,7 @@ export default function Auth() {
           transition={{ duration: 0.3 }}
         >
           <Card className="p-6">
-            <form onSubmit={handleAuth} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -86,6 +129,25 @@ export default function Auth() {
                 disabled={loading}
               >
                 {loading ? 'Processing...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+              </Button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleLogin}
+              >
+                {/* Replace with actual Google icon */}
+                <span>Google</span> {/* Placeholder until Icons are defined */}
               </Button>
             </form>
 
