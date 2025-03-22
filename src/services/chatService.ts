@@ -77,7 +77,7 @@ export const chatService = {
     }
   },
 
-  async findOrCreateChat(user1Id: string | undefined, user2Id: string | undefined): Promise<{id: string} | null> {
+  async findOrCreateChat(user1Id: string | undefined, user2Id: string | undefined): Promise<{id: string}> {
     try {
       if (!user1Id || !user2Id) {
         throw new Error('Both user IDs are required to create or find a chat');
@@ -95,7 +95,7 @@ export const chatService = {
       }
 
       if (existingChat) {
-        return existingChat.id;
+        return existingChat;
       }
 
       // Create new chat if none exists
@@ -113,7 +113,7 @@ export const chatService = {
         throw new Error(`Error creating chat: ${createError.message}`);
       }
 
-      return newChat.id;
+      return newChat;
     } catch (error) {
       console.error('Chat service error:', error);
       toast({

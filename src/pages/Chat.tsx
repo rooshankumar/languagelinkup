@@ -104,18 +104,20 @@ export default function Chat() {
       }
     };
 
-    let cleanup: (() => void) | undefined;
-    
     const init = async () => {
-      cleanup = await setupSubscription();
-      await fetchInitialData();
+      try {
+        if (!chatId || chatId === 'undefined') {
+          throw new Error('Invalid chat ID');
+        }
+        await fetchInitialData();
+        await setupSubscription();
+      } catch (error) {
+        console.error('Error initializing chat:', error);
+        navigate('/chats');
+      }
     };
-    
+
     init();
-    
-    return () => {
-      if (cleanup) cleanup();
-    };
   }, [chatId, navigate, toast, user?.id]);
 
   const handleTyping = () => {

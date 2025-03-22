@@ -86,14 +86,13 @@ const Community = () => {
       const { data: session } = await supabase.auth.getSession();
       const user = session?.session?.user;
 
-      if (!user?.id || !partnerId) {
-        throw new Error("Invalid user or partner ID");
+      if (!user?.id) {
+        throw new Error("You must be logged in to start a chat");
       }
 
       const chat = await chatService.findOrCreateChat(user.id, partnerId);
-
-      if (!chat) {
-        throw new Error("Could not create or find chat");
+      if (!chat?.id) {
+        throw new Error("Failed to create chat");
       }
 
       navigate(`/chat/${chat.id}`);
@@ -101,7 +100,7 @@ const Community = () => {
       console.error("Chat error:", error);
       toast({
         title: "Error",
-        description: "Could not start chat. Please try again.",
+        description: error instanceof Error ? error.message : "Could not start chat. Please try again.",
         variant: "destructive",
       });
     }
