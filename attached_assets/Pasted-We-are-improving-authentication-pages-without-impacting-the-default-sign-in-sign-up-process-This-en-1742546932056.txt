@@ -1,0 +1,50 @@
+We are improving authentication pages without impacting the default sign-in/sign-up process. This ensures Magic Link, Password Reset, and Email Confirmation work seamlessly while keeping existing authentication intact.
+
+🔹 What Are We Doing?
+✅ 1. Fixing 404 Errors on Authentication Pages
+
+Ensure /MagicLink, /ResetPassword, and /ConfirmEmail are accessible without authentication.
+Modify _app.tsx or ProtectedRoute.tsx to allow access only via valid email links.
+✅ 2. Handling Magic Link Authentication (/MagicLink)
+
+Extract the token from the email URL (?token=...).
+Call supabase.auth.signInWithOtp({ token }) to authenticate the user.
+If successful → Redirect to /dashboard.
+If failed → Redirect to /auth-error with an error message.
+✅ 3. Implementing Secure Password Reset (/ResetPassword)
+
+Extract the reset token from the email link.
+Show a form to set a new password.
+Call supabase.auth.updateUser({ password: newPassword }).
+If successful → Redirect to /dashboard.
+If failed → Show an error.
+✅ 4. Handling Email Confirmation (/ConfirmEmail)
+
+Extract the confirmation token from the email.
+Verify and update email using supabase.auth.updateUser().
+If successful → Redirect to /dashboard.
+If failed → Show an error or redirect to /auth-error.
+✅ 5. Ensuring Email Links Are Correct
+
+Fix email templates to point to the correct routes:
+Magic Link: https://roshlingua.vercel.app/MagicLink?token={{ .ConfirmationURL }}
+Reset Password: https://roshlingua.vercel.app/ResetPassword?token={{ .ConfirmationURL }}
+Email Confirmation: https://roshlingua.vercel.app/ConfirmEmail?token={{ .ConfirmationURL }}
+✅ 6. Protecting These Pages from Unauthorized Access
+
+Users should access these pages only via email links.
+If accessed without a valid token → Redirect to /auth-error.
+Authenticated users should not see these pages unnecessarily.
+✅ 7. Keeping Default Sign-In/Sign-Up Unaffected
+
+Existing login via email/password remains unchanged.
+Google/GitHub login continues to work as before.
+Only email-based authentication flows are being improved.
+🔹 Final Workflow Overview
+1️⃣ User requests Magic Link / Reset Password / Email Confirmation.
+2️⃣ Supabase sends an email with a secure token.
+3️⃣ User clicks the email link, lands on the respective page.
+4️⃣ Page validates the token and performs authentication.
+5️⃣ Successful? Redirect to /dashboard ✅
+6️⃣ Failed? Redirect to /auth-error ❌
+

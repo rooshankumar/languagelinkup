@@ -1,0 +1,32 @@
+ics initialized with tracking ID: G-XXXXXXXXXX
+2react-router-dom.js?v=26fd4578:209 Uncaught Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (react-router-dom.js?v=26fd4578:209:11)
+    at useNavigateUnstable (react-router-dom.js?v=26fd4578:3839:34)
+    at useNavigate (react-router-dom.js?v=26fd4578:3836:46)
+    at AuthProvider (AuthContext.tsx:25:20)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=26fd4578:11548:26)
+    at mountIndeterminateComponent (chunk-W6L2VRDA.js?v=26fd4578:14926:21)
+    at beginWork (chunk-W6L2VRDA.js?v=26fd4578:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-W6L2VRDA.js?v=26fd4578:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-W6L2VRDA.js?v=26fd4578:3699:24)
+    at invokeGuardedCallback (chunk-W6L2VRDA.js?v=26fd4578:3733:39)Understand this errorAI
+chunk-W6L2VRDA.js?v=26fd4578:14032 The above error occurred in the <AuthProvider> component:
+
+    at AuthProvider (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3001/src/contexts/AuthContext.tsx?t=1742383486786:21:32)
+    at QueryClientProvider (https://39e32fdf-3ff7-4e0b-bbb4-85a879664bd2-00-1jt2cpsdyzvwn.pike.replit.dev:3001/node_modules/.vite/deps/@tanstack_react-query.js?v=26fd4578:2794:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-W6L2VRDA.js?v=26fd4578:14032Understand this errorAI
+chunk-W6L2VRDA.js?v=26fd4578:19413 Uncaught Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (react-router-dom.js?v=26fd4578:209:11)
+    at useNavigateUnstable (react-router-dom.js?v=26fd4578:3839:34)
+    at useNavigate (react-router-dom.js?v=26fd4578:3836:46)
+    at AuthProvider (AuthContext.tsx:25:20)
+    at renderWithHooks (chunk-W6L2VRDA.js?v=26fd4578:11548:26)
+    at mountIndeterminateComponent (chunk-W6L2VRDA.js?v=26fd4578:14926:21)
+    at beginWork (chunk-W6L2VRDA.js?v=26fd4578:15914:22)
+    at beginWork$1 (chunk-W6L2VRDA.js?v=26fd4578:19753:22)
+    at performUnitOfWork (chunk-W6L2VRDA.js?v=26fd4578:19198:20)
+    at workLoopSync (chunk-W6L2VRDA.js?v=26fd4578:19137:13)Understand this errorAI

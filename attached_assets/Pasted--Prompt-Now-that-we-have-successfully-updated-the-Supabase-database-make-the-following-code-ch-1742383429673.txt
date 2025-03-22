@@ -1,0 +1,43 @@
+🔹 Prompt:
+
+"Now that we have successfully updated the Supabase database, make the following code changes to ensure everything works smoothly:
+
+Fix Supabase TypeScript Definitions:
+
+Update all TypeScript interfaces (UserProfile, Message, etc.) to match the updated Supabase schema.
+Ensure content_type only allows "text" | "voice" | "attachment".
+Fix Profile Picture Syncing Across the App:
+
+Ensure the profile_picture is always updated in Supabase whenever a user changes it.
+Display the correct profile_picture in the chat, navbar, dashboard, and community list.
+Improve Authentication Flow:
+
+Ensure only authenticated users can access the app.
+If a user exists but hasn’t completed onboarding, redirect them to the onboarding page.
+Once onboarding is complete, redirect users to the dashboard.
+Ensure Profile Updates Reflect Across the App:
+
+When a user updates their details, sync the changes across their profile, chat, community panel, and dashboard.
+Fix any potential race conditions when fetching user data.
+Fix Chat Feature (Text, Emojis, Attachments, Photos):
+
+Ensure real-time messages work using Supabase subscriptions.
+Add support for sending text messages, emojis, and images.
+Ensure users can send and receive photos and attachments correctly.
+Use Supabase Storage for storing images and attachments.
+Improve UI/UX (iPhone-like UI, Dark Mode, Logout in Settings):
+
+Ensure the UI is clean, responsive, and optimized for mobile and desktop.
+Implement Dark Mode toggle in settings.
+Fix logout issues and make sure users are fully logged out when they log out.
+Fix Any Remaining Bugs & Errors:
+
+Ensure all pages, components, and services work correctly without TypeScript or runtime errors.
+Debug any remaining Supabase integration issues.
+🔹 Test the entire app, ensure everything works, and optimize for performance!"
+
+📌 Final Steps
+Paste this prompt into Replit AI and let it make the necessary fixes.
+Manually test all functionalities (chat, authentication, profile updates, etc.).
+Deploy and verify that everything is working perfectly! 🚀
+Now, your app should be fully functional with real-time chat, a smooth user experience, and proper authentication! 🎉

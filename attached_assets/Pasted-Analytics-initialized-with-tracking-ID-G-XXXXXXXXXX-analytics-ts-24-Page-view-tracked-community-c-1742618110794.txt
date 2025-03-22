@@ -1,0 +1,103 @@
+Analytics initialized with tracking ID: G-XXXXXXXXXX
+analytics.ts:24 Page view tracked: /community/c105840e-643a-4378-a1e1-8975cbd9cd8d
+analytics.ts:24 Page view tracked: /chat/undefined
+@supabase_supabase-js.js?v=67c2eeff:3900 
+            
+            
+           GET https://czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=*%2Cmessages%3Achat_messages%28*%29%2Cuser1%3Ausers%21chats_user1_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%2Clast_active%29%2Cuser2%3Ausers%21chats_user2_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%2Clast_active%29&id=eq.undefined 400 (Bad Request)
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3900
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3921
+fulfilled @ @supabase_supabase-js.js?v=67c2eeff:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=67c2eeff:3886
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3888
+__awaiter6 @ @supabase_supabase-js.js?v=67c2eeff:3870
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3911
+then @ @supabase_supabase-js.js?v=67c2eeff:89Understand this errorAI
+chatService.ts:75 Error in getChatDetails: {code: '22P02', details: null, hint: null, message: 'invalid input syntax for type uuid: "undefined"'}
+getChatDetails @ chatService.ts:75
+await in getChatDetails
+fetchInitialData @ Chat.tsx:90
+init @ Chat.tsx:111
+await in init
+(anonymous) @ Chat.tsx:114
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=67c2eeff:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=67c2eeff:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=67c2eeff:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=67c2eeff:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=67c2eeff:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=67c2eeff:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=67c2eeff:19447
+(anonymous) @ chunk-W6L2VRDA.js?v=67c2eeff:19328
+workLoop @ chunk-W6L2VRDA.js?v=67c2eeff:197
+flushWork @ chunk-W6L2VRDA.js?v=67c2eeff:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=67c2eeff:384Understand this errorAI
+Chat.tsx:97 Error fetching chat: {code: '22P02', details: null, hint: null, message: 'invalid input syntax for type uuid: "undefined"'}
+fetchInitialData @ Chat.tsx:97
+await in fetchInitialData
+init @ Chat.tsx:111
+await in init
+(anonymous) @ Chat.tsx:114
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=67c2eeff:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=67c2eeff:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=67c2eeff:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=67c2eeff:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=67c2eeff:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=67c2eeff:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=67c2eeff:19447
+(anonymous) @ chunk-W6L2VRDA.js?v=67c2eeff:19328
+workLoop @ chunk-W6L2VRDA.js?v=67c2eeff:197
+flushWork @ chunk-W6L2VRDA.js?v=67c2eeff:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=67c2eeff:384Understand this errorAI
+analytics.ts:24 Page view tracked: /community/c105840e-643a-4378-a1e1-8975cbd9cd8d
+analytics.ts:24 Page view tracked: /community/list
+analytics.ts:24 Page view tracked: /community/9db0fedc-f5c0-4ff5-bc37-b5208e3ee8d2
+analytics.ts:24 Page view tracked: /chat/undefined
+@supabase_supabase-js.js?v=67c2eeff:3900 
+            
+            
+           GET https://czubndssgwedqqzlsazn.supabase.co/rest/v1/chats?select=*%2Cmessages%3Achat_messages%28*%29%2Cuser1%3Ausers%21chats_user1_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%2Clast_active%29%2Cuser2%3Ausers%21chats_user2_id_fkey%28id%2Cusername%2Cprofile_picture%2Cis_online%2Clast_active%29&id=eq.undefined 400 (Bad Request)
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3900
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3921
+fulfilled @ @supabase_supabase-js.js?v=67c2eeff:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=67c2eeff:3886
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3888
+__awaiter6 @ @supabase_supabase-js.js?v=67c2eeff:3870
+(anonymous) @ @supabase_supabase-js.js?v=67c2eeff:3911
+then @ @supabase_supabase-js.js?v=67c2eeff:89Understand this errorAI
+chatService.ts:75 Error in getChatDetails: {code: '22P02', details: null, hint: null, message: 'invalid input syntax for type uuid: "undefined"'}
+getChatDetails @ chatService.ts:75
+await in getChatDetails
+fetchInitialData @ Chat.tsx:90
+init @ Chat.tsx:111
+await in init
+(anonymous) @ Chat.tsx:114
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=67c2eeff:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=67c2eeff:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=67c2eeff:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=67c2eeff:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=67c2eeff:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=67c2eeff:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=67c2eeff:19447
+(anonymous) @ chunk-W6L2VRDA.js?v=67c2eeff:19328
+workLoop @ chunk-W6L2VRDA.js?v=67c2eeff:197
+flushWork @ chunk-W6L2VRDA.js?v=67c2eeff:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=67c2eeff:384Understand this errorAI
+Chat.tsx:97 Error fetching chat: {code: '22P02', details: null, hint: null, message: 'invalid input syntax for type uuid: "undefined"'}
+fetchInitialData @ Chat.tsx:97
+await in fetchInitialData
+init @ Chat.tsx:111
+await in init
+(anonymous) @ Chat.tsx:114
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=67c2eeff:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=67c2eeff:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=67c2eeff:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=67c2eeff:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=67c2eeff:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=67c2eeff:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=67c2eeff:19447
+(anonymous) @ chunk-W6L2VRDA.js?v=67c2eeff:19328
+workLoop @ chunk-W6L2VRDA.js?v=67c2eeff:197
+flushWork @ chunk-W6L2VRDA.js?v=67c2eeff:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=67c2eeff:384Understand this errorAI

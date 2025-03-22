@@ -1,0 +1,37 @@
+view tracked: /dashboard
+analytics.ts:24 Page view tracked: /community
+analytics.ts:24 Page view tracked: /community/list
+analytics.ts:24 Page view tracked: /community/7d7417b1-30df-416f-a71b-9ab0f75dcaad
+Community.tsx:101 Chat error: Error: Could not create or find chat
+    at handleChatClick (Community.tsx:98:15)
+handleChatClick @ Community.tsx:101Understand this errorAI
+Community.tsx:102 Uncaught (in promise) TypeError: toast.error is not a function
+    at handleChatClick (Community.tsx:102:13)Understand this errorAI
+Community.tsx:101 Chat error: Error: Could not create or find chat
+    at handleChatClick (Community.tsx:98:15)
+handleChatClick @ Community.tsx:101Understand this errorAI
+Community.tsx:102 Uncaught (in promise) TypeError: toast.error is not a function
+    at handleChatClick (Community.tsx:102:13)Understand this errorAI
+analytics.ts:24 Page view tracked: /community
+analytics.ts:24 Page view tracked: /community/list
+analytics.ts:24 Page view tracked: /community/c87bc7f4-b9d6-49f8-9c0d-2a3266588743
+Community.tsx:101 Chat error: Error: Could not create or find chat
+    at handleChatClick (Community.tsx:98:15)
+handleChatClick @ Community.tsx:101Understand this errorAI
+Community.tsx:102 Uncaught (in promise) TypeError: toast.error is not a function
+    at handleChatClick (Community.tsx:102:13)Understand this errorAI
+Community.tsx:101 Chat error: Error: Could not create or find chat
+    at handleChatClick (Community.tsx:98:15)
+handleChatClick @ Community.tsx:101Understand this errorAI
+Community.tsx:102 Uncaught (in promise) TypeError: toast.error is not a function
+    at handleChatClick (Community.tsx:102:13)Understand this errorAI
+analytics.ts:24 Page view tracked: /community
+analytics.ts:24 Page view tracked: /community/list
+analytics.ts:24 Page view tracked: /community/c105840e-643a-4378-a1e1-8975cbd9cd8d
+Community.tsx:101 Chat error: Error: Could not create or find chat
+    at handleChatClick (Community.tsx:98:15)
+handleChatClick @ Community.tsx:101Understand this errorAI
+Community.tsx:102 Uncaught (in promise) TypeError: toast.error is not a function
+    at handleChatClick (Community.tsx:102:13)Understand this errorAI
+analytics.ts:24 Page view tracked: /community
+analytics.ts:24 Page view tracked: /community/list

@@ -1,0 +1,213 @@
+ Objective:
+We need to implement Google OAuth authentication using Supabase while ensuring:
+✅ Users can sign up or log in with Google (keeping existing email/password login).
+✅ New users must complete onboarding before accessing the dashboard.
+✅ Returning users with completed onboarding are directly taken to the dashboard.
+✅ Email verification is required before proceeding to onboarding.
+✅ Database schema is properly structured to store additional user details.
+
+🛠️ 1. Database Schema & Tables
+Since Supabase auth.users table only stores authentication-related data, we create a separate profiles table to store additional user information.
+
+Database Schema:
+Column Name	Data Type	Description
+id	UUID (Primary Key)	References auth.users(id), links profile to auth
+full_name	TEXT	Stores user's full name
+gender	TEXT (Enum: Male, Female, Other)	Stores selected gender
+onboarding_completed	BOOLEAN DEFAULT FALSE	Tracks if onboarding is completed
+created_at	TIMESTAMP DEFAULT NOW()	Timestamp of user creation
+SQL Query to Create the Table:
+sql
+Copy
+Edit
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, 
+  full_name TEXT,
+  gender TEXT CHECK (gender IN ('Male', 'Female', 'Other')),
+  onboarding_completed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+Auto-Insert Users into profiles After Signup
+To automatically create a profile entry for every new user signing up:
+
+sql
+Copy
+Edit
+CREATE FUNCTION handle_new_user() RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO profiles (id, full_name, onboarding_completed)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', FALSE);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+🛠️ 2. Google OAuth Integration
+🔹 Update Supabase Authentication Settings
+Go to Supabase Dashboard → Authentication → Providers.
+
+Enable Google OAuth.
+
+Set Redirect URL:
+
+arduino
+Copy
+Edit
+https://roshlingua.vercel.app/auth/callback
+🛠️ 3. Frontend Implementation
+🔹 Add Google Sign-In Button
+Modify Auth.tsx to include Google login:
+
+tsx
+Copy
+Edit
+const signInWithGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: "https://roshlingua.vercel.app/auth/callback",
+    },
+  });
+
+  if (error) console.error("Google Sign-In Error:", error.message);
+};
+tsx
+Copy
+Edit
+<button onClick={signInWithGoogle} className="btn-google">
+  Continue with Google
+</button>
+🛠️ 4. Handling OAuth Callback & Redirects
+Create an AuthCallback.tsx file to check user onboarding status after sign-in.
+
+tsx
+Copy
+Edit
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
+
+const AuthCallback = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session || !session.session) {
+        navigate("/");
+        return;
+      }
+
+      const user = session.session.user;
+
+      // Check if the user has verified their email
+      if (!user.email_confirmed_at) {
+        navigate("/verify-email");
+        return;
+      }
+
+      // Check if user has completed onboarding
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      if (error || !profile) {
+        console.error("Profile fetch error:", error);
+        navigate("/onboarding");
+        return;
+      }
+
+      if (!profile.onboarding_completed) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
+    };
+
+    checkUser();
+  }, [navigate]);
+
+  return <p>Redirecting...</p>;
+};
+
+export default AuthCallback;
+🛠️ 5. Enforce Email Verification Before Onboarding
+Modify your signup logic to show a message after account creation:
+
+tsx
+Copy
+Edit
+const handleSignUp = async (email, password) => {
+  const { error } = await supabase.auth.signUp({ email, password });
+
+  if (error) {
+    console.error("Signup Error:", error.message);
+  } else {
+    alert("Please check your email and click the verification link before continuing.");
+  }
+};
+Create a verification reminder page (VerifyEmail.tsx):
+
+tsx
+Copy
+Edit
+const VerifyEmail = () => {
+  return (
+    <div className="container">
+      <h2>Verify Your Email</h2>
+      <p>We've sent a verification email to your inbox. Please confirm your email before continuing.</p>
+    </div>
+  );
+};
+
+export default VerifyEmail;
+Modify AuthCallback.tsx to redirect unverified users to this page.
+
+🛠️ 6. Force Users to Complete Onboarding
+Modify the Onboarding page (Onboarding.tsx):
+
+tsx
+Copy
+Edit
+const completeOnboarding = async (fullName, gender) => {
+  const user = await supabase.auth.getUser();
+
+  if (!fullName || !gender) {
+    alert("All fields are required!");
+    return;
+  }
+
+  await supabase
+    .from("profiles")
+    .update({ full_name: fullName, gender: gender, onboarding_completed: true })
+    .eq("id", user.id);
+
+  navigate("/dashboard");
+};
+🛠️ 7. Redirect Users Based on Onboarding Status
+Modify your router (router.tsx):
+
+tsx
+Copy
+Edit
+const router = createBrowserRouter([
+  { path: "/", element: <Home /> },
+  { path: "/verify-email", element: <VerifyEmail /> },
+  { path: "/dashboard", element: <Dashboard /> },
+  { path: "/onboarding", element: <Onboarding /> },
+  { path: "/auth/callback", element: <AuthCallback /> },
+  { path: "*", element: <Navigate to="/" replace /> },
+]);
+
+export default router;
+✅ Final Flow
+1️⃣ User signs up → Gets an email verification link.
+2️⃣ After verifying email → Redirects to onboarding.
+3️⃣ User fills in full name & gender → Marks onboarding as complete.
+4️⃣ If onboarding is done, user goes to dashboard.
+5️⃣ If onboarding is not done, user is forced to complete it.
+

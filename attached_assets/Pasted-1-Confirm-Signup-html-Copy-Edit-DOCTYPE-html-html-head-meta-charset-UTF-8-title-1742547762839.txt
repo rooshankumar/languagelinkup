@@ -1,0 +1,170 @@
+1. Confirm Signup
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to RoshLingua - Confirm Your Signup</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #007bff, #00c3ff); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Confirm Your Signup</h2>
+        <p>Thank you for signing up on <strong>RoshLingua</strong>! Click the button below to verify your email:</p>
+        <a href="{{ ConfirmationURL }}" class="button">Confirm Email</a>
+        <p class="footer">If you didn't request this, please ignore this email.</p>
+    </div>
+</body>
+</html>
+2. Invite User
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>You're Invited - RoshLingua</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #28a745, #45c855); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>You've Been Invited!</h2>
+        <p>Welcome to <strong>RoshLingua</strong>! Click below to accept your invitation and create your account:</p>
+        <a href="{{ ConfirmationURL }}" class="button">Accept Invitation</a>
+        <p class="footer">If you didn't expect this, please ignore this email.</p>
+    </div>
+</body>
+</html>
+3. Magic Link Login
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Login to RoshLingua</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #007bff, #00c3ff); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Magic Link Login</h2>
+        <p>Click below to log in instantly:</p>
+        <a href="{{ ConfirmationURL }}" class="button">Log In</a>
+        <p class="footer">If you didn't request this, please ignore this email.</p>
+    </div>
+</body>
+</html>
+4. Change Email Confirmation
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm Your Email Change</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #ff7b00, #ff9800); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Confirm Your Email Change</h2>
+        <p>You are updating your email from <strong>{{ Email }}</strong> to <strong>{{ NewEmail }}</strong>.</p>
+        <a href="{{ ConfirmationURL }}" class="button">Confirm Email Change</a>
+        <p class="footer">If you didn't request this, please ignore this email.</p>
+    </div>
+</body>
+</html>
+5. Reset Password
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Reset Your Password</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #dc3545, #ff4d4d); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Reset Your Password</h2>
+        <p>You have requested to reset your password. Click below to proceed:</p>
+        <a href="{{ ConfirmationURL }}" class="button">Reset Password</a>
+        <p class="footer">If you didn't request this, please ignore this email.</p>
+    </div>
+</body>
+</html>
+These templates match modern UI trends while ensuring clarity and security.
+
+Would you like any custom branding, fonts, or animations added? 😊
+
+
+
+
+
+
+You said:
+reauthentication for too.
+ChatGPT said:
+Here is the Reauthentication Email Template for RoshLingua, designed in the same modern and attractive style. 🚀
+
+6. Reauthentication Request
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Reauthenticate Your RoshLingua Account</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .code { display: inline-block; font-size: 24px; font-weight: bold; background: #eef4ff; padding: 10px 20px; border-radius: 5px; margin-top: 15px; color: #007bff; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Confirm Your Login</h2>
+        <p>For security reasons, please enter the following code to reauthenticate your account:</p>
+        <div class="code">{{ Token }}</div>
+        <p class="footer">If you didn't request this, please ignore this email.</p>
+    </div>
+</body>
+</html>

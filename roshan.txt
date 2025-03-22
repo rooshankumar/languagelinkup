@@ -1,0 +1,59 @@
+.env
+
+MONGODB_URI="mongodb+srv://isthisroshan:Patna123@cluster0.s8ird.mongodb.net/myLanguage?retryWrites=true&w=majority"
+CLOUDINARY_CLOUD_NAME="dx6ulcmub"
+CLOUDINARY_API_KEY="364494895834259"
+CLOUDINARY_API_SECRET="9OvPdkR00Efe6LIJyu3JcyP4Mls"
+
+
+.env.local
+
+
+MONGODB_URI="mongodb+srv://isthisroshan:Patna123@cluster0.s8ird.mongodb.net/myLanguage?retryWrites=true&w=majority"
+NEXTAUTH_SECRET="your-nextauth-secret-key-here"
+NEXTAUTH_URL="https://mylanguageapp.replit.app"
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME="dx6ulcmub"
+CLOUDINARY_API_KEY="364494895834259"
+CLOUDINARY_API_SECRET="9OvPdkR00Efe6LIJyu3JcyP4Mls"
+
+vite
+
+
+VITE_SUPABASE_URL=https://czubndssgwedqqzlsazn.supabase.co
+
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6dWJuZHNzZ3dlZHFxemxzYXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTU1MzksImV4cCI6MjA1NzE3MTUzOX0.yZDlA181ESw0_zLM-pY3Eu3gkaneQawkm_u7_PtkQRo
+
+
+vite.config.ts
+
+
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import { componentTagger } from "lovable-tagger";
+
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "0.0.0.0", // This allows connections from any IP address
+    port: 3001,
+    strictPort: false, // Allow Vite to use another port if 3001 is occupied
+    allowedHosts: ["6200a603-aca2-41ec-8408-5a623a11af8a-00-xkbyhzmr5g6t.pike.replit.dev", "7001cd1e-73c4-47f9-8864-33504126e24a-00-2gqtw3rglxf6u.sisko.replit.dev", "8cc24c6a-ab42-485c-9150-357511260870-00-2x6dhnnlw9dws.pike.replit.dev", "all"],
+  },
+  plugins: [
+    react(),
+    mode === 'development' &&
+    componentTagger(),
+  ].filter(Boolean),
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+  },
+}));

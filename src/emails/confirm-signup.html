@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to RoshLingua - Confirm Your Signup</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; }
+        h2 { color: #333; }
+        .button { display: inline-block; padding: 12px 24px; background: linear-gradient(45deg, #007bff, #00c3ff); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Confirm Your Signup</h2>
+        <p>Thank you for signing up on <strong>RoshLingua</strong>! Click the button below to verify your email:</p>
+        <a href="https://roshlingua.vercel.app/ConfirmEmail?token={{ .Token }}" class="button">Confirm Email</a>
+        <p class="footer">If you didn't request this, please ignore this email.</p>
+    </div>
+</body>
+</html>

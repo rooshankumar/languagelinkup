@@ -1,0 +1,2612 @@
+[
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "instance_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "ip_address",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "payload",
+    "data_type": "json"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "auth_code_issued_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "code_challenge_method",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "authentication_method",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "provider_refresh_token",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "provider_access_token",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "provider_type",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "code_challenge",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "auth_code",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "provider_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "provider",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "identity_data",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "last_sign_in_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "email",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "raw_base_config",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "uuid",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "authentication_method",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "session_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "factor_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "ip_address",
+    "data_type": "inet"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "verified_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "otp_code",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "web_authn_session_data",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "web_authn_aaguid",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "web_authn_credential",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "last_challenged_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "status",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "factor_type",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "phone",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "secret",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "friendly_name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "token_hash",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "relates_to",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "token_type",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "instance_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "id",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "revoked",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "token",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "user_id",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "session_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "parent",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "metadata_url",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "entity_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "attribute_mapping",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "sso_provider_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "name_id_format",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "metadata_xml",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "request_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "flow_state_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "sso_provider_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "for_email",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "redirect_to",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "schema_migrations",
+    "column_name": "version",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "user_agent",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "tag",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "factor_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "aal",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "not_after",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "refreshed_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "ip",
+    "data_type": "inet"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_domains",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_domains",
+    "column_name": "sso_provider_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_domains",
+    "column_name": "domain",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_domains",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_domains",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_providers",
+    "column_name": "resource_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_providers",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_providers",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sso_providers",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "phone_change",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "instance_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email_confirmed_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "invited_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "confirmation_sent_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "recovery_sent_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email_change_sent_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "last_sign_in_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "raw_app_meta_data",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "raw_user_meta_data",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "is_super_admin",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "phone_confirmed_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "phone_change_sent_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "confirmed_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email_change_confirm_status",
+    "data_type": "smallint"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "banned_until",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "reauthentication_sent_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "is_sso_user",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "deleted_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "is_anonymous",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "aud",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "role",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "encrypted_password",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "confirmation_token",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "recovery_token",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email_change_token_new",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email_change",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "phone",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "phone_change_token",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "email_change_token_current",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "users",
+    "column_name": "reauthentication_token",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_optimization_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "dbid",
+    "data_type": "oid"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "toplevel",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "queryid",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_optimization_count",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_emission_count",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "userid",
+    "data_type": "oid"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "query",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_emission_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "plans",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "total_plan_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "min_plan_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "max_plan_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "mean_plan_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "stddev_plan_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "calls",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "total_exec_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "min_exec_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "max_exec_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "mean_exec_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "stddev_exec_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "rows",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "shared_blks_hit",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "shared_blks_read",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "shared_blks_dirtied",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "shared_blks_written",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "local_blks_hit",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "local_blks_read",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "local_blks_dirtied",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "local_blks_written",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "temp_blks_read",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "temp_blks_written",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "blk_read_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "blk_write_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "temp_blk_read_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "temp_blk_write_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "wal_records",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "wal_fpi",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "wal_bytes",
+    "data_type": "numeric"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_functions",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_generation_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_inlining_count",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements",
+    "column_name": "jit_inlining_time",
+    "data_type": "double precision"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements_info",
+    "column_name": "dealloc",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "extensions",
+    "table_name": "pg_stat_statements_info",
+    "column_name": "stats_reset",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "raw_key_nonce",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "comment",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "associated_data",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "parent_key",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "decrypted_raw_key",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "raw_key",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "key_context",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "key_id",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "key_type",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "expires",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "created",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "status",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "decrypted_key",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "comment",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "key_id",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "associated_data",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "key_type",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "expires",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "parent_key",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "raw_key_nonce",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "raw_key",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "key_context",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "user_data",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "created",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "key",
+    "column_name": "status",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "attrelid",
+    "data_type": "oid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "attname",
+    "data_type": "name"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "format_type",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "nonce_column",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "key_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "key_id_column",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "mask_columns",
+    "column_name": "associated_columns",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "nonce_column",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "col_description",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "relnamespace",
+    "data_type": "regnamespace"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "attnum",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "view_name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "format_type",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "relname",
+    "data_type": "name"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "key_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "security_invoker",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "key_id_column",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "associated_columns",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "priority",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "attname",
+    "data_type": "name"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "masking_rule",
+    "column_name": "attrelid",
+    "data_type": "oid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "associated_data",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "status",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "key_type",
+    "data_type": "USER-DEFINED"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "key_id",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "key_context",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "created",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "expires",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "pgsodium",
+    "table_name": "valid_key",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "sender_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "attachment_url",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "content",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "chat_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_messages",
+    "column_name": "content_type",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_read_status",
+    "column_name": "chat_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_read_status",
+    "column_name": "last_read",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_read_status",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chat_read_status",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "user1_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "user2",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "user1",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "user2_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "chats",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "message_receipts",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "message_receipts",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "message_receipts",
+    "column_name": "seen_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "message_receipts",
+    "column_name": "message_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_profiles",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_profiles",
+    "column_name": "bio",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_profiles",
+    "column_name": "email",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_profiles",
+    "column_name": "avatar",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_profiles",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_profiles",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_settings",
+    "column_name": "notifications",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_settings",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_settings",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_settings",
+    "column_name": "dark_mode",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "username",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "profile_picture",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "last_active",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "avatars",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "bio",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "proficiency",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "learning_language",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "location",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "next_lesson_time",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "chat_partners",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "minutes_practiced",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "native_language",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "email",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "avatar_url",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "vocabulary_count",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "streak",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "dob",
+    "data_type": "date"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "last_lesson",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "is_online",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_16",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_17",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_18",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_19",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_20",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_21",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "private",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "topic",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "extension",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "event",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "messages_2025_03_22",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "schema_migrations",
+    "column_name": "version",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "schema_migrations",
+    "column_name": "inserted_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "claims",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "id",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "subscription_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "claims_role",
+    "data_type": "regrole"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "entity",
+    "data_type": "regclass"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "realtime",
+    "table_name": "subscription",
+    "column_name": "filters",
+    "data_type": "ARRAY"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "owner_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "file_size_limit",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "owner",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "avif_autodetection",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "public",
+    "data_type": "boolean"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "buckets",
+    "column_name": "allowed_mime_types",
+    "data_type": "ARRAY"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "migrations",
+    "column_name": "hash",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "migrations",
+    "column_name": "name",
+    "data_type": "character varying"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "migrations",
+    "column_name": "executed_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "migrations",
+    "column_name": "id",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "user_metadata",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "owner_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "metadata",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "path_tokens",
+    "data_type": "ARRAY"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "version",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "bucket_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "last_accessed_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "owner",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "objects",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "in_progress_size",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "version",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "key",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "owner_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "upload_signature",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "bucket_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "user_metadata",
+    "data_type": "jsonb"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "key",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "bucket_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "size",
+    "data_type": "bigint"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "part_number",
+    "data_type": "integer"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "upload_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "etag",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "owner_id",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "version",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "storage",
+    "table_name": "s3_multipart_uploads_parts",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "decrypted_secret",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "nonce",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "key_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "secret",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "decrypted_secrets",
+    "column_name": "description",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "key_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "description",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "nonce",
+    "data_type": "bytea"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "secret",
+    "data_type": "text"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_schema": "vault",
+    "table_name": "secrets",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  }
+]

@@ -1,0 +1,64 @@
+Here are detailed prompts for generating all necessary authentication pages with proper security, token validation, and redirect handling for your app.
+
+1️⃣ Reset Password Page
+Prompt:
+
+Write a secure React page for resetting a user's password.
+Requirements:
+
+The page should only be accessible via an email link containing a valid reset token (/reset-password?token=XYZ).
+If no token is provided, show an "Invalid or expired reset link" message.
+If the user is already logged in, redirect to the dashboard (/dashboard).
+Form should accept a new password input and submit the request.
+Display errors if the token is invalid or the request fails.
+Use React Router for navigation and Supabase/Firebase/Auth API for resetting the password.
+2️⃣ Confirm Email Change Page
+Prompt:
+
+Generate a React page to confirm email changes (/confirm-email).
+Requirements:
+
+The page should only be accessible via an email link (/confirm-email?token=XYZ).
+It should display a message:
+"You're updating your email on RoshLingua from old@example.com → new@example.com. Click the button below to confirm."
+If the token is missing or invalid, show "Invalid email confirmation link".
+If the user is logged in, automatically update the email in the database.
+After success, show "Your email has been updated!" and redirect to dashboard after 3 seconds.
+If already logged in, redirect to dashboard.
+3️⃣ Magic Link Login Page
+Prompt:
+
+Create a React page for Magic Link login (/magic-login).
+Requirements:
+
+The page should only be accessed via an email link (/magic-login?token=XYZ).
+If the token is missing or invalid, show "Invalid login link".
+If the token is valid, authenticate the user and redirect them to the dashboard.
+If the user is already logged in, redirect them to the dashboard.
+4️⃣ Invite User Page
+Prompt:
+
+Develop a React page to allow invited users to create an account (/invite).
+Requirements:
+
+The page should only be accessible via an invite email link (/invite?token=XYZ).
+If no token is present, show "Invalid or expired invite link."
+If the token is valid, show "You've been invited to join RoshLingua! Click below to create your account."
+Include a registration form for the invited user (name, password, etc.).
+After successful sign-up, redirect the user to dashboard.
+If already logged in, redirect to dashboard.
+5️⃣ Reauthentication Page
+Prompt:
+
+Write a React page for user reauthentication (/reauth).
+Requirements:
+
+This page should be used for security-sensitive actions (e.g., changing email or password).
+It should display "Please reauthenticate to continue."
+The user must enter their password again before performing sensitive actions.
+If authenticated, allow the requested action (e.g., update email, delete account).
+If authentication fails, show "Incorrect password. Please try again."
+🛠️ Extra Security Considerations
+Token Expiration: Ensure the tokens expire after 15-30 minutes for security.
+Server-Side Validation: Validate tokens on the backend before processing.
+Redirect Rules: Logged-in users should always be redirected to the dashboard.
