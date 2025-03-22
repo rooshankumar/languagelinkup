@@ -149,7 +149,7 @@ const CommunityList = () => {
 
       let query = supabase
         .from('users')
-        .select('*')
+        .select('id, username, profile_picture, is_online, last_active') //Added this line
         .neq('id', session.session.user.id)
         .order('last_active', { ascending: false });
 
@@ -163,7 +163,7 @@ const CommunityList = () => {
       if (filters.learningLanguage) query = query.eq('learning_language', filters.learningLanguage);
       if (filters.onlineStatus === 'active') query = query.gt('last_active', new Date()); // Adjust logic for 'recently active' as needed
       if (filters.onlineStatus === 'recent') {
-          //Add logic to filter users based on "recently active" criteria. This requires defining what "recently active" means (e.g., within the last hour, day, etc.)
+          query = query.gt('last_active', new Date(Date.now() - 86400000)); //Recently active within the last 24 hours
       }
 
 
