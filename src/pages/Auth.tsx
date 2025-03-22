@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
-import { toast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -113,7 +113,7 @@ export default function Auth() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
 
@@ -153,99 +153,6 @@ export default function Auth() {
           </p>
         </Card>
       </div>
-    </div>
-  );
-}
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { signInWithPassword, signUp, signInWithGoogle } from '@/lib/auth';
-
-export default function Auth() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (isLogin) {
-        const { error } = await signInWithPassword(email, password);
-        if (!error) navigate('/dashboard');
-      } else {
-        const { error } = await signUp(email, password);
-        if (!error) navigate('/dashboard');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    const { error } = await signInWithGoogle();
-    if (!error) navigate('/dashboard');
-  };
-
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isLogin ? 'Sign In' : 'Create Account'}
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div>
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
-          </Button>
-        </form>
-
-        <div className="mt-4">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleSignIn}
-          >
-            Continue with Google
-          </Button>
-        </div>
-
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
-          >
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-          </button>
-        </div>
-      </Card>
     </div>
   );
 }
