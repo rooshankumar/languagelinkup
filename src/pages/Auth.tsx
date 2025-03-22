@@ -19,25 +19,28 @@ export default function Auth() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
   const handleGoogleLogin = async () => {
+    const redirectTo = window.location.hostname === "0.0.0.0" 
+    ? `http://0.0.0.0:${window.location.port}/auth/callback`
+    : `${window.location.origin}/auth/callback`;
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
+        provider: "google",
+        options: { redirectTo }
       });
+
       if (error) {
         toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
+          title: "Error",
+          description: "Failed to sign in with Google. Please try again.",
+          variant: "destructive"
         });
       }
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive"
       });
     }
   };
