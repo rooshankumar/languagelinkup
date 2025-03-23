@@ -13,9 +13,19 @@ export async function signInWithPassword(email: string, password: string) {
     // 🔹 Check if the user has completed onboarding
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
-      .select('onboarded')
+      .select('onboarded, id')
       .eq('id', data.user?.id)
-      .single();
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+      throw profileError;
+    }
+
+    // If profile doesn't exist or onboarding not completed, redirect
+    if (!userProfile?.onboarded) {
+      return { data: { ...data, shouldCompleteOnboarding: true }, error: null };
+    }
 
     if (profileError) console.warn('Profile fetch error:', profileError);
 

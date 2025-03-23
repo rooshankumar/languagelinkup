@@ -14,7 +14,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!loading && !authPages.includes(currentPath)) {
       if (!user) {
         navigate('/auth')
-      } else if (!profile || !profile.onboarding_completed) {
+      } else if (!profile?.onboarded && currentPath !== '/onboarding') {
         navigate('/onboarding')
       }
     }
