@@ -63,7 +63,8 @@ const ChatList = () => {
             )
           `)
           .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-          .order('updated_at', { ascending: false });
+          .order('updated_at', { ascending: false })
+          .throwOnError(); // Added throwOnError to handle errors explicitly
 
         if (chatsError) throw chatsError;
 
@@ -76,15 +77,15 @@ const ChatList = () => {
               id: chat.id,
               partner: {
                 id: partner.id,
-                username: partner.username,
-                profilePicture: partner.avatar_url 
-                  ? supabase.storage.from('avatars').getPublicUrl(partner.avatar_url).data.publicUrl
+                username: partner.username || 'Unknown User', // Handle potential null username
+                profilePicture: partner.profile_picture 
+                  ? partner.profile_picture // Assuming profile_picture is a direct URL now.
                   : `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.username || 'User')}&background=random&color=fff&size=128`,
                 isOnline: partner.is_online,
               },
               lastMessage: latestMessage
                 ? {
-                    content: latestMessage.content,
+                    content: latestMessage.content || '', // Handle potential null content
                     timestamp: latestMessage.created_at,
                   }
                 : null,
@@ -96,6 +97,7 @@ const ChatList = () => {
         }
       } catch (error) {
         console.error('Error fetching chats:', error);
+        toast.error('Error fetching chats. Please try again later.'); // Added user feedback
       } finally {
         setIsLoading(false);
       }

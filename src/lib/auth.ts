@@ -12,7 +12,7 @@ export async function signInWithPassword(email: string, password: string) {
 
     // 🔹 Check if the user has completed onboarding
     const { data: userProfile, error: profileError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('onboarded')
       .eq('id', data.user?.id)
       .single();

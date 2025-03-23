@@ -145,13 +145,15 @@ const CommunityList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user?.id) return;
+      const currentUser = session?.session?.user;
+      if (!currentUser?.id) return;
 
       let query = supabase
         .from('users')
-        .select('id, username, profile_picture, is_online, last_active') //Added this line
-        .neq('id', session.session.user.id)
-        .order('last_active', { ascending: false });
+        .select('id, username, profile_picture, is_online, last_active')
+        .neq('id', currentUser?.id || '')
+        .order('last_active', { ascending: false })
+        .throwOnError();
 
       // Apply filters to the query
       if (filters.gender) query = query.eq('gender', filters.gender);
