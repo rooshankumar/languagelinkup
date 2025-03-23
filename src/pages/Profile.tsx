@@ -110,7 +110,8 @@ const Profile = () => {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) throw new Error("Not authenticated");
+      const userId = session?.user?.id;
+      if (!userId) throw new Error("Not authenticated");
 
       const { error } = await supabase
         .from('users')
@@ -124,7 +125,7 @@ const Profile = () => {
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", session.user.id);
+        .eq("id", userId);
 
       if (error) throw error;
 
