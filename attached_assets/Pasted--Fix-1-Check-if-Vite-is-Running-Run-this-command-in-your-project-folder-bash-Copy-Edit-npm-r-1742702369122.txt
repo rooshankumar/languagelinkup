@@ -1,0 +1,95 @@
+.
+
+🛠 Fix 1: Check if Vite is Running
+Run this command in your project folder:
+
+bash
+Copy
+Edit
+npm run dev
+Check the terminal output—it should show something like:
+
+arduino
+Copy
+Edit
+  ➜  Local:   http://localhost:3001/
+If it shows a different port, update your redirect URLs accordingly.
+
+🛠 Fix 2: Ensure Your Supabase Callback is Correct
+Modify your AuthCallback component to log any errors:
+
+js
+Copy
+Edit
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabaseClient';
+
+const AuthCallback = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleAuthCallback = async () => {
+      const { searchParams } = new URL(window.location.href);
+      const code = searchParams.get('code');
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (!error) {
+          console.log("✅ Authentication successful");
+          navigate('/dashboard');  // Change to your post-login route
+        } else {
+          console.error("❌ Auth error:", error);
+          navigate('/auth/error');
+        }
+      }
+    };
+
+    handleAuthCallback();
+  }, [navigate]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p>Authenticating...</p>
+    </div>
+  );
+};
+
+export default AuthCallback;
+Try logging in again.
+
+If it fails, check the console for errors.
+
+🛠 Fix 3: Verify Google OAuth Redirect URI
+Go to Google Cloud Console → OAuth Credentials, and check:
+
+Authorized Redirect URIs should include:
+
+bash
+Copy
+Edit
+http://localhost:3001/auth/callback
+If you changed it recently, wait 5 minutes for changes to take effect.
+
+🛠 Fix 4: Manually Navigate to AuthCallback
+If you're stuck on login, try:
+
+Open a new tab
+
+Manually go to http://localhost:3001/auth/callback?code=YOUR_CODE_HERE
+
+If this page doesn't load, your server is still not running.
+
+🛠 Fix 5: Restart Everything
+Stop any running Vite server
+Press Ctrl + C in the terminal
+
+Restart your app
+
+bash
+Copy
+Edit
+npm run dev
+Open http://localhost:3001 and try logging in again.
+
