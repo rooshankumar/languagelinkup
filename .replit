@@ -32,4 +32,4 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NODE_OPTIONS=\"--loader ts-node/esm\" node src/api/server.ts & npm run dev"
+args = "node --loader ts-node/esm src/api/server.ts & npm run dev"
