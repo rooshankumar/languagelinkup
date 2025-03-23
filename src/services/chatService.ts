@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import type { Chat, ChatMessage } from '@/types/chat';
 import { Message, ContentType } from '@/types/supabase';
 import { toast } from '@/hooks/use-toast';

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
-import { toast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
+import { signInWithPassword, signUp, signInWithGoogle } from '@/lib/auth';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -14,31 +14,20 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+        const { error } = await signInWithPassword(email, password);
         if (error) throw error;
         navigate('/dashboard');
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-
+        const { error } = await signUp(email, password);
         if (error) throw error;
-
         toast({
           title: "Check your email",
           description: "We sent you a confirmation link to complete your signup.",
@@ -55,15 +44,9 @@ export default function Auth() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google') => {
+  const handleGoogleSignIn = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
+      const { error } = await signInWithGoogle();
       if (error) throw error;
     } catch (error: any) {
       toast({
@@ -87,7 +70,7 @@ export default function Auth() {
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h2>
 
-          <form onSubmit={handleAuth} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -113,7 +96,7 @@ export default function Auth() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
 
@@ -130,7 +113,7 @@ export default function Auth() {
             type="button"
             variant="outline"
             className="w-full"
-            onClick={() => handleOAuthSignIn('google')}
+            onClick={handleGoogleSignIn}
           >
             <svg role="img" viewBox="0 0 24 24" className="h-4 w-4 mr-2">
               <path
