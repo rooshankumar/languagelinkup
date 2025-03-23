@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -6,28 +7,32 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true; // ✅ Prevents memory leaks in React
-
     const handleAuthCallback = async () => {
-      const { searchParams } = new URL(window.location.href);
-      const code = searchParams.get('code');
+      try {
+        const { searchParams } = new URL(window.location.href);
+        const code = searchParams.get('code');
 
-      if (!code) {
-        navigate('/auth/error'); // ✅ Redirect if code is missing
-        return;
-      }
+        if (!code) {
+          console.error('No code provided in callback');
+          navigate('/auth/error');
+          return;
+        }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (isMounted) {
-        navigate(error ? '/auth/error' : '/dashboard');
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('Auth error:', error.message);
+          navigate('/auth/error');
+          return;
+        }
+
+        navigate('/dashboard');
+      } catch (err) {
+        console.error('Callback error:', err);
+        navigate('/auth/error');
       }
     };
 
     handleAuthCallback();
-
-    return () => {
-      isMounted = false; // ✅ Cleanup to prevent state update on unmounted component
-    };
   }, [navigate]);
 
   return (
