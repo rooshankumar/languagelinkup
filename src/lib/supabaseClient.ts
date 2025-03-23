@@ -15,6 +15,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    redirectTo: 'https://workspace.username.repl.co/auth/callback',
+    redirectTo: `${window.location.origin}/auth/callback`,
   },
 });

@@ -38,12 +38,21 @@ export async function signUp(email: string, password: string) {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          email_confirm_sent: true
+        }
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+    
+    console.log('Signup response:', data);
     return { data, error: null };
   } catch (error) {
+    console.error('Signup failed:', error);
     return { data: null, error: error as AuthError };
   }
 }
