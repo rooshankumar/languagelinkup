@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 
 export const signInWithGoogle = async () => {
