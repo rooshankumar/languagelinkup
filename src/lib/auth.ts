@@ -54,7 +54,7 @@ export async function signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `https://5a26870e-ba06-436d-b121-ac78f2ab02e5-00-35yf96lqew2dc.pike.replit.dev:3001/auth/callback`, // Change if hosting elsewhere
+        redirectTo: 'https://obhakrlrvmmroosuejnh.supabase.co/auth/v1/callback',
       },
     });
 
