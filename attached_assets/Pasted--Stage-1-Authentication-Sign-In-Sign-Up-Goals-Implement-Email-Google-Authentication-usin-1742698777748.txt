@@ -1,0 +1,90 @@
+🔹 Stage 1: Authentication (Sign In / Sign Up)
+✅ Goals:
+Implement Email & Google Authentication using Supabase.
+
+Redirect users after sign-in/up based on onboarding status.
+
+Handle error messages & toast notifications for user feedback.
+
+📌 Tasks:
+Set up Email & Password Authentication.
+
+Implement Google Sign-In.
+
+Store user session in context (useAuth).
+
+Check if onboarding is completed after login.
+
+Redirect users to /onboarding if profile is incomplete.
+
+📌 Code to Implement:
+Authentication handlers (handleSignUp, handleSignIn, handleGoogleSignIn).
+
+Onboarding status check (handleAuthSuccess).
+
+ProtectedRoute component to prevent access without onboarding.
+
+🔹 Stage 2: Onboarding Flow
+✅ Goals:
+Multi-step form to collect user details.
+
+Upload profile picture to Supabase Storage.
+
+Save user data to the users table.
+
+📌 Tasks:
+Design onboarding UI (Steps: Personal Info → Languages → DOB → Avatar → Finish).
+
+Implement form validation (Ensure all fields are filled).
+
+Upload profile picture to Supabase Storage.
+
+Store user details in the users table.
+
+Redirect users to dashboard once onboarding is completed.
+
+📌 Code to Implement:
+Onboarding.tsx with multi-step form.
+
+File upload handler for avatars.
+
+handleSubmit function to save data in the database.
+
+🔹 Stage 3: Community List (Fetching Registered Users)
+✅ Goals:
+Fetch only users who completed onboarding.
+
+Display registered users on the community page.
+
+📌 Tasks:
+Query users table to fetch completed profiles.
+
+Display user list with names, avatars & bio.
+
+Ensure real-time updates when a new user joins.
+
+📌 Code to Implement:
+fetchCommunityUsers function (only fetch users with a profile).
+
+UI to display user list (avatar, name, bio).
+
+🔹 Stage 4: Database Setup & RLS Security
+✅ Goals:
+Create users table with required columns.
+
+Set up Row-Level Security (RLS) to protect user data.
+
+📌 Tasks:
+Define database schema with correct columns.
+
+Set RLS policies to:
+
+Allow users to update their own profile.
+
+Allow authenticated users to read community profiles.
+
+📌 Code to Implement:
+SQL queries to create users table.
+
+Supabase RLS policies for privacy & security.
+
