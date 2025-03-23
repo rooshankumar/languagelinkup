@@ -37,7 +37,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NODE_OPTIONS=\"--loader ts-node/esm\" node --experimental-specifier-resolution=node src/api/server.ts"
+args = "node --loader ts-node/esm src/api/server.ts"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
