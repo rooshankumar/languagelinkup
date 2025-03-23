@@ -11,6 +11,13 @@ const AuthCallback = () => {
       try {
         const { searchParams } = new URL(window.location.href);
         const code = searchParams.get('code');
+        const error = searchParams.get('error');
+
+        if (error) {
+          console.error('Auth callback error:', error);
+          navigate('/auth/error');
+          return;
+        }
 
         if (!code) {
           console.error('No code provided in callback');
@@ -18,13 +25,14 @@ const AuthCallback = () => {
           return;
         }
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          console.error('Auth error:', error.message);
+        const { data, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+        if (sessionError) {
+          console.error('Session exchange error:', sessionError.message);
           navigate('/auth/error');
           return;
         }
 
+        console.log('Auth successful, user:', data?.user?.id);
         navigate('/dashboard');
       } catch (err) {
         console.error('Callback error:', err);
