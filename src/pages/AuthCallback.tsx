@@ -6,21 +6,28 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true; // ✅ Prevents memory leaks in React
+
     const handleAuthCallback = async () => {
       const { searchParams } = new URL(window.location.href);
       const code = searchParams.get('code');
 
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
-          navigate('/dashboard');
-        } else {
-          navigate('/auth/error');
-        }
+      if (!code) {
+        navigate('/auth/error'); // ✅ Redirect if code is missing
+        return;
+      }
+
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (isMounted) {
+        navigate(error ? '/auth/error' : '/dashboard');
       }
     };
 
     handleAuthCallback();
+
+    return () => {
+      isMounted = false; // ✅ Cleanup to prevent state update on unmounted component
+    };
   }, [navigate]);
 
   return (
